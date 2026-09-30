@@ -1,0 +1,10 @@
+*
+!.gitignore
+!banners/
+!banners/**
+!categories/
+!categories/**
+!products/
+!products/**
+!settings/
+!settings/**
