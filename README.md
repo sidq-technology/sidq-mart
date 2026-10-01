@@ -76,15 +76,19 @@
 
 ---
 
-## 🔑 Default Login Credentials (ডিফল্ট লগইন তথ্য)
+## 🔑 Demo & Admin Access Credentials (অ্যাডমিন লগইন তথ্য)
 
-| রোল (Role) | ইমেইল (Email) | পাসওয়ার্ড (Password) | লগইন লিংক (URL) |
-|---|---|---|---|
-| **Super Administrator** | `admin@sidqmart.com` | `admin123` | `http://127.0.0.1:8000/admin` |
-| **Administrator (Tech Support)** | `admin@sidqtech.com` | `admin123` | `http://127.0.0.1:8000/admin` |
-| **Shop Manager** | `manager@sidqmart.com` | `password123` | `http://127.0.0.1:8000/admin` |
-| **Employee / Staff** | `employee@sidqmart.com` | `password123` | `http://127.0.0.1:8000/admin` |
-| **Customer** | `customer@sidqmart.com` | `password123` | `http://127.0.0.1:8000/login` |
+> 💡 **অ্যাডমিন প্যানেল সরাসরি এক্সেস লিংক:** `http://127.0.0.1:8000/admin` (অথবা আপনার লাইভ ডোমেইনের `/admin`)
+
+| রোল (Role) | নাম / পদবী | ইমেইল (Email / Username) | পাসওয়ার্ড (Password) | এক্সেস লিংক (URL) |
+|---|---|---|---|---|
+| 👑 **Super Admin** | SIDQ Technology Administrator | `admin@sidqmart.com` | `admin123` | `/admin` |
+| 🛠️ **Tech Support Admin** | SIDQ Technology Support | `admin@sidqtech.com` | `admin123` | `/admin` |
+| 🏪 **Shop Manager** | সাকিব হাসান (শপ ম্যানেজার) | `manager@sidqmart.com` | `password123` | `/admin` |
+| 📦 **Employee / Staff** | রাকিব ইসলাম (এমপ্লয়ি) | `employee@sidqmart.com` | `password123` | `/admin` |
+| 👤 **Customer (গ্রাহক)** | তানভীর আহমেদ (গ্রাহক) | `customer@sidqmart.com` | `password123` | `/login` |
+
+> 🔒 **সিকিউরিটি নোট:** প্রোডাকশন বা লাইভ সার্ভারে ডেপ্লয় করার পর অ্যাডমিন প্যানেল থেকে ডিফল্ট পাসওয়ার্ড পরিবর্তন করার জন্য অনুরোধ করা হচ্ছে।
 
 ---
 
