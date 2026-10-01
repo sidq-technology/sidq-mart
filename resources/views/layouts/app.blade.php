@@ -209,7 +209,7 @@
         }
 
         // Add to Cart via AJAX
-        function addToCart(productId, quantity = 1) {
+        function addToCart(productId, quantity = 1, variantId = null) {
             fetch("{{ route('cart.add') }}", {
                 method: "POST",
                 headers: {
@@ -217,7 +217,7 @@
                     "X-CSRF-TOKEN": CSRF_TOKEN,
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ product_id: productId, quantity: quantity })
+                body: JSON.stringify({ product_id: productId, quantity: quantity, variant_id: variantId })
             })
             .then(res => res.json())
             .then(data => {
@@ -253,14 +253,16 @@
 
                 let itemsHtml = '<div class="flex-grow-1 overflow-auto pe-1">';
                 data.items.forEach(item => {
+                    const variantLine = item.variant_text ? `<div class="small text-danger fw-semibold" style="font-size: 11px;">${item.variant_text}</div>` : '';
                     itemsHtml += `
                         <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
                             <img src="${item.image}" alt="${item.name}" class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
                             <div class="flex-grow-1 me-2">
                                 <h6 class="mb-1 text-truncate" style="max-width: 170px; font-size: 13px;">${item.name}</h6>
+                                ${variantLine}
                                 <div class="text-danger fw-bold" style="font-size: 13px;">${item.unit_price} ৳ x ${item.quantity} = ${item.total_price} ৳</div>
                             </div>
-                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${item.product_id})" title="Remove item">
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFromCart('${item.item_key || item.product_id}')" title="Remove item">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
@@ -289,7 +291,7 @@
             });
         }
 
-        function removeFromCart(productId) {
+        function removeFromCart(itemKey) {
             fetch("{{ route('cart.remove') }}", {
                 method: "POST",
                 headers: {
@@ -297,7 +299,7 @@
                     "X-CSRF-TOKEN": CSRF_TOKEN,
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ product_id: productId })
+                body: JSON.stringify({ item_key: itemKey, product_id: itemKey })
             })
             .then(res => res.json())
             .then(data => {

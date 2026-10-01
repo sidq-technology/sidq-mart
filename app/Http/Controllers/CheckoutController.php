@@ -17,7 +17,8 @@ class CheckoutController extends Controller
     public function buyNow(Request $request, Product $product, CartService $cart)
     {
         $quantity = (int) $request->input('quantity', 1);
-        $cart->add($product->id, $quantity);
+        $variantId = $request->filled('variant_id') ? (int) $request->input('variant_id') : null;
+        $cart->add($product->id, $quantity, $variantId);
 
         return redirect()->route('checkout');
     }
@@ -220,21 +221,18 @@ class CheckoutController extends Controller
 
         $order = $orderService->createOrder($validated, $cart);
 
-        // Mark any matching draft failed order as recovered
+        // Remove any matching draft failed order as order has been placed successfully
         try {
             $sessionId = Session::getId();
-            FailedOrder::where('is_recovered', false)
-                ->where(function ($q) use ($sessionId, $validated) {
-                    $q->where('session_id', $sessionId)
-                      ->orWhere('customer_phone', $validated['customer_phone']);
+            FailedOrder::where(function ($q) use ($sessionId, $validated) {
+                    $q->where('session_id', $sessionId);
+                    if (!empty($validated['customer_phone'])) {
+                        $q->orWhere('customer_phone', $validated['customer_phone']);
+                    }
                 })
-                ->update([
-                    'is_recovered' => true,
-                    'status' => 'recovered',
-                    'recovered_order_id' => $order->id,
-                ]);
+                ->delete();
         } catch (\Throwable $e) {
-            \Log::error('Failed to mark draft as recovered: ' . $e->getMessage());
+            \Log::error('Failed to clean up draft order: ' . $e->getMessage());
         }
 
         return redirect()->route('order.success', $order->order_number)

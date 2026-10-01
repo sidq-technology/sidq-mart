@@ -107,6 +107,9 @@
                 <li class="sidq-nav-item">
                     <a href="{{ route('home') }}"><i class="fas fa-home me-1"></i> হোম</a>
                 </li>
+                <li class="sidq-nav-item">
+                    <a href="{{ route('shop.index') }}" class="{{ request()->routeIs('shop.index') ? 'active' : '' }}"><i class="fas fa-store me-1"></i> শপ</a>
+                </li>
                 @foreach($categories->take(8) as $cat)
                 <li class="sidq-nav-item position-relative dropdown">
                     <a href="{{ route('product.category', $cat->slug) }}" class="{{ $cat->children->count() ? 'dropdown-toggle' : '' }}">
@@ -161,6 +164,11 @@
             <li class="list-group-item">
                 <a href="{{ route('home') }}" class="d-flex align-items-center py-2 text-dark">
                     <i class="fas fa-home me-2 text-danger"></i> হোম পেজ
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a href="{{ route('shop.index') }}" class="d-flex align-items-center py-2 text-dark {{ request()->routeIs('shop.index') ? 'fw-bold text-danger' : '' }}">
+                    <i class="fas fa-store me-2 text-danger"></i> সকল পণ্য (Shop)
                 </a>
             </li>
             @foreach($categories as $cat)

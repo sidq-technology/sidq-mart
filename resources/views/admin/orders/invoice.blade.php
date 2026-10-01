@@ -129,7 +129,12 @@
                 @foreach($order->items as $index => $item)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $item->product_name }}</td>
+                    <td>
+                        <div style="font-weight: 500;">{{ $item->product_name }}</div>
+                        @if(!empty($item->variant_text))
+                        <div style="font-size: 11px; color: #dc2626; margin-top: 2px; font-weight: 600;">{{ $item->variant_text }}</div>
+                        @endif
+                    </td>
                     <td class="text-right">৳{{ number_format($item->unit_price, 0) }}</td>
                     <td class="text-right">{{ $item->quantity }}</td>
                     <td class="text-right">৳{{ number_format($item->total_price, 0) }}</td>

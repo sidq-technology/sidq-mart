@@ -66,7 +66,12 @@
                                             @if($item->product_image)
                                             <img src="{{ $item->product_image }}" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                             @endif
-                                            <span class="fw-medium">{{ $item->product_name }}</span>
+                                            <div>
+                                                <div class="fw-medium">{{ $item->product_name }}</div>
+                                                @if(!empty($item->variant_text))
+                                                <small class="text-danger fw-semibold d-block" style="font-size: 11px;">{{ $item->variant_text }}</small>
+                                                @endif
+                                            </div>
                                         </div>
                                     </td>
                                     <td>৳{{ number_format($item->unit_price, 0) }}</td>

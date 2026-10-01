@@ -12,7 +12,10 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'product_id',
+        'variant_id',
         'product_name',
+        'color',
+        'size',
         'product_image',
         'unit_price',
         'quantity',
@@ -32,5 +35,22 @@ class OrderItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function variant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
+    }
+
+    public function getVariantTextAttribute(): ?string
+    {
+        $parts = [];
+        if (!empty($this->color)) {
+            $parts[] = 'কালার: ' . $this->color;
+        }
+        if (!empty($this->size)) {
+            $parts[] = 'সাইজ: ' . $this->size;
+        }
+        return !empty($parts) ? implode(' | ', $parts) : null;
     }
 }

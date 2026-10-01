@@ -22,12 +22,14 @@ class CartController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'nullable|integer|min:1',
+            'variant_id' => 'nullable|exists:product_variants,id',
         ]);
 
         $productId = (int) $request->input('product_id');
         $quantity = (int) $request->input('quantity', 1);
+        $variantId = $request->filled('variant_id') ? (int) $request->input('variant_id') : null;
 
-        $result = $cart->add($productId, $quantity);
+        $result = $cart->add($productId, $quantity, $variantId);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -44,15 +46,10 @@ class CartController extends Controller
 
     public function update(Request $request, CartService $cart)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:0',
-        ]);
+        $itemKey = $request->input('item_key') ?? $request->input('product_id');
+        $quantity = (int) $request->input('quantity', 1);
 
-        $productId = (int) $request->input('product_id');
-        $quantity = (int) $request->input('quantity');
-
-        $result = $cart->update($productId, $quantity);
+        $result = $cart->update($itemKey, $quantity);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -68,12 +65,8 @@ class CartController extends Controller
 
     public function remove(Request $request, CartService $cart)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-        ]);
-
-        $productId = (int) $request->input('product_id');
-        $result = $cart->remove($productId);
+        $itemKey = $request->input('item_key') ?? $request->input('product_id');
+        $result = $cart->remove($itemKey);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([

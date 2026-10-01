@@ -112,6 +112,7 @@
                 <h5>Quick Links</h5>
                 <ul class="list-unstyled small">
                     <li class="mb-2"><a href="{{ route('home') }}" class="text-decoration-none">হোম পেজ</a></li>
+                    <li class="mb-2"><a href="{{ route('shop.index') }}" class="text-decoration-none">সকল পণ্য (Shop)</a></li>
                     <li class="mb-2"><a href="{{ route('checkout') }}" class="text-decoration-none">সরাসরি অর্ডার (Checkout)</a></li>
                     <li class="mb-2"><a href="{{ route('cart.index') }}" class="text-decoration-none">শপিং কার্ট</a></li>
                     @foreach($categories->take(3) as $cat)

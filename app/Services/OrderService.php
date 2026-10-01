@@ -62,12 +62,27 @@ class OrderService
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item['product_id'],
+                    'variant_id' => $item['variant_id'] ?? null,
                     'product_name' => $item['name'],
+                    'color' => $item['color'] ?? null,
+                    'size' => $item['size'] ?? null,
                     'product_image' => $item['image'],
                     'unit_price' => $item['unit_price'],
                     'quantity' => $item['quantity'],
                     'total_price' => $item['total_price'],
                 ]);
+
+                // Stock decrement
+                if (!empty($item['variant_id'])) {
+                    $variant = \App\Models\ProductVariant::find($item['variant_id']);
+                    if ($variant) {
+                        $variant->decrement('stock_quantity', $item['quantity']);
+                    }
+                }
+                $prod = \App\Models\Product::find($item['product_id']);
+                if ($prod) {
+                    $prod->decrement('stock_quantity', $item['quantity']);
+                }
             }
 
             $cart->clear();

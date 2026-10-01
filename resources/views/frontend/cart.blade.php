@@ -34,6 +34,9 @@
                                             <a href="{{ route('product.detail', $item['slug']) }}" class="text-dark fw-medium text-decoration-none">
                                                 {{ $item['name'] }}
                                             </a>
+                                            @if(!empty($item['variant_text']))
+                                            <div class="small text-danger fw-semibold mt-1" style="font-size: 12px;">{{ $item['variant_text'] }}</div>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -41,6 +44,7 @@
                                 <td>
                                     <form action="{{ route('cart.update') }}" method="POST" class="d-flex align-items-center" style="max-width: 110px;">
                                         @csrf
+                                        <input type="hidden" name="item_key" value="{{ $item['item_key'] }}">
                                         <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
                                         <input type="number" name="quantity" value="{{ $item['quantity'] }}" min="1" class="form-control form-control-sm text-center me-1" onchange="this.form.submit()">
                                     </form>
@@ -49,8 +53,9 @@
                                 <td class="text-end">
                                     <form action="{{ route('cart.remove') }}" method="POST">
                                         @csrf
+                                        <input type="hidden" name="item_key" value="{{ $item['item_key'] }}">
                                         <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove Item">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="মুছে ফেলুন">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </form>

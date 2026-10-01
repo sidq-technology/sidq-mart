@@ -46,8 +46,15 @@
                                         @endif
                                         <div>
                                             <div class="fw-medium">{{ $item->product_name }}</div>
+                                            @if(!empty($item->variant_text))
+                                            <div class="mt-1">
+                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle px-2 py-1 small">
+                                                    <i class="fas fa-tag me-1"></i> {{ $item->variant_text }}
+                                                </span>
+                                            </div>
+                                            @endif
                                             @if($item->product)
-                                            <small class="text-muted">SKU: {{ $item->product->sku }}</small>
+                                            <small class="text-muted d-block mt-1">SKU: {{ $item->product->sku }}</small>
                                             @endif
                                         </div>
                                     </div>

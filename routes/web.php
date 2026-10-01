@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/shop', [ProductController::class, 'shop'])->name('shop.index');
 Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
 Route::get('/product-category/{slug}', [ProductController::class, 'category'])->name('product.category');
 Route::get('/search', [ProductController::class, 'search'])->name('search');
@@ -145,6 +146,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/product-images/{image}', [AdminProductController::class, 'deleteImage'])
             ->middleware('permission:products.edit')
             ->name('products.deleteImage');
+        Route::post('/products/upload-description-image', [AdminProductController::class, 'uploadDescriptionImage'])
+            ->middleware('permission:products.create')
+            ->name('products.upload-description-image');
 
         // Categories
         Route::resource('categories', CategoryController::class)

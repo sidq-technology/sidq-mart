@@ -26,12 +26,14 @@ class Product extends Model
         'description',
         'specifications',
         'primary_image',
+        'has_variants',
         'is_active',
     ];
 
     protected $casts = [
         'regular_price' => 'decimal:2',
         'sale_price' => 'decimal:2',
+        'has_variants' => 'boolean',
         'is_featured' => 'boolean',
         'is_flash_sale' => 'boolean',
         'is_active' => 'boolean',
@@ -84,9 +86,27 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
 
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class)->where('is_active', true);
+    }
+
+    public function allVariants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function getEffectiveStockAttribute(): int
+    {
+        if ($this->has_variants && $this->variants()->exists()) {
+            return (int) $this->variants()->sum('stock_quantity');
+        }
+        return (int) $this->stock_quantity;
     }
 
     public function getCurrentPriceAttribute()

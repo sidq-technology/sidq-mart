@@ -84,7 +84,7 @@ class FailedOrderController extends Controller
         $failedOrder = FailedOrder::findOrFail($id);
 
         if ($failedOrder->is_recovered && $failedOrder->recovered_order_id) {
-            return redirect()->route('admin.orders.show', $failedOrder->recovered_order_id)
+            return redirect()->back()
                 ->with('info', 'এই রেকর্ডটি ইতোমধ্যেই একটি অর্ডারে রূপান্তরিত হয়েছে।');
         }
 
@@ -94,50 +94,66 @@ class FailedOrderController extends Controller
 
         DB::beginTransaction();
         try {
-            // Generate unique order number
-            $orderNumber = 'ORD-' . strtoupper(Str::random(8));
+            // Generate unique order number (SIDQ standard format)
+            do {
+                $orderNumber = 'SIDQ-' . date('Ymd') . '-' . rand(1000, 9999);
+            } while (Order::where('order_number', $orderNumber)->exists());
+
+            $subtotal = (float) ($failedOrder->subtotal ?? 0);
+            $shippingCharge = (float) ($failedOrder->shipping_charge ?? 70);
+            $discountAmount = 0.00;
+            $grandTotal = (float) ($failedOrder->total_amount ?? ($subtotal + $shippingCharge));
+            if ($grandTotal <= 0 && ($subtotal + $shippingCharge) > 0) {
+                $grandTotal = $subtotal + $shippingCharge;
+            }
 
             $order = Order::create([
                 'order_number' => $orderNumber,
+                'user_id' => null,
                 'customer_name' => $failedOrder->customer_name,
                 'customer_phone' => $failedOrder->customer_phone,
-                'customer_email' => null,
                 'shipping_address' => $failedOrder->shipping_address ?: 'ঠিকানা গ্রাহকের সাথে কথা বলে কনফার্ম করা হবে',
                 'delivery_zone' => $failedOrder->delivery_zone ?: 'inside_dhaka',
+                'shipping_charge' => $shippingCharge,
+                'subtotal' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'grand_total' => $grandTotal,
                 'payment_method' => $failedOrder->payment_method ?: 'cod',
-                'subtotal' => $failedOrder->subtotal,
-                'shipping_charge' => $failedOrder->shipping_charge,
-                'discount_amount' => 0.00,
-                'total_amount' => $failedOrder->total_amount,
+                'payment_status' => 'pending',
                 'order_status' => 'pending',
-                'payment_status' => 'unpaid',
-                'customer_note' => $failedOrder->customer_note . ' [Converted from Failed Order #' . $failedOrder->id . ']',
+                'customer_note' => $failedOrder->customer_note ? ($failedOrder->customer_note . ' [Converted from Failed Order #' . $failedOrder->id . ']') : ('[Converted from Failed Order #' . $failedOrder->id . ']'),
                 'ip_address' => $failedOrder->ip_address,
+                'admin_notes' => 'Converted from abandoned/failed order #' . $failedOrder->id . ' by admin',
             ]);
 
             // Create Order Items if cart items exist
             if (!empty($failedOrder->cart_items) && is_array($failedOrder->cart_items)) {
                 foreach ($failedOrder->cart_items as $item) {
+                    $unitPrice = (float) ($item['unit_price'] ?? $item['price'] ?? 0);
+                    $qty = (int) ($item['quantity'] ?? $item['qty'] ?? 1);
+                    $totalPrice = (float) ($item['total_price'] ?? ($unitPrice * $qty));
+
                     OrderItem::create([
                         'order_id' => $order->id,
                         'product_id' => $item['product_id'] ?? null,
-                        'product_name' => $item['name'] ?? 'Product',
-                        'product_price' => $item['unit_price'] ?? 0,
-                        'quantity' => $item['quantity'] ?? 1,
-                        'total_price' => $item['total_price'] ?? 0,
+                        'variant_id' => $item['variant_id'] ?? null,
+                        'product_name' => $item['name'] ?? $item['product_name'] ?? 'Product',
+                        'color' => $item['color'] ?? null,
+                        'size' => $item['size'] ?? null,
+                        'product_image' => $item['image'] ?? $item['product_image'] ?? null,
+                        'unit_price' => $unitPrice,
+                        'quantity' => $qty,
+                        'total_price' => $totalPrice,
                     ]);
                 }
             }
 
-            $failedOrder->update([
-                'is_recovered' => true,
-                'status' => 'recovered',
-                'recovered_order_id' => $order->id,
-            ]);
+            // Delete from failed orders list as it is now converted into an active order
+            $failedOrder->delete();
 
             DB::commit();
 
-            return redirect()->route('admin.orders.show', $order->id)
+            return redirect()->back()
                 ->with('success', "ফেইল্ড অর্ডারটি সফলভাবে মূল অর্ডারে (#{$order->order_number}) রূপান্তর করা হয়েছে!");
         } catch (\Throwable $e) {
             DB::rollBack();

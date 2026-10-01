@@ -204,6 +204,9 @@
                             <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
                             <div>
                                 <h6 class="mb-0 text-truncate" style="max-width: 170px; font-size: 13px;">{{ $item['name'] }}</h6>
+                                @if(!empty($item['variant_text']))
+                                <small class="text-danger d-block fw-semibold" style="font-size: 11px;">{{ $item['variant_text'] }}</small>
+                                @endif
                                 <small class="text-muted">{{ $item['quantity'] }} টি &times; ৳{{ number_format($item['unit_price'], 0) }}</small>
                             </div>
                         </div>
