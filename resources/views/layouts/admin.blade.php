@@ -17,10 +17,10 @@
     <title>@yield('title', 'Admin Panel') | {{ \App\Models\Setting::get('site_name', 'SIDQ MART') }} — Powered by SIDQ Technology</title>
     <link rel="icon" href="{{ \App\Models\Setting::get('site_favicon', asset('favicon.png')) }}">
 
-    <!-- Google Fonts: Rubik + Hind Siliguri -->
+    <!-- Google Fonts: Outfit + Hind Siliguri + Rubik -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -39,18 +39,18 @@
             --admin-secondary: {{ $secondaryThemeColor }};
             --admin-sidebar-bg: #ffffff;
             --admin-sidebar-surface: #f8fafc;
-            --admin-sidebar-text: #64748b;
+            --admin-sidebar-text: #0f172a;
             --admin-sidebar-border: #e2e8f0;
             --admin-mint-bg: {{ $adminBgTint }};
             --admin-mint-subtle: #f0faf4;
             --admin-mint-border: #e2f0e8;
             --admin-card-bg: #ffffff;
-            --admin-text-main: #1e293b;
+            --admin-text-main: #0f172a;
             --admin-text-muted: #64748b;
         }
 
         body {
-            font-family: 'Rubik', 'Hind Siliguri', sans-serif;
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
             background-color: var(--admin-mint-bg);
             background-image: radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
                               radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.03) 0px, transparent 50%);
@@ -58,7 +58,7 @@
             min-height: 100vh;
         }
 
-        /* Sidebar Styling - Distinct Light White Theme */
+        /* Sidebar Styling - Distinct Light White Theme with Solid Black Text */
         .admin-sidebar {
             width: 270px;
             background-color: var(--admin-sidebar-bg);
@@ -78,13 +78,13 @@
             padding: 20px 24px;
             font-size: 18px;
             font-weight: 700;
-            color: #0f172a;
+            color: #000000;
             border-bottom: 1px solid var(--admin-sidebar-border);
             display: flex;
             align-items: center;
             gap: 12px;
             letter-spacing: -0.3px;
-            background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+            background: #ffffff;
         }
 
         .admin-sidebar-brand .brand-badge {
@@ -113,26 +113,26 @@
             display: flex;
             align-items: center;
             padding: 11px 16px;
-            color: #64748b;
+            color: #0f172a;
             text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 14.5px;
+            font-weight: 600;
             gap: 13px;
             border-radius: 10px;
-            transition: all 0.2s ease;
+            transition: all 0.18s ease;
         }
 
         .admin-nav-item a i {
             width: 20px;
             text-align: center;
             font-size: 16px;
-            color: #94a3b8;
+            color: #1e293b;
             transition: transform 0.2s ease, color 0.2s ease;
         }
 
         .admin-nav-item a:hover {
             background-color: #f1f5f9;
-            color: #0f172a;
+            color: #000000;
             transform: translateX(3px);
         }
 
@@ -141,11 +141,11 @@
         }
 
         .admin-nav-item.active a {
-            background: linear-gradient(90deg, rgba(241, 49, 36, 0.09) 0%, rgba(241, 49, 36, 0.02) 100%);
+            background: #f1f5f9;
             color: var(--admin-primary);
-            font-weight: 600;
+            font-weight: 700;
             border-left: 4px solid var(--admin-primary);
-            box-shadow: 0 2px 8px rgba(241, 49, 36, 0.05);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         }
 
         .admin-nav-item.active a i {
@@ -416,8 +416,8 @@
             </li>
         </ul>
 
-        <div class="p-3 border-top text-center small" style="border-color: #e2e8f0 !important; font-size: 11px; color: #64748b; background: #fbfcfd;">
-            Engineered &amp; Powered by <br><strong class="text-dark">SIDQ Technology</strong>
+        <div class="p-3 border-top text-center small" style="border-color: #e2e8f0 !important; font-size: 11px; color: #1e293b; background: #ffffff;">
+            Engineered &amp; Powered by <br><strong class="text-black fw-bold">SIDQ Technology</strong>
         </div>
     </aside>
 

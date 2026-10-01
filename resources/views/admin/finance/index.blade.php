@@ -4,72 +4,89 @@
 
 @section('content')
 <div class="container-fluid px-0">
-    <!-- Header Section with Date Range Filter -->
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <!-- Header Section (Fully Responsive) -->
+    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
         <div>
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #047857; font-size: 13px; font-weight: 600;">
-                    <i class="fas fa-wallet me-1"></i> Financial Intelligence
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge rounded-pill bg-white text-dark border px-2 py-1 small fw-semibold">
+                    <i class="fas fa-coins text-warning me-1"></i> Cash Flow &amp; Earnings
                 </span>
-                <span class="text-muted small">Updated Realtime</span>
+                <span class="text-muted small">Realtime Ledger</span>
             </div>
-            <h1 class="h3 fw-bold text-dark mt-1 mb-0">Finance & Revenue Analytics</h1>
-            <p class="text-muted small mb-0">Comprehensive gross earnings, payment distribution, delivery charges, and cash ledger.</p>
+            <h1 class="h3 fw-bold text-dark mb-0" style="letter-spacing: -0.5px;">Finance &amp; Revenue</h1>
+            <p class="text-muted small mb-0">Overview of sales velocity, collected cash, transit receivables, and payments.</p>
         </div>
 
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            <!-- Filter Pills -->
-            <div class="btn-group shadow-sm bg-white p-1 rounded-3 border" role="group">
-                <a href="{{ route('admin.finance.index', ['range' => 'today']) }}" class="btn btn-sm {{ $range === 'today' ? 'btn-primary' : 'btn-light border-0' }}" style="{{ $range === 'today' ? 'background: var(--admin-primary); border-color: var(--admin-primary);' : '' }}">Today</a>
-                <a href="{{ route('admin.finance.index', ['range' => 'this_week']) }}" class="btn btn-sm {{ $range === 'this_week' ? 'btn-primary' : 'btn-light border-0' }}" style="{{ $range === 'this_week' ? 'background: var(--admin-primary); border-color: var(--admin-primary);' : '' }}">Week</a>
-                <a href="{{ route('admin.finance.index', ['range' => 'this_month']) }}" class="btn btn-sm {{ $range === 'this_month' ? 'btn-primary' : 'btn-light border-0' }}" style="{{ $range === 'this_month' ? 'background: var(--admin-primary); border-color: var(--admin-primary);' : '' }}">Month</a>
-                <a href="{{ route('admin.finance.index', ['range' => 'this_year']) }}" class="btn btn-sm {{ $range === 'this_year' ? 'btn-primary' : 'btn-light border-0' }}" style="{{ $range === 'this_year' ? 'background: var(--admin-primary); border-color: var(--admin-primary);' : '' }}">Year</a>
-                <a href="{{ route('admin.finance.index', ['range' => 'all']) }}" class="btn btn-sm {{ $range === 'all' ? 'btn-primary' : 'btn-light border-0' }}" style="{{ $range === 'all' ? 'background: var(--admin-primary); border-color: var(--admin-primary);' : '' }}">All Time</a>
+        <div class="d-flex flex-wrap align-items-center gap-2 w-100 w-md-auto justify-content-start justify-content-md-end">
+            <!-- Period Filter Pills -->
+            <div class="d-inline-flex flex-wrap p-1 bg-white border rounded-3 shadow-xs gap-1">
+                @php
+                    $periods = [
+                        'today' => 'Today',
+                        'this_week' => 'This Week',
+                        'this_month' => 'This Month',
+                        'this_year' => 'This Year',
+                        'all' => 'All Time',
+                    ];
+                @endphp
+                @foreach($periods as $key => $label)
+                <a href="{{ route('admin.finance.index', ['range' => $key]) }}" 
+                   class="btn btn-sm py-1 px-2 px-sm-3 {{ $range === $key ? 'btn-dark fw-bold text-white' : 'btn-light border-0 text-dark fw-medium' }}"
+                   style="font-size: 12.5px; border-radius: 6px;">
+                    {{ $label }}
+                </a>
+                @endforeach
             </div>
 
-            <!-- Print Ledger Button -->
-            <button onclick="window.print()" class="btn btn-sm btn-white bg-white border shadow-sm text-dark d-inline-flex align-items-center gap-1">
-                <i class="fas fa-print text-secondary"></i> Print Report
+            <!-- Print Button -->
+            <button onclick="window.print()" class="btn btn-sm btn-white bg-white border text-dark fw-semibold px-3 py-1 shadow-xs rounded-3 d-inline-flex align-items-center gap-1">
+                <i class="fas fa-print text-secondary"></i>
+                <span class="d-none d-sm-inline">Print</span>
             </button>
         </div>
     </div>
 
-    <!-- Date Range Custom Filter Bar (if custom or expanded) -->
-    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
+    <!-- Filter Bar (Responsive Grid) -->
+    <div class="card border bg-white shadow-xs rounded-3 mb-4">
         <div class="card-body p-3">
-            <form method="GET" action="{{ route('admin.finance.index') }}" class="row g-2 align-items-center">
+            <form method="GET" action="{{ route('admin.finance.index') }}" class="row g-2 align-items-end">
                 <input type="hidden" name="range" value="custom">
-                <div class="col-12 col-md-3">
-                    <label class="form-label small fw-semibold text-muted mb-1"><i class="far fa-calendar me-1"></i> From Date</label>
-                    <input type="date" name="start_date" class="form-control form-control-sm" value="{{ request('start_date', $startDate ? $startDate->format('Y-m-d') : '') }}">
+                
+                <div class="col-6 col-md-3">
+                    <label class="form-label small fw-semibold text-muted mb-1"><i class="far fa-calendar-alt me-1"></i> From Date</label>
+                    <input type="date" name="start_date" class="form-control form-control-sm border" value="{{ request('start_date', $startDate ? $startDate->format('Y-m-d') : '') }}">
                 </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label small fw-semibold text-muted mb-1"><i class="far fa-calendar me-1"></i> To Date</label>
-                    <input type="date" name="end_date" class="form-control form-control-sm" value="{{ request('end_date', $endDate ? $endDate->format('Y-m-d') : '') }}">
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label small fw-semibold text-muted mb-1"><i class="far fa-calendar-alt me-1"></i> To Date</label>
+                    <input type="date" name="end_date" class="form-control form-control-sm border" value="{{ request('end_date', $endDate ? $endDate->format('Y-m-d') : '') }}">
                 </div>
-                <div class="col-12 col-md-2">
-                    <label class="form-label small fw-semibold text-muted mb-1">Payment Method</label>
-                    <select name="payment_method" class="form-select form-select-sm">
-                        <option value="">All Methods</option>
-                        <option value="cod" {{ request('payment_method') === 'cod' ? 'selected' : '' }}>Cash on Delivery (COD)</option>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold text-muted mb-1">Gateway</label>
+                    <select name="payment_method" class="form-select form-select-sm border">
+                        <option value="">All Gateways</option>
+                        <option value="cod" {{ request('payment_method') === 'cod' ? 'selected' : '' }}>Cash on Delivery</option>
                         <option value="bkash" {{ request('payment_method') === 'bkash' ? 'selected' : '' }}>bKash</option>
                         <option value="nagad" {{ request('payment_method') === 'nagad' ? 'selected' : '' }}>Nagad</option>
                         <option value="rocket" {{ request('payment_method') === 'rocket' ? 'selected' : '' }}>Rocket</option>
                     </select>
                 </div>
-                <div class="col-12 col-md-2">
+
+                <div class="col-6 col-md-2">
                     <label class="form-label small fw-semibold text-muted mb-1">Payment Status</label>
-                    <select name="payment_status" class="form-select form-select-sm">
+                    <select name="payment_status" class="form-select form-select-sm border">
                         <option value="">All Statuses</option>
-                        <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Paid</option>
+                        <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Paid / Settled</option>
                         <option value="pending" {{ request('payment_status') === 'pending' ? 'selected' : '' }}>Pending / Unpaid</option>
                     </select>
                 </div>
-                <div class="col-12 col-md-2 d-flex align-items-end gap-2 pt-2 pt-md-0">
-                    <button type="submit" class="btn btn-sm btn-primary w-100" style="background: var(--admin-primary); border-color: var(--admin-primary);">
-                        <i class="fas fa-filter me-1"></i> Apply
+
+                <div class="col-12 col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-dark w-100 fw-semibold">
+                        <i class="fas fa-filter me-1"></i> Filter
                     </button>
-                    <a href="{{ route('admin.finance.index') }}" class="btn btn-sm btn-light border" title="Reset Filters">
+                    <a href="{{ route('admin.finance.index') }}" class="btn btn-sm btn-light border px-2" title="Reset Filters">
                         <i class="fas fa-undo"></i>
                     </a>
                 </div>
@@ -77,176 +94,174 @@
         </div>
     </div>
 
-    <!-- KPI Summary Grid -->
+    <!-- Clean Style KPI Cards -->
     <div class="row g-3 mb-4">
-        <!-- Gross Revenue -->
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white" style="border-left: 4px solid #10b981 !important;">
-                <div class="card-body p-3 p-md-4">
+        <!-- 1. Gross Revenue -->
+        <div class="col-6 col-lg-3">
+            <div class="card border bg-white rounded-3 shadow-xs h-100">
+                <div class="card-body p-3 p-sm-4">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">Gross Sales</span>
-                        <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(16, 185, 129, 0.12); color: #059669;">
-                            <i class="fas fa-chart-line fs-5"></i>
+                        <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px; font-size: 11px;">Gross Revenue</span>
+                        <div class="text-muted">
+                            <i class="fas fa-chart-line fs-6"></i>
                         </div>
                     </div>
-                    <div class="fs-3 fw-bold text-dark mb-1">৳{{ number_format($grossRevenue, 2) }}</div>
-                    <div class="small text-muted d-flex align-items-center gap-1">
-                        <span class="badge bg-light text-success fw-normal border">Total Value</span>
-                        <span>Excl. cancelled orders</span>
+                    <div class="fs-4 fs-sm-3 fw-bold text-dark mb-1" style="font-family: 'Outfit', sans-serif;">
+                        ৳{{ number_format($grossRevenue, 2) }}
+                    </div>
+                    <div class="text-muted small" style="font-size: 11.5px;">
+                        <span>All orders (excl. cancelled)</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Paid / Collected Cash -->
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white" style="border-left: 4px solid #3b82f6 !important;">
-                <div class="card-body p-3 p-md-4">
+        <!-- 2. Realized Cash (Paid) -->
+        <div class="col-6 col-lg-3">
+            <div class="card border bg-white rounded-3 shadow-xs h-100">
+                <div class="card-body p-3 p-sm-4">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">Realized Cash (Paid)</span>
-                        <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(59, 130, 246, 0.12); color: #2563eb;">
-                            <i class="fas fa-check-double fs-5"></i>
+                        <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px; font-size: 11px;">Realized Cash</span>
+                        <div class="text-success">
+                            <i class="fas fa-check-circle fs-6"></i>
                         </div>
                     </div>
-                    <div class="fs-3 fw-bold text-dark mb-1">৳{{ number_format($paidRevenue, 2) }}</div>
-                    <div class="small text-muted d-flex align-items-center gap-1">
-                        <span class="badge bg-light text-primary fw-normal border">Settled</span>
-                        <span>Cleared transactions</span>
+                    <div class="fs-4 fs-sm-3 fw-bold text-dark mb-1" style="font-family: 'Outfit', sans-serif;">
+                        ৳{{ number_format($paidRevenue, 2) }}
+                    </div>
+                    <div class="text-muted small" style="font-size: 11.5px;">
+                        <span class="text-success fw-medium">Settled &amp; Paid In Full</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Pending Receivables -->
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white" style="border-left: 4px solid #f59e0b !important;">
-                <div class="card-body p-3 p-md-4">
+        <!-- 3. Pending Receivables -->
+        <div class="col-6 col-lg-3">
+            <div class="card border bg-white rounded-3 shadow-xs h-100">
+                <div class="card-body p-3 p-sm-4">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">Pending Receivables</span>
-                        <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(245, 158, 11, 0.12); color: #d97706;">
-                            <i class="fas fa-clock fs-5"></i>
+                        <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px; font-size: 11px;">Transit Receivables</span>
+                        <div class="text-warning">
+                            <i class="fas fa-clock fs-6"></i>
                         </div>
                     </div>
-                    <div class="fs-3 fw-bold text-dark mb-1">৳{{ number_format($pendingReceivables, 2) }}</div>
-                    <div class="small text-muted d-flex align-items-center gap-1">
-                        <span class="badge bg-light text-warning fw-normal border text-dark">COD Transit</span>
-                        <span>Pending collection</span>
+                    <div class="fs-4 fs-sm-3 fw-bold text-dark mb-1" style="font-family: 'Outfit', sans-serif;">
+                        ৳{{ number_format($pendingReceivables, 2) }}
+                    </div>
+                    <div class="text-muted small" style="font-size: 11.5px;">
+                        <span class="text-warning fw-medium">COD Collection In Transit</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Delivered Revenue -->
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white" style="border-left: 4px solid var(--admin-primary) !important;">
-                <div class="card-body p-3 p-md-4">
+        <!-- 4. Delivered Sales -->
+        <div class="col-6 col-lg-3">
+            <div class="card border bg-white rounded-3 shadow-xs h-100">
+                <div class="card-body p-3 p-sm-4">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">Delivered Revenue</span>
-                        <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(241, 49, 36, 0.12); color: var(--admin-primary);">
-                            <i class="fas fa-box-open fs-5"></i>
+                        <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px; font-size: 11px;">Delivered Sales</span>
+                        <div class="text-primary">
+                            <i class="fas fa-box-check fs-6"></i>
                         </div>
                     </div>
-                    <div class="fs-3 fw-bold text-dark mb-1">৳{{ number_format($netDeliveredRevenue, 2) }}</div>
-                    <div class="small text-muted d-flex align-items-center gap-1">
-                        <span class="badge bg-light text-danger fw-normal border">Completed</span>
-                        <span>Successfully handed over</span>
+                    <div class="fs-4 fs-sm-3 fw-bold text-dark mb-1" style="font-family: 'Outfit', sans-serif;">
+                        ৳{{ number_format($netDeliveredRevenue, 2) }}
+                    </div>
+                    <div class="text-muted small" style="font-size: 11.5px;">
+                        <span>Delivered to customer</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Secondary Metric Strip -->
+    <!-- Secondary Clean Metrics Strip -->
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="p-3 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-3">
-                <div class="rounded-circle p-2 bg-light text-primary">
-                    <i class="fas fa-truck"></i>
-                </div>
+        <div class="col-6 col-lg-3">
+            <div class="p-3 bg-white border rounded-3 shadow-xs d-flex align-items-center justify-content-between">
                 <div>
-                    <div class="text-muted small fw-medium">Shipping Collected</div>
-                    <div class="fw-bold fs-5 text-dark">৳{{ number_format($totalShippingCollected, 2) }}</div>
+                    <div class="text-muted small" style="font-size: 11.5px;">Shipping Collected</div>
+                    <div class="fw-bold fs-5 text-dark" style="font-family: 'Outfit', sans-serif;">৳{{ number_format($totalShippingCollected, 2) }}</div>
                 </div>
+                <div class="text-muted opacity-50"><i class="fas fa-shipping-fast fs-5"></i></div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="p-3 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-3">
-                <div class="rounded-circle p-2 bg-light text-danger">
-                    <i class="fas fa-tags"></i>
-                </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="p-3 bg-white border rounded-3 shadow-xs d-flex align-items-center justify-content-between">
                 <div>
-                    <div class="text-muted small fw-medium">Coupons / Discounts</div>
-                    <div class="fw-bold fs-5 text-dark">৳{{ number_format($totalDiscountsGiven, 2) }}</div>
+                    <div class="text-muted small" style="font-size: 11.5px;">Total Discounts</div>
+                    <div class="fw-bold fs-5 text-dark" style="font-family: 'Outfit', sans-serif;">৳{{ number_format($totalDiscountsGiven, 2) }}</div>
                 </div>
+                <div class="text-muted opacity-50"><i class="fas fa-ticket-alt fs-5"></i></div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="p-3 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-3">
-                <div class="rounded-circle p-2 bg-light text-success">
-                    <i class="fas fa-calculator"></i>
-                </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="p-3 bg-white border rounded-3 shadow-xs d-flex align-items-center justify-content-between">
                 <div>
-                    <div class="text-muted small fw-medium">Avg Order Value (AOV)</div>
-                    <div class="fw-bold fs-5 text-dark">৳{{ number_format($averageOrderValue, 2) }}</div>
+                    <div class="text-muted small" style="font-size: 11.5px;">Average Order (AOV)</div>
+                    <div class="fw-bold fs-5 text-dark" style="font-family: 'Outfit', sans-serif;">৳{{ number_format($averageOrderValue, 2) }}</div>
                 </div>
+                <div class="text-muted opacity-50"><i class="fas fa-divide fs-5"></i></div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="p-3 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-3">
-                <div class="rounded-circle p-2 bg-light text-secondary">
-                    <i class="fas fa-receipt"></i>
-                </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="p-3 bg-white border rounded-3 shadow-xs d-flex align-items-center justify-content-between">
                 <div>
-                    <div class="text-muted small fw-medium">Total Orders Placed</div>
-                    <div class="fw-bold fs-5 text-dark">{{ $totalOrdersCount }} <span class="small fw-normal text-muted">Orders</span></div>
+                    <div class="text-muted small" style="font-size: 11.5px;">Total Orders Placed</div>
+                    <div class="fw-bold fs-5 text-dark" style="font-family: 'Outfit', sans-serif;">{{ $totalOrdersCount }} <span class="small fw-normal text-muted" style="font-size: 12px;">orders</span></div>
                 </div>
+                <div class="text-muted opacity-50"><i class="fas fa-shopping-bag fs-5"></i></div>
             </div>
         </div>
     </div>
 
-    <!-- Charts & Analytics Row -->
+    <!-- Charts & Analytics (Clean Minimalist Style) -->
     <div class="row g-4 mb-4">
-        <!-- 30-Day Revenue Trend Line Chart -->
+        <!-- Revenue Velocity Chart -->
         <div class="col-12 col-xl-8">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
+            <div class="card border bg-white rounded-3 shadow-xs h-100">
+                <div class="card-header bg-transparent border-0 pt-3 px-3 px-sm-4 pb-0 d-flex align-items-center justify-content-between">
                     <div>
-                        <h5 class="fw-bold text-dark mb-0">30-Day Revenue Velocity</h5>
-                        <p class="text-muted small mb-0">Daily gross revenue curve and transaction volume.</p>
+                        <h6 class="fw-bold text-dark mb-0">30-Day Revenue Trend</h6>
+                        <span class="text-muted small">Daily sales trajectory and order count</span>
                     </div>
-                    <span class="badge rounded-pill bg-light text-dark border px-3 py-2">
-                        <i class="fas fa-circle text-success me-1" style="font-size: 8px;"></i> Live Trajectory
+                    <span class="badge bg-light text-dark border px-2 py-1 small fw-medium">
+                        Last 30 Days
                     </span>
                 </div>
-                <div class="card-body px-4 pb-4 pt-3">
-                    <div style="height: 300px; position: relative;">
+                <div class="card-body px-3 px-sm-4 pb-3 pt-2">
+                    <div style="position: relative; height: 260px; width: 100%;">
                         <canvas id="revenueTrendChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Breakdown by Payment Method & Zone -->
+        <!-- Breakdown by Payment Gateway & Logistics -->
         <div class="col-12 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
-                    <h5 class="fw-bold text-dark mb-0">Payment Channels & Logistics</h5>
-                    <p class="text-muted small mb-0">Settlement method and geographical splits.</p>
+            <div class="card border bg-white rounded-3 shadow-xs h-100">
+                <div class="card-header bg-transparent border-0 pt-3 px-3 px-sm-4 pb-1">
+                    <h6 class="fw-bold text-dark mb-0">Payment Channels &amp; Zones</h6>
+                    <span class="text-muted small">Distribution by payment type &amp; region</span>
                 </div>
-                <div class="card-body px-4 pb-4 pt-0">
-                    <div style="height: 180px; position: relative;" class="mb-3">
+                <div class="card-body px-3 px-sm-4 pb-3 pt-0">
+                    <div style="position: relative; height: 160px; width: 100%;" class="my-2">
                         <canvas id="paymentMethodChart"></canvas>
                     </div>
 
                     <div class="pt-2 border-top">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small fw-semibold text-uppercase">Delivery Zone Breakdown</span>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted small fw-semibold text-uppercase" style="font-size: 11px;">Delivery Zones</span>
                         </div>
                         @forelse($zoneBreakdown as $zone)
-                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                        <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
                             <div>
                                 <span class="fw-semibold text-dark text-capitalize small">
-                                    <i class="fas fa-map-marker-alt text-danger me-1"></i>
                                     {{ $zone->delivery_zone === 'inside_dhaka' ? 'Inside Dhaka' : ($zone->delivery_zone === 'outside_dhaka' ? 'Outside Dhaka' : ucfirst($zone->delivery_zone)) }}
                                 </span>
                                 <div class="text-muted" style="font-size: 11px;">{{ $zone->count }} orders (Shipping: ৳{{ number_format($zone->shipping_total, 0) }})</div>
@@ -262,110 +277,110 @@
         </div>
     </div>
 
-    <!-- Detailed Financial Transaction Ledger Table -->
-    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
-        <div class="card-header bg-transparent border-bottom pt-4 px-4 pb-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <!-- Clean Transaction Ledger Table (Fully Responsive with smooth horizontal scroll) -->
+    <div class="card border bg-white rounded-3 shadow-xs mb-4">
+        <div class="card-header bg-transparent border-bottom pt-3 px-3 px-sm-4 pb-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
             <div>
-                <h5 class="fw-bold text-dark mb-1">Financial Transaction Ledger</h5>
-                <p class="text-muted small mb-0">Detailed breakdown of invoices, payment gateways, and settlement status.</p>
+                <h6 class="fw-bold text-dark mb-0">Financial Transaction Ledger</h6>
+                <span class="text-muted small">Real-time invoice records, settlement, and customer breakdown</span>
             </div>
             <div class="text-muted small">
-                Showing <strong class="text-dark">{{ $transactions->firstItem() ?? 0 }} - {{ $transactions->lastItem() ?? 0 }}</strong> of <strong class="text-dark">{{ $transactions->total() }}</strong> transactions
+                Showing <strong class="text-dark">{{ $transactions->firstItem() ?? 0 }} - {{ $transactions->lastItem() ?? 0 }}</strong> of <strong class="text-dark">{{ $transactions->total() }}</strong> records
             </div>
         </div>
 
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
+            <div class="table-responsive" style="-webkit-overflow-scrolling: touch;">
+                <table class="table table-hover align-middle mb-0">
                     <thead>
-                        <tr>
-                            <th class="ps-4">Order ID</th>
-                            <th>Customer</th>
-                            <th>Date & Time</th>
-                            <th>Payment Gateway</th>
-                            <th>Delivery Zone</th>
-                            <th>Shipping</th>
-                            <th>Discount</th>
-                            <th>Net Total</th>
-                            <th>Payment Status</th>
-                            <th>Order Status</th>
-                            <th class="text-end pe-4">Action</th>
+                        <tr class="text-muted small text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
+                            <th class="ps-3 ps-sm-4 text-nowrap py-3">Order</th>
+                            <th class="text-nowrap py-3">Customer</th>
+                            <th class="text-nowrap py-3">Date</th>
+                            <th class="text-nowrap py-3">Gateway</th>
+                            <th class="text-nowrap py-3">Zone</th>
+                            <th class="text-nowrap py-3">Shipping</th>
+                            <th class="text-nowrap py-3">Discount</th>
+                            <th class="text-nowrap py-3">Net Total</th>
+                            <th class="text-nowrap py-3">Payment</th>
+                            <th class="text-nowrap py-3">Status</th>
+                            <th class="text-end pe-3 pe-sm-4 text-nowrap py-3">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($transactions as $order)
                         <tr>
-                            <td class="ps-4">
+                            <td class="ps-3 ps-sm-4 text-nowrap">
                                 <a href="{{ route('admin.orders.show', $order->id) }}" class="fw-bold text-dark text-decoration-none">
                                     #{{ $order->order_number }}
                                 </a>
                             </td>
-                            <td>
+                            <td class="text-nowrap">
                                 <div class="fw-semibold text-dark">{{ $order->customer_name }}</div>
-                                <div class="text-muted" style="font-size: 12px;"><i class="fas fa-phone-alt me-1"></i>{{ $order->customer_phone }}</div>
+                                <div class="text-muted" style="font-size: 11.5px;">{{ $order->customer_phone }}</div>
                             </td>
-                            <td>
+                            <td class="text-nowrap">
                                 <div class="text-dark small">{{ $order->created_at->format('d M, Y') }}</div>
                                 <div class="text-muted" style="font-size: 11px;">{{ $order->created_at->format('h:i A') }}</div>
                             </td>
-                            <td>
+                            <td class="text-nowrap">
                                 @if($order->payment_method === 'bkash')
                                     <span class="badge rounded-pill" style="background: rgba(226, 19, 110, 0.12); color: #e2136e; font-weight: 600;">
-                                        <i class="fas fa-mobile-alt me-1"></i> bKash
+                                        bKash
                                     </span>
                                 @elseif($order->payment_method === 'nagad')
                                     <span class="badge rounded-pill" style="background: rgba(247, 148, 29, 0.12); color: #f7941d; font-weight: 600;">
-                                        <i class="fas fa-mobile-alt me-1"></i> Nagad
+                                        Nagad
                                     </span>
                                 @elseif($order->payment_method === 'cod')
                                     <span class="badge rounded-pill bg-light text-dark border fw-medium">
-                                        <i class="fas fa-hand-holding-usd me-1 text-success"></i> Cash on Delivery
+                                        COD
                                     </span>
                                 @else
                                     <span class="badge bg-light text-dark border">{{ strtoupper($order->payment_method) }}</span>
                                 @endif
                                 
                                 @if($order->transaction_id)
-                                    <div class="text-muted" style="font-size: 11px;">Trx: <code>{{ $order->transaction_id }}</code></div>
+                                    <div class="text-muted" style="font-size: 10.5px;">Trx: <code>{{ $order->transaction_id }}</code></div>
                                 @endif
                             </td>
-                            <td>
+                            <td class="text-nowrap">
                                 <span class="badge bg-light text-secondary border small">
                                     {{ $order->delivery_zone === 'inside_dhaka' ? 'Inside Dhaka' : ($order->delivery_zone === 'outside_dhaka' ? 'Outside Dhaka' : ucfirst($order->delivery_zone)) }}
                                 </span>
                             </td>
-                            <td class="text-muted">৳{{ number_format($order->shipping_charge, 2) }}</td>
-                            <td class="text-danger">
+                            <td class="text-nowrap text-muted small">৳{{ number_format($order->shipping_charge, 2) }}</td>
+                            <td class="text-nowrap text-danger small">
                                 @if($order->discount_amount > 0)
                                     -৳{{ number_format($order->discount_amount, 2) }}
                                 @else
                                     —
                                 @endif
                             </td>
-                            <td>
-                                <span class="fw-bold text-dark fs-6">৳{{ number_format($order->grand_total, 2) }}</span>
+                            <td class="text-nowrap">
+                                <span class="fw-bold text-dark fs-6" style="font-family: 'Outfit', sans-serif;">৳{{ number_format($order->grand_total, 2) }}</span>
                             </td>
-                            <td>
+                            <td class="text-nowrap">
                                 @if($order->payment_status === 'paid')
-                                    <span class="badge rounded-pill" style="background: rgba(16, 185, 129, 0.15); color: #047857; font-weight: 600;">
-                                        <i class="fas fa-check-circle me-1"></i> Paid
+                                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1">
+                                        <i class="fas fa-check me-1"></i> Paid
                                     </span>
                                 @else
-                                    <span class="badge rounded-pill" style="background: rgba(245, 158, 11, 0.15); color: #b45309; font-weight: 600;">
-                                        <i class="fas fa-hourglass-half me-1"></i> Unpaid
+                                    <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-semibold px-2 py-1">
+                                        Pending
                                     </span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="text-nowrap">
                                 <span class="badge {{ $order->status_badge_class }} rounded-pill px-2 py-1" style="font-size: 11px;">
                                     {{ ucfirst($order->order_status) }}
                                 </span>
                             </td>
-                            <td class="text-end pe-4">
-                                <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-sm btn-light border px-2 py-1" title="View Order Details">
-                                    <i class="fas fa-eye text-primary"></i>
+                            <td class="text-end pe-3 pe-sm-4 text-nowrap">
+                                <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-sm btn-light border px-2 py-1" title="View Order">
+                                    <i class="fas fa-eye text-dark"></i>
                                 </a>
-                                <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" class="btn btn-sm btn-light border px-2 py-1 ms-1" title="Print Invoice">
+                                <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" class="btn btn-sm btn-light border px-2 py-1 ms-1" title="Invoice">
                                     <i class="fas fa-file-invoice text-secondary"></i>
                                 </a>
                             </td>
@@ -373,9 +388,9 @@
                         @empty
                         <tr>
                             <td colspan="11" class="text-center py-5 text-muted">
-                                <i class="fas fa-receipt fa-3x text-muted mb-3 opacity-25"></i>
-                                <h5>No financial transactions found</h5>
-                                <p class="small mb-0">Try changing your date filters or search parameters.</p>
+                                <i class="fas fa-receipt fa-2x text-muted mb-2 opacity-50"></i>
+                                <h6 class="text-dark fw-bold">No financial transactions found</h6>
+                                <p class="small text-muted mb-0">Try clearing your filters or selecting a broader time period.</p>
                             </td>
                         </tr>
                         @endforelse
@@ -385,7 +400,7 @@
 
             <!-- Pagination -->
             @if($transactions->hasPages())
-            <div class="px-4 py-3 border-top d-flex justify-content-between align-items-center">
+            <div class="px-3 px-sm-4 py-3 border-top d-flex justify-content-between align-items-center">
                 {{ $transactions->links() }}
             </div>
             @endif
@@ -407,10 +422,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const trendCtx = document.getElementById('revenueTrendChart').getContext('2d');
     
-    // Gradient fill for chart
-    const gradient = trendCtx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
-    gradient.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+    const gradient = trendCtx.createLinearGradient(0, 0, 0, 260);
+    gradient.addColorStop(0, 'rgba(15, 23, 42, 0.08)');
+    gradient.addColorStop(1, 'rgba(15, 23, 42, 0.00)');
 
     new Chart(trendCtx, {
         type: 'line',
@@ -420,24 +434,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     label: 'Gross Sales (৳)',
                     data: revenues,
-                    borderColor: '#10b981',
+                    borderColor: '#0f172a',
                     backgroundColor: gradient,
-                    borderWidth: 2.5,
+                    borderWidth: 2,
                     fill: true,
-                    tension: 0.35,
-                    pointRadius: 3,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: '#10b981',
+                    tension: 0.3,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: '#0f172a',
                     yAxisID: 'y'
                 },
                 {
                     label: 'Order Volume',
                     data: orderCounts,
-                    borderColor: 'rgba(99, 102, 241, 0.7)',
+                    borderColor: 'rgba(100, 116, 139, 0.6)',
                     backgroundColor: 'transparent',
                     borderWidth: 1.5,
-                    borderDash: [4, 4],
-                    pointRadius: 2,
+                    borderDash: [3, 3],
+                    pointRadius: 1.5,
                     tension: 0.3,
                     yAxisID: 'y1'
                 }
@@ -454,15 +468,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 legend: {
                     position: 'top',
                     labels: {
-                        boxWidth: 12,
-                        font: { family: 'Rubik, sans-serif', size: 12 }
+                        boxWidth: 10,
+                        font: { family: "'Outfit', sans-serif", size: 11 }
                     }
                 },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
                             if (context.datasetIndex === 0) {
-                                return ' Revenue: ৳' + Number(context.parsed.y).toLocaleString();
+                                return ' Gross Sales: ৳' + Number(context.parsed.y).toLocaleString();
                             }
                             return ' Orders: ' + context.parsed.y;
                         }
@@ -472,17 +486,18 @@ document.addEventListener('DOMContentLoaded', function () {
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { maxRotation: 45, minRotation: 0, font: { size: 10 } }
+                    ticks: { maxRotation: 45, minRotation: 0, font: { family: "'Outfit', sans-serif", size: 10 } }
                 },
                 y: {
                     type: 'linear',
                     display: true,
                     position: 'left',
-                    grid: { color: 'rgba(226, 232, 240, 0.6)' },
+                    grid: { color: 'rgba(226, 232, 240, 0.5)' },
                     ticks: {
                         callback: function(value) {
                             return '৳' + value;
-                        }
+                        },
+                        font: { family: "'Outfit', sans-serif", size: 10 }
                     }
                 },
                 y1: {
@@ -490,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     display: true,
                     position: 'right',
                     grid: { drawOnChartArea: false },
-                    ticks: { stepSize: 1 }
+                    ticks: { stepSize: 1, font: { family: "'Outfit', sans-serif", size: 10 } }
                 }
             }
         }
@@ -499,7 +514,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 2. Payment Method Distribution Doughnut Chart
     const paymentBreakdown = @json($paymentMethodsBreakdown);
     const pLabels = paymentBreakdown.map(p => {
-        if (p.payment_method === 'cod') return 'Cash on Delivery';
+        if (p.payment_method === 'cod') return 'COD';
         if (p.payment_method === 'bkash') return 'bKash';
         if (p.payment_method === 'nagad') return 'Nagad';
         return p.payment_method.toUpperCase();
@@ -514,7 +529,7 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 data: pTotals.length > 0 ? pTotals : [1],
                 backgroundColor: [
-                    '#10b981',
+                    '#0f172a',
                     '#e2136e',
                     '#f7941d',
                     '#3b82f6',
@@ -531,8 +546,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        boxWidth: 10,
-                        font: { size: 11, family: 'Rubik, sans-serif' }
+                        boxWidth: 8,
+                        font: { size: 10.5, family: "'Outfit', sans-serif" }
                     }
                 },
                 tooltip: {
@@ -543,7 +558,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             },
-            cutout: '65%'
+            cutout: '70%'
         }
     });
 });
