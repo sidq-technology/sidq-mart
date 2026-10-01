@@ -590,6 +590,7 @@
     const productVariants = @json($variantsData);
     const baseProductPrice = {{ (float)$product->current_price }};
     const baseRegularPrice = {{ $product->regular_price ? (float)$product->regular_price : 'null' }};
+    let currentProductPrice = {{ (float)$product->final_price }};
     const hasColorOptions = {{ $availableColors->isNotEmpty() ? 'true' : 'false' }};
     const hasSizeOptions = {{ $availableSizes->isNotEmpty() ? 'true' : 'false' }};
 
@@ -666,6 +667,7 @@
 
             // Update Price if variant has specific price
             const effectivePrice = matched.effective_price || baseProductPrice;
+            currentProductPrice = effectivePrice;
             const priceEl = document.getElementById('pdpPriceDisplay');
             if (priceEl) priceEl.innerText = 'Tk ' + Math.round(effectivePrice).toLocaleString('en-US');
 
@@ -707,6 +709,7 @@
             }
         } else {
             if (variantIdInput) variantIdInput.value = '';
+            currentProductPrice = baseProductPrice;
         }
     }
 
@@ -795,7 +798,7 @@
                 // Track AddToCart / InitiateCheckout when clicking Order Now
                 try {
                     const qty = parseInt(document.getElementById('pdpQtyInput')?.value) || 1;
-                    const price = currentPrice || {{ (float) $product->final_price }};
+                    const price = (typeof currentProductPrice !== 'undefined' ? currentProductPrice : {{ (float) $product->final_price }});
                     const prodName = @json($product->name);
                     const prodId = '{{ $product->id }}';
 
@@ -820,7 +823,9 @@
                             currency: 'BDT'
                         });
                     }
-                } catch (err) {}
+                } catch (err) {
+                    console.warn('Tracking OrderNow notice:', err);
+                }
             });
         }
     });
@@ -837,12 +842,13 @@
             return;
         }
 
-        const qty = parseInt(document.getElementById('pdpQtyInput').value) || 1;
+        const qtyInput = document.getElementById('pdpQtyInput');
+        const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
         const variantId = document.getElementById('selectedVariantId')?.value || null;
-        const price = currentPrice || {{ (float) $product->final_price }};
 
-        // Track AddToCart
+        // Track AddToCart safely
         try {
+            const price = (typeof currentProductPrice !== 'undefined' ? currentProductPrice : {{ (float) $product->final_price }});
             if (typeof fbq === 'function') {
                 fbq('track', 'AddToCart', {
                     content_name: @json($product->name),
@@ -864,7 +870,9 @@
                     currency: 'BDT'
                 });
             }
-        } catch (err) {}
+        } catch (err) {
+            console.warn('Tracking AddToCart notice:', err);
+        }
 
         addToCart({{ $product->id }}, qty, variantId);
     }

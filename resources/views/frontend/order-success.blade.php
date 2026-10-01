@@ -42,37 +42,48 @@
                         <p class="text-muted small mb-0">{{ $upsellSubtitle }}</p>
                     </div>
 
-                    <div class="row g-2 g-md-3 justify-content-center">
+                    @php
+                        $upsellCount = $upsellProducts->count();
+                        $colClass = $upsellCount === 1 ? 'col-12 col-sm-9 col-md-7 mx-auto' : ($upsellCount === 2 ? 'col-12 col-sm-6' : 'col-12 col-sm-6 col-md-4');
+                        $imgBoxClass = $upsellCount === 1 ? 'upsell-img-box-single' : 'upsell-img-box-multi';
+                        $titleSizeClass = $upsellCount === 1 ? 'fs-5' : 'fs-6';
+                    @endphp
+                    <div class="row g-3 justify-content-center">
                         @foreach($upsellProducts as $upsellProd)
-                        <div class="col-12 col-sm-{{ $upsellProducts->count() === 1 ? '10 col-md-8' : ($upsellProducts->count() === 2 ? '6' : '6 col-md-4') }}" id="upsellCard-{{ $upsellProd->id }}">
-                            <div class="card h-100 border bg-white rounded-3 shadow-xs p-3 text-center d-flex flex-column justify-content-between">
+                        <div class="{{ $colClass }}" id="upsellCard-{{ $upsellProd->id }}">
+                            <div class="card h-100 border bg-white rounded-3 shadow-sm p-3 p-md-4 text-center d-flex flex-column justify-content-between upsell-item-card">
                                 <div>
-                                    <div class="position-relative mb-2 rounded-2 overflow-hidden bg-light" style="height: 140px;">
-                                        <img src="{{ $upsellProd->primary_image_url }}" alt="{{ $upsellProd->name }}" class="w-100 h-100" style="object-fit: contain; padding: 6px;">
+                                    <div class="position-relative mb-3 rounded-3 overflow-hidden bg-white border {{ $imgBoxClass }}">
+                                        <img src="{{ $upsellProd->primary_image_url }}" alt="{{ $upsellProd->name }}" class="w-100 h-100 upsell-main-img">
                                         @if($upsellProd->is_on_sale)
-                                        <span class="position-absolute top-0 start-0 badge bg-danger m-2 shadow-xs" style="font-size: 11px;">
+                                        <span class="position-absolute top-0 start-0 badge bg-danger m-2 px-2.5 py-1.5 shadow-sm fw-bold" style="font-size: 12px;">
                                             -{{ $upsellProd->discount_percentage }}% ছাড়
                                         </span>
                                         @endif
                                     </div>
-                                    <h6 class="fw-bold text-dark mb-1" style="min-height: 38px; font-size: 13.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="{{ $upsellProd->name }}">
+                                    <h5 class="fw-bold text-dark mb-2 {{ $titleSizeClass }} upsell-product-title" title="{{ $upsellProd->name }}">
                                         {{ $upsellProd->name }}
-                                    </h6>
+                                    </h5>
                                     <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
                                         @if($upsellProd->is_on_sale)
-                                            <span class="text-muted text-decoration-line-through small">৳{{ number_format($upsellProd->price, 0) }}</span>
+                                            <span class="text-muted text-decoration-line-through fs-6">৳{{ number_format($upsellProd->price, 0) }}</span>
                                         @endif
-                                        <span class="fs-5 fw-bold text-danger">৳{{ number_format($upsellProd->final_price, 0) }}</span>
+                                        <span class="{{ $upsellCount === 1 ? 'fs-2' : 'fs-3' }} fw-bold text-danger">৳{{ number_format($upsellProd->final_price, 0) }}</span>
                                     </div>
                                 </div>
                                 <div>
                                     <button type="button" 
-                                            class="btn btn-danger w-100 py-2 fw-bold btn-add-upsell shadow-xs rounded-2 d-inline-flex align-items-center justify-content-center gap-1" 
+                                            class="btn btn-danger w-100 py-2.5 py-md-3 fw-bold btn-add-upsell shadow-sm rounded-pill fs-6 d-inline-flex align-items-center justify-content-center gap-2" 
                                             data-product-id="{{ $upsellProd->id }}"
                                             data-product-name="{{ $upsellProd->name }}">
-                                        <i class="fas fa-plus-circle"></i>
-                                        <span>অর্ডারে যুক্ত করুন</span>
+                                        <i class="fas fa-cart-plus fs-5"></i>
+                                        <span>অর্ডারে যুক্ত করুন (+ ১-ক্লিক)</span>
                                     </button>
+                                    <div class="mt-2 text-center">
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1" style="font-size: 11px;">
+                                            <i class="fas fa-truck-moving me-1"></i> ফ্রি ডেলিভারি (আগের অর্ডারের সাথে যুক্ত হবে)
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -226,6 +237,56 @@
         </div>
     </div>
 </div>
+
+<style>
+.upsell-item-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.upsell-item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+}
+.upsell-img-box-single {
+    height: 240px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+@media (min-width: 768px) {
+    .upsell-img-box-single {
+        height: 280px;
+    }
+}
+.upsell-img-box-multi {
+    height: 190px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+@media (min-width: 768px) {
+    .upsell-img-box-multi {
+        height: 220px;
+    }
+}
+.upsell-main-img {
+    object-fit: contain;
+    padding: 8px;
+    transition: transform 0.3s ease;
+}
+.upsell-item-card:hover .upsell-main-img {
+    transform: scale(1.04);
+}
+.upsell-product-title {
+    line-height: 1.45;
+    min-height: 46px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
 @endsection
 
 @push('scripts')
