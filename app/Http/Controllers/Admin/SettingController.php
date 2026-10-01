@@ -28,11 +28,21 @@ class SettingController extends Controller
             'currency_symbol',
             'footer_about',
             'notice_text',
+            'copyright_text',
+            'order_notification_email',
             
-            // Delivery Charges
+            // Delivery Charges & Times
             'delivery_inside_dhaka',
             'delivery_outside_dhaka',
             'free_delivery_threshold',
+            'delivery_time_inside',
+            'delivery_time_outside',
+            'invoice_footer_note',
+
+            // Social Media Links
+            'facebook_url',
+            'instagram_url',
+            'youtube_url',
 
             // Payment Information (Checkout page)
             'cod_enabled',
@@ -45,6 +55,10 @@ class SettingController extends Controller
             'nagad_number',
             'nagad_type',
             'nagad_instructions',
+            'rocket_enabled',
+            'rocket_number',
+            'rocket_type',
+            'rocket_instructions',
 
             // Analytics & Pixel
             'meta_pixel_id',
@@ -58,7 +72,7 @@ class SettingController extends Controller
         foreach ($fields as $field) {
             if ($request->has($field)) {
                 Setting::set($field, $request->input($field));
-            } elseif (in_array($field, ['cod_enabled', 'bkash_enabled', 'nagad_enabled'])) {
+            } elseif (in_array($field, ['cod_enabled', 'bkash_enabled', 'nagad_enabled', 'rocket_enabled'])) {
                 // Checkbox unselected
                 Setting::set($field, '0');
             }
