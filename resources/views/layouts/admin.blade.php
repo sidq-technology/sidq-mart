@@ -37,9 +37,10 @@
         :root {
             --admin-primary: {{ $primaryThemeColor }};
             --admin-secondary: {{ $secondaryThemeColor }};
-            --admin-sidebar-bg: #0f172a;
-            --admin-sidebar-surface: #1e293b;
-            --admin-sidebar-text: #94a3b8;
+            --admin-sidebar-bg: #ffffff;
+            --admin-sidebar-surface: #f8fafc;
+            --admin-sidebar-text: #64748b;
+            --admin-sidebar-border: #e2e8f0;
             --admin-mint-bg: {{ $adminBgTint }};
             --admin-mint-subtle: #f0faf4;
             --admin-mint-border: #e2f0e8;
@@ -57,7 +58,7 @@
             min-height: 100vh;
         }
 
-        /* Sidebar Styling */
+        /* Sidebar Styling - Distinct Light White Theme */
         .admin-sidebar {
             width: 270px;
             background-color: var(--admin-sidebar-bg);
@@ -69,31 +70,33 @@
             z-index: 1000;
             overflow-y: auto;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+            border-right: 1px solid var(--admin-sidebar-border);
+            box-shadow: 4px 0 20px rgba(15, 23, 42, 0.03);
         }
 
         .admin-sidebar-brand {
-            padding: 22px 24px;
-            font-size: 19px;
+            padding: 20px 24px;
+            font-size: 18px;
             font-weight: 700;
-            color: #ffffff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: #0f172a;
+            border-bottom: 1px solid var(--admin-sidebar-border);
             display: flex;
             align-items: center;
             gap: 12px;
             letter-spacing: -0.3px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
         }
 
         .admin-sidebar-brand .brand-badge {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 10px;
             background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             color: #fff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 4px 12px rgba(241, 49, 36, 0.2);
         }
 
         .admin-nav {
@@ -103,32 +106,33 @@
         }
 
         .admin-nav-item {
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
 
         .admin-nav-item a {
             display: flex;
             align-items: center;
             padding: 11px 16px;
-            color: var(--admin-sidebar-text);
+            color: #64748b;
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
-            gap: 14px;
+            gap: 13px;
             border-radius: 10px;
-            transition: all 0.22s ease;
+            transition: all 0.2s ease;
         }
 
         .admin-nav-item a i {
             width: 20px;
             text-align: center;
             font-size: 16px;
+            color: #94a3b8;
             transition: transform 0.2s ease, color 0.2s ease;
         }
 
         .admin-nav-item a:hover {
-            background-color: rgba(255, 255, 255, 0.07);
-            color: #ffffff;
+            background-color: #f1f5f9;
+            color: #0f172a;
             transform: translateX(3px);
         }
 
@@ -137,11 +141,11 @@
         }
 
         .admin-nav-item.active a {
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
-            color: #ffffff;
+            background: linear-gradient(90deg, rgba(241, 49, 36, 0.09) 0%, rgba(241, 49, 36, 0.02) 100%);
+            color: var(--admin-primary);
             font-weight: 600;
             border-left: 4px solid var(--admin-primary);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 2px 8px rgba(241, 49, 36, 0.05);
         }
 
         .admin-nav-item.active a i {
@@ -302,7 +306,7 @@
                 <i class="fas fa-shopping-bag"></i>
             </span>
             <div class="d-flex flex-column">
-                <span class="text-truncate" style="max-width: 170px;">{{ \App\Models\Setting::get('site_name', 'SIDQ MART') }}</span>
+                <span class="fw-bold text-dark text-truncate" style="max-width: 170px;">{{ \App\Models\Setting::get('site_name', 'SIDQ MART') }}</span>
                 <span class="text-muted fw-normal" style="font-size: 11px;">Admin Console</span>
             </div>
         </div>
@@ -311,7 +315,7 @@
             <li class="admin-nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <a href="{{ route('admin.dashboard') }}">
                     <i class="fas fa-chart-pie"></i>
-                    <span>ড্যাশবোর্ড (Dashboard)</span>
+                    <span>Dashboard</span>
                 </a>
             </li>
 
@@ -319,7 +323,7 @@
             <li class="admin-nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.orders.index') }}">
                     <i class="fas fa-shopping-cart"></i>
-                    <span>অর্ডারসমূহ (Orders)</span>
+                    <span>Orders</span>
                     @php $pendingCount = \App\Models\Order::where('order_status', 'pending')->count(); @endphp
                     @if($pendingCount > 0)
                     <span class="badge rounded-pill ms-auto" style="background: var(--admin-primary); font-size: 11px;">{{ $pendingCount }}</span>
@@ -332,7 +336,7 @@
             <li class="admin-nav-item {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.products.index') }}">
                     <i class="fas fa-boxes"></i>
-                    <span>পণ্যসমূহ (Products)</span>
+                    <span>Products</span>
                 </a>
             </li>
             @endif
@@ -341,7 +345,16 @@
             <li class="admin-nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.categories.index') }}">
                     <i class="fas fa-tags"></i>
-                    <span>ক্যাটেগরি (Categories)</span>
+                    <span>Categories</span>
+                </a>
+            </li>
+            @endif
+
+            @if(auth()->user()->canDo('finance.view'))
+            <li class="admin-nav-item {{ request()->routeIs('admin.finance.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.finance.index') }}">
+                    <i class="fas fa-wallet"></i>
+                    <span>Finance</span>
                 </a>
             </li>
             @endif
@@ -350,7 +363,7 @@
             <li class="admin-nav-item {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.banners.index') }}">
                     <i class="fas fa-images"></i>
-                    <span>ব্যানার স্লাইডার (Banners)</span>
+                    <span>Banners</span>
                 </a>
             </li>
             @endif
@@ -359,7 +372,7 @@
             <li class="admin-nav-item {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.coupons.index') }}">
                     <i class="fas fa-ticket-alt"></i>
-                    <span>কুপন (Coupons)</span>
+                    <span>Coupons</span>
                 </a>
             </li>
             @endif
@@ -369,7 +382,17 @@
             <li class="admin-nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.users.index') }}">
                     <i class="fas fa-users-cog"></i>
-                    <span>ইউজার ও রোল (Users)</span>
+                    <span>Users &amp; Roles</span>
+                </a>
+            </li>
+            @endif
+
+            <!-- Integrations & Tracking Scripts -->
+            @if(auth()->user()->canDo('integrations.manage'))
+            <li class="admin-nav-item {{ request()->routeIs('admin.integrations.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.integrations.index') }}">
+                    <i class="fas fa-plug"></i>
+                    <span>Integrations</span>
                 </a>
             </li>
             @endif
@@ -378,23 +401,23 @@
             <li class="admin-nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.settings.index') }}">
                     <i class="fas fa-sliders-h"></i>
-                    <span>সাইট সেটিংস (Settings)</span>
+                    <span>Settings</span>
                 </a>
             </li>
             @endif
 
-            <li class="border-top border-secondary border-opacity-25 my-3"></li>
+            <li class="border-top my-3" style="border-color: #e2e8f0 !important;"></li>
 
             <li class="admin-nav-item">
                 <a href="{{ route('home') }}" target="_blank">
-                    <i class="fas fa-external-link-alt text-info"></i>
-                    <span>ওয়েবসাইট দেখুন</span>
+                    <i class="fas fa-external-link-alt text-primary"></i>
+                    <span>Visit Store</span>
                 </a>
             </li>
         </ul>
 
-        <div class="p-3 border-top border-secondary border-opacity-25 text-center small" style="font-size: 12px; color: #94a3b8;">
-            Engineered &amp; Powered by <br><strong class="text-white">SIDQ Technology</strong>
+        <div class="p-3 border-top text-center small" style="border-color: #e2e8f0 !important; font-size: 11px; color: #64748b; background: #fbfcfd;">
+            Engineered &amp; Powered by <br><strong class="text-dark">SIDQ Technology</strong>
         </div>
     </aside>
 

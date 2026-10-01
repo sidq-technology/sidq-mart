@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FinanceController;
+use App\Http\Controllers\Admin\IntegrationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\SettingController;
@@ -127,6 +129,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('categories', CategoryController::class)
             ->middleware('permission:categories.manage');
 
+        // Finance & Revenue Analytics
+        Route::get('/finance', [FinanceController::class, 'index'])
+            ->middleware('permission:finance.view')
+            ->name('finance.index');
+
         // Banners
         Route::resource('banners', BannerController::class)
             ->middleware('permission:banners.manage');
@@ -139,6 +146,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', UserController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->middleware('permission:users.manage');
+
+        // Integrations & Tracking Scripts
+        Route::get('/integrations', [IntegrationController::class, 'index'])
+            ->middleware('permission:integrations.manage')
+            ->name('integrations.index');
+        Route::post('/integrations', [IntegrationController::class, 'update'])
+            ->middleware('permission:integrations.manage')
+            ->name('integrations.update');
 
         // Site Settings & Branding
         Route::get('/settings', [SettingController::class, 'index'])

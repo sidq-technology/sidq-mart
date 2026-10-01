@@ -189,9 +189,11 @@ class User extends Authenticatable
                 'products.edit',
                 'products.delete',
                 'categories.manage',
+                'finance.view',
                 'banners.manage',
                 'coupons.manage',
                 'users.view',
+                'integrations.manage',
             ],
             self::ROLE_EMPLOYEE => [
                 'orders.view',
@@ -220,9 +222,13 @@ class User extends Authenticatable
                 'products.delete'   => 'পণ্য মুছে ফেলা',
                 'categories.manage' => 'ক্যাটেগরি তৈরি ও সাজানো',
             ],
-            'মার্কেটিং ও প্রমোশন (Marketing)' => [
-                'banners.manage' => 'ব্যানার স্লাইডার পরিবর্তন করা',
-                'coupons.manage' => 'ডিসকাউন্ট কুপন তৈরি ও নিয়ন্ত্রণ',
+            'ফাইন্যান্স ও রাজস্ব (Finance & Revenue)' => [
+                'finance.view' => 'আয়-ব্যয়, রাজস্ব ও আর্থিক স্ট্যাটিস্টিক রিপোর্ট দেখা',
+            ],
+            'মার্কেটিং ও ইন্টিগ্রেশন (Marketing & Integrations)' => [
+                'banners.manage'      => 'ব্যানার স্লাইডার পরিবর্তন করা',
+                'coupons.manage'      => 'ডিসকাউন্ট কুপন তৈরি ও নিয়ন্ত্রণ',
+                'integrations.manage' => 'পিক্সেল, ট্যাগ ম্যানেজার ও ট্র্যাকিং স্ক্রিপ্টস ইন্টিগ্রেশন',
             ],
             'ইউজার ও স্টাফ ব্যবস্থাপনা (Staff & Users)' => [
                 'users.view'   => 'ইউজার ও স্টাফদের তালিকা দেখা',

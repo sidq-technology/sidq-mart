@@ -45,7 +45,29 @@
         }
     </style>
 
-    @if(\App\Models\Setting::get('meta_pixel_id'))
+    <!-- Marketing & Analytics Tracking Integrations (Engineered by SIDQ Technology) -->
+    @if(\App\Models\Setting::get('gtm_enabled') == '1' && $gtmId = \App\Models\Setting::get('gtm_container_id'))
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','{{ $gtmId }}');</script>
+    <!-- End Google Tag Manager -->
+    @endif
+
+    @if(\App\Models\Setting::get('ga4_enabled') == '1' && $ga4Id = \App\Models\Setting::get('ga4_measurement_id'))
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $ga4Id }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ $ga4Id }}');
+    </script>
+    @endif
+
+    @if((\App\Models\Setting::get('meta_pixel_enabled', '1') == '1') && $pixelId = \App\Models\Setting::get('meta_pixel_id'))
     <!-- Meta Pixel Code -->
     <script>
         !function(f,b,e,v,n,t,s)
@@ -56,17 +78,40 @@
         t.src=v;s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '{{ \App\Models\Setting::get("meta_pixel_id") }}');
+        fbq('init', '{{ $pixelId }}');
         fbq('track', 'PageView');
     </script>
     <noscript>
-        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ \App\Models\Setting::get('meta_pixel_id') }}&ev=PageView&noscript=1"/>
+        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $pixelId }}&ev=PageView&noscript=1"/>
     </noscript>
+    @endif
+
+    @if(\App\Models\Setting::get('tiktok_pixel_enabled') == '1' && $ttId = \App\Models\Setting::get('tiktok_pixel_id'))
+    <!-- TikTok Pixel Code -->
+    <script>
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+      ttq.load('{{ $ttId }}');
+      ttq.page();
+    }(window, document, 'ttq');
+    </script>
+    @endif
+
+    @if($customHeader = \App\Models\Setting::get('custom_header_scripts'))
+    <!-- Custom Injected Header Scripts -->
+    {!! $customHeader !!}
     @endif
 
     @stack('styles')
 </head>
 <body>
+    @if(\App\Models\Setting::get('gtm_enabled') == '1' && $gtmId = \App\Models\Setting::get('gtm_container_id'))
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $gtmId }}"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    @endif
+
     <!-- Skip to main content for Accessibility (WCAG 2.4.1) -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
@@ -313,6 +358,27 @@
 
     <!-- Customer Authentication Modal Popup -->
     @include('customer.auth.auth-modal')
+
+    <!-- WhatsApp Floating Live Chat Widget (Engineered by SIDQ Technology) -->
+    @if(\App\Models\Setting::get('whatsapp_chat_enabled') == '1' && $waNumber = \App\Models\Setting::get('whatsapp_number'))
+    @php
+        $cleanWa = preg_replace('/[^0-9]/', '', $waNumber);
+        $waMsg = urlencode(\App\Models\Setting::get('whatsapp_default_message', 'Hello SIDQ MART! I need assistance with an order.'));
+        $waPos = \App\Models\Setting::get('whatsapp_widget_position', 'bottom-right');
+    @endphp
+    <a href="https://wa.me/{{ $cleanWa }}?text={{ $waMsg }}" target="_blank" rel="noopener noreferrer" 
+       class="position-fixed d-flex align-items-center justify-content-center text-white text-decoration-none shadow"
+       style="{{ $waPos === 'bottom-left' ? 'left: 20px;' : 'right: 20px;' }} bottom: 85px; z-index: 1040; width: 56px; height: 56px; border-radius: 50%; background: #25d366; transition: transform 0.2s ease, box-shadow 0.2s ease;"
+       onmouseover="this.style.transform='scale(1.1)';" onmouseout="this.style.transform='scale(1)';"
+       title="Chat with SIDQ MART on WhatsApp">
+        <i class="fab fa-whatsapp" style="font-size: 32px;"></i>
+    </a>
+    @endif
+
+    @if($customFooter = \App\Models\Setting::get('custom_footer_scripts'))
+    <!-- Custom Injected Footer Scripts -->
+    {!! $customFooter !!}
+    @endif
 
     @stack('scripts')
 </body>
