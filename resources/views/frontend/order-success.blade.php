@@ -79,11 +79,6 @@
                                         <i class="fas fa-cart-plus fs-5"></i>
                                         <span>অর্ডারে যুক্ত করুন (+ ১-ক্লিক)</span>
                                     </button>
-                                    <div class="mt-2 text-center">
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1" style="font-size: 11px;">
-                                            <i class="fas fa-truck-moving me-1"></i> ফ্রি ডেলিভারি (আগের অর্ডারের সাথে যুক্ত হবে)
-                                        </span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
