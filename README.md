@@ -1,46 +1,84 @@
-# sidq-mart
-
-> **SIDQ MART — Production-Grade Enterprise E-Commerce Platform**  
+# 🚀 Sidq Mart v1.0.0 — Official Production Release
 > **Engineered & Powered by SIDQ Technology (সিদিক টেকনোলজি)**  
-> *Core Software Architecture & Commerce Engine © SIDQ Technology. All Rights Reserved.*
+> *Core Software Architecture & Enterprise Commerce Engine © SIDQ Technology. All Rights Reserved.*
 
 ---
 
-## 🌟 Overview
+## 🌟 Overview (প্ল্যাটফর্ম পরিচিতি)
 
-**SIDQ MART** is a modern, high-performance, and white-label ready e-commerce web application engineered with **Laravel 12** and **Bootstrap 5**. Designed with clean code architecture, portable migrations (supporting SQLite for development and MySQL/XAMPP for production), accessible design tokens (WCAG 2.2 AA), and an ultra-modern administrative panel.
-
----
-
-## 🚀 Key Features
-
-### 🛒 1. Customer Storefront
-- **Responsive Product Showcase**: 5-column responsive product card grid with hover image zoom, lift animations, instant discount badges, and quick add-to-cart buttons.
-- **Trust & Features Section**: Polished `.intro-part` trust strip with soft mint background (`#f8fffa`), circular double-ring icons, and animated hover effects.
-- **Offcanvas Cart Drawer**: Real-time sliding cart drawer for seamless shopping without page redirects.
-- **Fast 1-Page Checkout**: Dynamic delivery zone fee calculation (Inside Dhaka ৳70 / Outside Dhaka ৳130 / Free delivery above threshold), coupon validation, and payment instructions.
-- **Dual-Mode Customer Authentication**:
-  - **Instant Modal Popup (`#customerAuthModal`)**: Available from any page with AJAX login and registration tabs.
-  - **Dedicated Login & Registration Page (`/login`)**: Full-screen responsive customer portal.
-- **Customer Dashboard (`/customer/dashboard`)**: Order history tracking, delivery status timeline, and saved address management.
-
-### 🛡️ 2. Role-Based Access Control (RBAC) & Staff Management
-- **4 Distinct Roles**:
-  - **সুপার অ্যাডমিন (Administrator)**: Full unrestricted platform management.
-  - **শপ ম্যানেজার (Shop Manager)**: Orders, catalog, stock, banners, coupons, and customer viewing.
-  - **এমপ্লয়ি / স্টাফ (Employee)**: Order processing, delivery status update, invoice printing, and inventory viewing.
-  - **সাধারণ গ্রাহক (Customer)**: Storefront shopping and order tracking.
-- **Granular Permissions Matrix**: Over 12 customizable permissions grouped into Orders, Catalog, Marketing, Staff, and Settings with automatic role presets.
-
-### 🎨 3. Modernized Admin Console & Dynamic Theme Customizer
-- **Pastel Mint Aesthetic (`#f8fffa`)**: Soft, eye-pleasing mint background palette, glassmorphic header, 14px rounded cards, and clean typography.
-- **Dynamic Theme Color Engine**: Change primary brand color, button hover color, and admin background tint directly from Admin Settings with live preview and 8 one-click presets (SIDQ Red, Emerald Green, Royal Blue, Modern Violet, Vibrant Orange, Rose Crimson, Ocean Teal).
+**Sidq Mart v1.0.0** হলো বাংলাদেশের ই-কমার্স বাজারের জন্য বিশেষভাবে ডিজাইন করা একটি অত্যন্ত দ্রুতগতির, হাই-কনভার্টিং এবং এন্টারপ্রাইজ গ্রেড ই-কমার্স প্ল্যাটফর্ম। সিঙ্গেল পেজ চেকআউট, ১-ক্লিক পোস্ট-পারচেজ আপসেল, রিয়েল-টাইম অর্ডার ট্র্যাকিং এবং অ্যাডভান্সড ফ্রড প্রটেকশনসহ একটি স্বয়ংসম্পূর্ণ প্ল্যাটফর্ম হিসেবে এটি প্রস্তুত করা হয়েছে।
 
 ---
 
-## 🔑 Default Login Credentials
+## 📦 ডাউনলোড ও ডিপ্লয়মেন্ট প্যাকেজ:
+1. **`sidq-mart-v1.0.0-full-with-vendor.zip` (46.7 MB)**  
+   👉 **সম্পূর্ণ ফুল প্যাকেজ (সব ফাইল এবং `vendor/` ফোল্ডার প্রি-ইন্সটল্ড)**। যেকোনো cPanel, Shared Hosting বা VPS-এ কোনো প্রকার `composer install` কমান্ড ছাড়াই সরাসরি ১-ক্লিকে আপলোড ও আনজিপ করে ইনস্ট্যান্ট চালানো যাবে।
+2. **`Source code (zip / tar.gz)`**  
+   👉 ডেভেলপার সোর্স কোড (কমান্ড লাইনে `composer install` চালিয়ে সেটআপ করার জন্য)।
 
-| Role | Email | Password | Access URL |
+---
+
+## 🌟 Sidq Mart v1.0.0-এর পূর্ণাঙ্গ ফিচার ও আর্কিটেকচার তালিকা:
+
+### ১. গ্রাহক ও স্টোরফ্রন্ট অভিজ্ঞতা (Customer Storefront):
+- **মডার্ন ও রেসপনসিভ ইউআই:** বুটস্ট্র্যাপ ৫ এবং 'হিন্দ শিলিগুড়ি' বাংলা টাইপোগ্রাফির ওপর নির্মিত আল্ট্রা-ফাস্ট মোবাইল-ফার্স্ট ডিজাইন।
+- **ডায়নামিক হিরো ব্যানার স্লাইডার:** ডেস্কটপ ও মোবাইলের জন্য অপ্টিমাইজড ব্যানার এবং ডিরেক্ট লিংক সাপোর্ট।
+- **ফ্ল্যাশ সেল (Flash Sale):** ডিসকাউন্ট ব্যাজ ও লাইভ কাউন্টডাউনসহ স্পেশাল ফ্ল্যাশ সেল সেকশন।
+- **টপ ও ফিচার্ড ক্যাটাগরি:** আকর্ষণীয় আইকন ও ছবিসহ জনপ্রিয় ক্যাটাগরি ব্রাউজিং।
+- **লাইভ ইনস্ট্যান্ট সার্চ (Live Search):** প্রতি ক্লিকে ইনস্ট্যান্ট ড্রপডাউনে প্রোডাক্ট থাম্বনেইল, দাম ও নাম প্রদর্শনী।
+- **অ্যাডভান্সড ভ্যারিয়েবল ও সিঙ্গেল প্রোডাক্ট পেজ:**
+  - কালার সোয়াচ (Color Swatches) ক্লিক করলেই স্বয়ংক্রিয়ভাবে মূল ছবি পরিবর্তন।
+  - সাইজ চিপস (Size Chips) নির্বাচন ও লাইভ স্টক আপডেট।
+  - ডাইনামিক প্রাইস এবং 'টাকা সেভিংস' ব্যাজ ক্যালকুলেশন।
+  - ফুলস্ক্রিন ইমেজ লাইটবক্স (Lightbox Modal) জুম ও অ্যারো নেভিগেশন সুবিধা।
+  - বিস্তারিত স্পেসিফিকেশন টেবিল ও সম্পর্কিত পণ্য (Related Products) সেকশন।
+
+### ২. কার্ট ও সুপার-ফাস্ট চেকআউট (High-Converting Checkout):
+- **ইন্টারেক্টিভ অফক্যানভাস কার্ট ড্রয়ার (Offcanvas Cart):** সাইট রিফ্রেশ ছাড়াই ডান পাশ থেকে স্লাইড-ইন কার্ট এবং রিয়েল-টাইম সাবটোটাল আপডেট।
+- **হাই-স্পিড ১-পেজ চেকআউট:** বাংলাদেশের গ্রাহকদের মনস্তত্ত্ব বুঝে তৈরি সহজতম চেকআউট ফর্ম।
+- **গেস্ট চেকআউট ও অটো-ফিল নোটিশ:** গেস্ট গ্রাহক একবার অর্ডার করলে পরবর্তীতে ব্রাউজারে তার নাম, ফোন ও ঠিকানা স্বয়ংক্রিয়ভাবে পূরণ হয়ে যায়।
+- **ডেলিভারি এরিয়া সুইচার:** 'ঢাকার ভিতরে' ও 'ঢাকার বাহিরে' এক ক্লিকে সিলেক্ট ও লাইভ ডেলিভারি চার্জ হিসাব।
+- **কুপন ও ডিসকাউন্ট ইঞ্জিন:** ফিক্সড ও পার্সেন্টেজ ছাড়, মেয়াদ এবং মিনিমাম অর্ডারের শর্তসহ কুপন সিস্টেম।
+- **পেমেন্ট মেথড:** ক্যাশ অন ডেলিভারি (COD), বিকাশ (bKash) ও নগদ (Nagad) সাপোর্ট।
+- **'সরাসরি অর্ডার করুন' (Buy Now):** কার্ট ছাড়াই সিঙ্গেল ক্লিকে সরাসরি চেকআউটে যাওয়ার সুবিধা।
+
+### ৩. থ্যাঙ্ক ইউ পেজ ও ১-ক্লিক আপসেল (Post-Purchase Upsell):
+- **১-ক্লিক পোস্ট-পারচেজ আপসেল (Upsell):** অর্ডার সফল হওয়ার পর থ্যাঙ্ক ইউ পেজে বড় ও আকর্ষণীয় অফার কার্ড—গ্রাহক ১-ক্লিকেই অতিরিক্ত ডেলিভারি চার্জ ছাড়াই অর্ডারে নতুন পণ্য যুক্ত করতে পারেন।
+- **কলাপ্সড অর্ডার সামারি:** থ্যাঙ্ক ইউ পেজে অর্ডারের বিস্তারিত তথ্য সুন্দরভাবে কলাপ্সড বারে সাজানো (ক্লিন 'Overview' ব্যাজসহ)।
+- **রিলেটেড প্রোডাক্ট রিকমেন্ডেশন:** থ্যাঙ্ক ইউ পেজে ক্যাটাগরি ভিত্তিক "আপনার পছন্দ হতে পারে এমন আরও পণ্য" প্রদর্শন।
+
+### ৪. অর্ডার ট্র্যাকিং সিস্টেম (`/order-tracking`):
+- ফোন নম্বর অথবা অর্ডার রেফারেন্স নম্বর দিয়ে যেকোনো সময় অর্ডারের অবস্থা জানার সুবিধা।
+- ইনপুটকৃত বাংলাদেশি মোবাইল নম্বরের স্বয়ংক্রিয় ফিল্টারিং (`+88`, স্পেস বা ড্যাশ দূরীকরণ)।
+- **৪-ধাপের খাঁটি বাংলা ভিজ্যুয়াল টাইমলাইন:**  
+  ১. অর্ডার গৃহীত হয়েছে $\rightarrow$ ২. প্রসেসিং চলছে $\rightarrow$ ৩. কুরিয়ারে পাঠানো হয়েছে $\rightarrow$ ৪. ডেলিভারি সম্পন্ন।
+- টপ হেডার বার ও ফুটার থেকে সরাসরি এক ক্লিকে ট্র্যাকিং সুবিধা।
+
+### ৫. প্রফেশনাল পলিসি পেজসমূহ (Legal & Trust):
+- **প্রাইভেসি পলিসি (`/privacy-policy`):** ডেটা সুরক্ষা ও এনক্রিপশন ধারা।
+- **শর্তাবলী ও নীতিমালা (`/terms-and-conditions`):** ডেলিভারি, মূল্য ও সাধারণ নিয়ম।
+- **রিটার্ন ও রিফান্ড পলিসি (`/return-and-refund-policy`):** ৭ দিনের সহজ রিটার্ন ও রিফান্ড প্রক্রিয়া।
+- অ্যাডমিন প্যানেল থেকে স্বয়ংক্রিয়ভাবে স্টোরের নাম, হটলাইন ও ইমেইল সিঙ্ক।
+
+### ৬. শক্তিশালী অ্যাডমিন প্যানেল ও কন্ট্রোল কনসোল:
+- **রিয়েল-টাইম ড্যাশবোর্ড:** দৈনিক ও মাসিক বিক্রয়, পেন্ডিং অর্ডার, মোট পণ্য ও আয়ের পরিসংখ্যান।
+- **পণ্য ব্যবস্থাপনা:** সিম্পল ও ভ্যারিয়েবল প্রোডাক্ট তৈরি, স্টক কন্ট্রোল, একাধিক গ্যালারি ছবি আপলোড।
+- **অর্ডার ম্যানেজমেন্ট:** পেন্ডিং, প্রসেসিং, কুরিয়ার, ডেলিভার্ড ও বাতিল ফিল্টারিং, ইনভয়েস প্রিন্ট।
+- **ফেইল্ড/ড্রাফট অর্ডার রিকভারি:** চেকআউটে ফর্ম পূরণ করে অর্ডার কনফার্ম না করা গ্রাহকদের ফোন নম্বর ও ড্রাফট সংরক্ষণ (লস্ট সেল রিকভারির জন্য)।
+- **রোল-বেসড এক্সেস কন্ট্রোল (RBAC):** সুপার অ্যাডমিন, অ্যাডমিন, ম্যানেজার ও সাপোর্ট স্টাফদের জন্য আলাদা অনুমতি নির্ধারণ।
+- **স্টোর সেটিংস কন্ট্রোল:** লোগো, ফেভিকন, থিম কালার, হটলাইন, ফেসবুক পিক্সেল, টিকটক পিক্সেল, গুগল ট্যাগ ম্যানেজার (GTM) এবং কাস্টম স্ক্রিপ্ট ইনজেকশন।
+- **হোয়াটসঅ্যাপ লাইভ চ্যাট উইজেট:** অন/অফ কন্ট্রোল, নম্বর ও মেসেজ নির্ধারণ সুবিধা।
+
+### ৭. সিকিউরিটি ও অ্যান্টি-ফ্রড প্রটেকশন:
+- **ফেক অর্ডার প্রটেকশন (Anti-Spam Rate Limiter):** একই আইপি বা নম্বর থেকে ক্ষতিকর বা ভুয়া অর্ডার প্রতিরোধ।
+- সম্পূর্ণ এনক্রিপ্টেড পাসওয়ার্ড ও সিআরএফ (CSRF) সিকিউরিটি।
+- ডেমো মোড রিড-অনলি প্রটেকশন।
+
+---
+
+## 🔑 Default Login Credentials (ডিফল্ট লগইন তথ্য)
+
+| রোল (Role) | ইমেইল (Email) | পাসওয়ার্ড (Password) | লগইন লিংক (URL) |
 |---|---|---|---|
 | **Super Administrator** | `admin@sidqmart.com` | `admin123` | `http://127.0.0.1:8000/admin` |
 | **Administrator (Tech Support)** | `admin@sidqtech.com` | `admin123` | `http://127.0.0.1:8000/admin` |
@@ -50,53 +88,53 @@
 
 ---
 
-## 🛠️ Installation & Setup Guide
+## 🛠️ Installation & Setup Guide (ম্যানুয়াল ইন্সটলেশন)
 
-### Prerequisites
-- PHP 8.2 or higher
+### রিকোয়ারমেন্টস
+- PHP 8.2 বা তার চেয়ে নতুন
 - Composer
-- SQLite (or MySQL via XAMPP)
+- SQLite অথবা MySQL (XAMPP / cPanel)
 
-### Steps
+### ইন্সটলেশন ধাপসমূহ:
 
-1. **Clone the repository:**
+1. **ক্লোন করুন:**
    ```bash
    git clone https://github.com/sidq-technology/sidq-mart.git
    cd sidq-mart
    ```
 
-2. **Install Composer dependencies:**
+2. **ডিপেন্ডেন্সি ইন্সটল করুন:**
    ```bash
    composer install
    ```
 
-3. **Configure environment:**
+3. **কনফিগারেশন ফাইল ও কি জেনারেট:**
    ```bash
    copy .env.example .env
    php artisan key:generate
    ```
 
-4. **Run migrations and seed default data:**
+4. **ডাটাবেজ মাইগ্রেশন ও ডিফল্ট ডাটা সিড:**
    ```bash
    php artisan migrate --seed
    ```
 
-5. **Link storage directory:**
+5. **স্টোরেজ লিংক তৈরি:**
    ```bash
    php artisan storage:link
    ```
 
-6. **Start local development server:**
+6. **সার্ভার রান করুন:**
    ```bash
    php artisan serve
    ```
-   Visit `http://127.0.0.1:8000` in your browser.
+   ব্রাউজারে ভিজিট করুন: `http://127.0.0.1:8000`
 
 ---
 
 ## 🏛️ Architecture & Attribution
 
-- **Engine**: SIDQ Commerce Engine (Enterprise Edition)
-- **Built for**: **SIDQ MART**
-- **Developed by**: **SIDQ Technology (সিদিক টেকনোলজি)**
-- **Intellectual Property**: Core architecture, UI design tokens, and components engineered by SIDQ Technology.
+- **Commerce Engine**: SIDQ Commerce Engine (Enterprise Edition)
+- **Built For**: **SIDQ MART**
+- **Architecture & Engineering**: **SIDQ Technology (সিদিক টেকনোলজি)**
+- **Copyright**: © SIDQ Technology. All Rights Reserved.
