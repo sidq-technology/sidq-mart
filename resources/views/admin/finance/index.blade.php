@@ -3,7 +3,6 @@
 @section('title', 'Financial Analytics & Revenue')
 
 @section('content')
-<div class="container-fluid px-0">
     <!-- Header Section (Fully Responsive) -->
     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
         <div>
@@ -97,7 +96,7 @@
     <!-- Clean Style KPI Cards -->
     <div class="row g-3 mb-4">
         <!-- 1. Gross Revenue -->
-        <div class="col-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="card border bg-white rounded-3 shadow-xs h-100">
                 <div class="card-body p-3 p-sm-4">
                     <div class="d-flex align-items-center justify-content-between mb-2">
@@ -117,7 +116,7 @@
         </div>
 
         <!-- 2. Realized Cash (Paid) -->
-        <div class="col-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="card border bg-white rounded-3 shadow-xs h-100">
                 <div class="card-body p-3 p-sm-4">
                     <div class="d-flex align-items-center justify-content-between mb-2">
@@ -137,7 +136,7 @@
         </div>
 
         <!-- 3. Pending Receivables -->
-        <div class="col-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="card border bg-white rounded-3 shadow-xs h-100">
                 <div class="card-body p-3 p-sm-4">
                     <div class="d-flex align-items-center justify-content-between mb-2">
@@ -157,7 +156,7 @@
         </div>
 
         <!-- 4. Delivered Sales -->
-        <div class="col-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="card border bg-white rounded-3 shadow-xs h-100">
                 <div class="card-body p-3 p-sm-4">
                     <div class="d-flex align-items-center justify-content-between mb-2">
@@ -179,7 +178,7 @@
 
     <!-- Secondary Clean Metrics Strip -->
     <div class="row g-3 mb-4">
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-md-3">
             <div class="p-3 bg-white border rounded-3 shadow-xs d-flex align-items-center justify-content-between">
                 <div>
                     <div class="text-muted small" style="font-size: 11.5px;">Shipping Collected</div>
@@ -189,7 +188,7 @@
             </div>
         </div>
 
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-md-3">
             <div class="p-3 bg-white border rounded-3 shadow-xs d-flex align-items-center justify-content-between">
                 <div>
                     <div class="text-muted small" style="font-size: 11.5px;">Total Discounts</div>
@@ -199,7 +198,7 @@
             </div>
         </div>
 
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-md-3">
             <div class="p-3 bg-white border rounded-3 shadow-xs d-flex align-items-center justify-content-between">
                 <div>
                     <div class="text-muted small" style="font-size: 11.5px;">Average Order (AOV)</div>
@@ -209,7 +208,7 @@
             </div>
         </div>
 
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-md-3">
             <div class="p-3 bg-white border rounded-3 shadow-xs d-flex align-items-center justify-content-between">
                 <div>
                     <div class="text-muted small" style="font-size: 11.5px;">Total Orders Placed</div>
@@ -406,7 +405,6 @@
             @endif
         </div>
     </div>
-</div>
 
 @push('scripts')
 <!-- Chart.js CDN -->

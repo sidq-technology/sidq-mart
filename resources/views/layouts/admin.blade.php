@@ -49,6 +49,11 @@
             --admin-text-muted: #64748b;
         }
 
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
         body {
             font-family: 'Outfit', 'Hind Siliguri', sans-serif;
             background-color: var(--admin-mint-bg);
@@ -67,9 +72,10 @@
             position: fixed;
             top: 0;
             left: 0;
-            z-index: 1000;
+            bottom: 0;
+            z-index: 1040;
             overflow-y: auto;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-right: 1px solid var(--admin-sidebar-border);
             box-shadow: 4px 0 20px rgba(15, 23, 42, 0.03);
         }
@@ -154,31 +160,40 @@
 
         .admin-main {
             margin-left: 270px;
+            width: calc(100% - 270px);
+            max-width: calc(100% - 270px);
+            min-width: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Glassmorphic Modern Header */
         .admin-header {
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            height: 68px;
+            height: 64px;
             border-bottom: 1px solid var(--admin-mint-border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 32px;
+            padding: 0 28px;
             position: sticky;
             top: 0;
             z-index: 990;
-            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.04);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .admin-content {
-            padding: 30px 32px;
+            padding: 24px 28px;
             flex-grow: 1;
+            min-width: 0;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         /* Modernized Surface Cards & Metric Cards */
@@ -278,27 +293,51 @@
             background-color: rgba(248, 255, 250, 0.6);
         }
 
+        /* Mobile Sidebar Backdrop */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            z-index: 1035;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .sidebar-backdrop.show {
+            display: block;
+            opacity: 1;
+        }
+
         @media (max-width: 991.98px) {
             .admin-sidebar {
                 transform: translateX(-100%);
             }
             .admin-sidebar.show {
                 transform: translateX(0);
+                box-shadow: 8px 0 32px rgba(15, 23, 42, 0.25);
             }
             .admin-main {
-                margin-left: 0;
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
             }
             .admin-header {
                 padding: 0 16px;
             }
             .admin-content {
-                padding: 20px 16px;
+                padding: 16px 14px;
             }
         }
     </style>
     @stack('styles')
 </head>
 <body>
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
     <!-- Sidebar -->
     <aside class="admin-sidebar d-flex flex-column" id="adminSidebar">
         <div class="admin-sidebar-brand">
@@ -517,10 +556,31 @@
         document.addEventListener('DOMContentLoaded', function () {
             const toggle = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('adminSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+
+            function openSidebar() {
+                sidebar.classList.add('show');
+                if (backdrop) backdrop.classList.add('show');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('show');
+                if (backdrop) backdrop.classList.remove('show');
+            }
+
             if (toggle && sidebar) {
-                toggle.addEventListener('click', function () {
-                    sidebar.classList.toggle('show');
+                toggle.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    if (sidebar.classList.contains('show')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
                 });
+            }
+
+            if (backdrop) {
+                backdrop.addEventListener('click', closeSidebar);
             }
         });
     </script>
