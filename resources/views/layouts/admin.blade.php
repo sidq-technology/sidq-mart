@@ -453,6 +453,13 @@
                     <span>Visit Store</span>
                 </a>
             </li>
+
+            <li class="admin-nav-item {{ request()->routeIs('admin.support.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.support.index') }}">
+                    <i class="fas fa-headset text-danger"></i>
+                    <span>Help &amp; Support</span>
+                </a>
+            </li>
         </ul>
 
         <div class="p-3 border-top text-center small" style="border-color: #e2e8f0 !important; font-size: 11px; color: #1e293b; background: #ffffff;">

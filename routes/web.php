@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\IntegrationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SupportController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
@@ -162,5 +163,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/settings', [SettingController::class, 'update'])
             ->middleware('permission:settings.manage')
             ->name('settings.update');
+
+        // Help & Developer Support Portal
+        Route::get('/support', [SupportController::class, 'index'])
+            ->name('support.index');
     });
 });
