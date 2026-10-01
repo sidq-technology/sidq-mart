@@ -114,12 +114,9 @@
                     <li class="mb-2"><a href="{{ route('home') }}" class="text-decoration-none">হোম পেজ</a></li>
                     <li class="mb-2"><a href="{{ route('shop.index') }}" class="text-decoration-none">সকল পণ্য</a></li>
                     <li class="mb-2"><a href="{{ route('order.tracking') }}" class="text-decoration-none fw-semibold text-danger">অর্ডার ট্র্যাক করুন</a></li>
-                    <li class="mb-2"><a href="{{ route('checkout') }}" class="text-decoration-none">সরাসরি অর্ডার</a></li>
-                    <li class="mb-2"><a href="{{ route('cart.index') }}" class="text-decoration-none">শপিং কার্ট</a></li>
-                    @foreach($categories->take(3) as $cat)
-                    <li class="mb-2"><a href="{{ route('product.category', $cat->slug) }}" class="text-decoration-none">{{ $cat->name }}</a></li>
-                    @endforeach
-                    <li class="mb-2"><a href="{{ route('admin.login') }}" class="text-decoration-none">অ্যাডমিন প্যানেল</a></li>
+                    <li class="mb-2"><a href="{{ route('pages.privacy') }}" class="text-decoration-none">প্রাইভেসি পলিসি</a></li>
+                    <li class="mb-2"><a href="{{ route('pages.terms') }}" class="text-decoration-none">শর্তাবলী ও নীতিমালা</a></li>
+                    <li class="mb-2"><a href="{{ route('pages.return') }}" class="text-decoration-none">রিটার্ন ও রিফান্ড পলিসি</a></li>
                 </ul>
             </div>
 

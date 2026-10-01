@@ -36,4 +36,28 @@ class HomeController extends Controller
 
         return view('frontend.home', compact('banners', 'topCategories', 'flashSales', 'featuredProducts', 'allProducts'));
     }
+
+    /**
+     * Privacy Policy Page
+     */
+    public function privacyPolicy()
+    {
+        return view('frontend.pages.privacy-policy');
+    }
+
+    /**
+     * Terms and Conditions Page
+     */
+    public function termsConditions()
+    {
+        return view('frontend.pages.terms-and-conditions');
+    }
+
+    /**
+     * Return and Refund Policy Page
+     */
+    public function returnRefundPolicy()
+    {
+        return view('frontend.pages.return-and-refund-policy');
+    }
 }

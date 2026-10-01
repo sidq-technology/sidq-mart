@@ -54,6 +54,11 @@ Route::post('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name
 // Order Tracking
 Route::get('/order-tracking', [OrderTrackingController::class, 'index'])->name('order.tracking');
 
+// Legal & Policy Pages
+Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('pages.privacy');
+Route::get('/terms-and-conditions', [HomeController::class, 'termsConditions'])->name('pages.terms');
+Route::get('/return-and-refund-policy', [HomeController::class, 'returnRefundPolicy'])->name('pages.return');
+
 /*
 |--------------------------------------------------------------------------
 | Customer Authentication & Account Routes
