@@ -279,6 +279,54 @@ a:hover {
     color: #ffffff;
 }
 
+/* SIDQ Desktop Hover Dropdown */
+@media (min-width: 992px) {
+    .sidq-nav-item.dropdown:hover > .dropdown-menu {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .sidq-nav-item.dropdown > .dropdown-menu {
+        display: block;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(6px);
+        transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-top: 0;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        padding: 8px 0;
+        min-width: 210px;
+    }
+
+    /* Invisible bridge to prevent mouse leave gap */
+    .sidq-nav-item.dropdown > .dropdown-menu::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 0;
+        right: 0;
+        height: 8px;
+    }
+
+    .sidq-nav-item .dropdown-item {
+        padding: 9px 18px;
+        font-size: 13.5px;
+        font-weight: 500;
+        color: #1e293b;
+        transition: background-color 0.15s ease, color 0.15s ease, padding-left 0.15s ease;
+    }
+
+    .sidq-nav-item .dropdown-item:hover {
+        background-color: #f8fafc;
+        color: var(--color-brand-accent);
+        padding-left: 22px;
+    }
+}
+
 /* SIDQ Product Card & Animations */
 .product-card, .sidq-product-card {
     background: #ffffff;

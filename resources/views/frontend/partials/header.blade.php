@@ -105,7 +105,7 @@
                 </li>
                 @foreach($categories->take(8) as $cat)
                 <li class="sidq-nav-item position-relative dropdown">
-                    <a href="{{ route('product.category', $cat->slug) }}" class="{{ $cat->children->count() ? 'dropdown-toggle' : '' }}" @if($cat->children->count()) data-bs-toggle="dropdown" @endif>
+                    <a href="{{ route('product.category', $cat->slug) }}" class="{{ $cat->children->count() ? 'dropdown-toggle' : '' }}">
                         {{ $cat->name }}
                     </a>
                     @if($cat->children->count())
