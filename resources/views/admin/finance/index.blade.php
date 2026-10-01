@@ -234,8 +234,8 @@
                     </span>
                 </div>
                 <div class="card-body px-3 px-sm-4 pb-3 pt-2">
-                    <div style="position: relative; height: 260px; width: 100%;">
-                        <canvas id="revenueTrendChart"></canvas>
+                    <div style="position: relative; height: 260px; width: 100%; max-width: 100%; overflow: hidden;">
+                        <canvas id="revenueTrendChart" style="max-width: 100% !important;"></canvas>
                     </div>
                 </div>
             </div>
@@ -249,8 +249,8 @@
                     <span class="text-muted small">Distribution by payment type &amp; region</span>
                 </div>
                 <div class="card-body px-3 px-sm-4 pb-3 pt-0">
-                    <div style="position: relative; height: 160px; width: 100%;" class="my-2">
-                        <canvas id="paymentMethodChart"></canvas>
+                    <div style="position: relative; height: 160px; width: 100%; max-width: 100%; overflow: hidden;" class="my-2">
+                        <canvas id="paymentMethodChart" style="max-width: 100% !important;"></canvas>
                     </div>
 
                     <div class="pt-2 border-top">
@@ -290,19 +290,19 @@
 
         <div class="card-body p-0">
             <div class="table-responsive" style="-webkit-overflow-scrolling: touch;">
-                <table class="table table-hover align-middle mb-0">
-                    <thead>
+                <table class="table align-middle mb-0 table-hover">
+                    <thead class="table-light">
                         <tr class="text-muted small text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-                            <th class="ps-3 ps-sm-4 text-nowrap py-3">Order</th>
-                            <th class="text-nowrap py-3">Customer</th>
-                            <th class="text-nowrap py-3">Date</th>
-                            <th class="text-nowrap py-3">Gateway</th>
-                            <th class="text-nowrap py-3">Zone</th>
-                            <th class="text-nowrap py-3">Shipping</th>
-                            <th class="text-nowrap py-3">Discount</th>
-                            <th class="text-nowrap py-3">Net Total</th>
-                            <th class="text-nowrap py-3">Payment</th>
-                            <th class="text-nowrap py-3">Status</th>
+                            <th class="ps-3 ps-sm-4 text-nowrap py-3">Order #</th>
+                            <th class="py-3">Customer</th>
+                            <th class="py-3">Date</th>
+                            <th class="py-3">Gateway</th>
+                            <th class="py-3">Zone</th>
+                            <th class="py-3">Shipping</th>
+                            <th class="py-3">Discount</th>
+                            <th class="py-3">Net Total</th>
+                            <th class="py-3">Payment</th>
+                            <th class="py-3">Status</th>
                             <th class="text-end pe-3 pe-sm-4 text-nowrap py-3">Action</th>
                         </tr>
                     </thead>
@@ -314,15 +314,15 @@
                                     #{{ $order->order_number }}
                                 </a>
                             </td>
-                            <td class="text-nowrap">
+                            <td>
                                 <div class="fw-semibold text-dark">{{ $order->customer_name }}</div>
                                 <div class="text-muted" style="font-size: 11.5px;">{{ $order->customer_phone }}</div>
                             </td>
-                            <td class="text-nowrap">
+                            <td>
                                 <div class="text-dark small">{{ $order->created_at->format('d M, Y') }}</div>
                                 <div class="text-muted" style="font-size: 11px;">{{ $order->created_at->format('h:i A') }}</div>
                             </td>
-                            <td class="text-nowrap">
+                            <td>
                                 @if($order->payment_method === 'bkash')
                                     <span class="badge rounded-pill" style="background: rgba(226, 19, 110, 0.12); color: #e2136e; font-weight: 600;">
                                         bKash
@@ -343,23 +343,23 @@
                                     <div class="text-muted" style="font-size: 10.5px;">Trx: <code>{{ $order->transaction_id }}</code></div>
                                 @endif
                             </td>
-                            <td class="text-nowrap">
+                            <td>
                                 <span class="badge bg-light text-secondary border small">
                                     {{ $order->delivery_zone === 'inside_dhaka' ? 'Inside Dhaka' : ($order->delivery_zone === 'outside_dhaka' ? 'Outside Dhaka' : ucfirst($order->delivery_zone)) }}
                                 </span>
                             </td>
-                            <td class="text-nowrap text-muted small">৳{{ number_format($order->shipping_charge, 2) }}</td>
-                            <td class="text-nowrap text-danger small">
+                            <td class="text-muted small">৳{{ number_format($order->shipping_charge, 2) }}</td>
+                            <td class="text-danger small">
                                 @if($order->discount_amount > 0)
                                     -৳{{ number_format($order->discount_amount, 2) }}
                                 @else
                                     —
                                 @endif
                             </td>
-                            <td class="text-nowrap">
+                            <td>
                                 <span class="fw-bold text-dark fs-6" style="font-family: 'Outfit', sans-serif;">৳{{ number_format($order->grand_total, 2) }}</span>
                             </td>
-                            <td class="text-nowrap">
+                            <td>
                                 @if($order->payment_status === 'paid')
                                     <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1">
                                         <i class="fas fa-check me-1"></i> Paid
@@ -370,7 +370,7 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="text-nowrap">
+                            <td>
                                 <span class="badge {{ $order->status_badge_class }} rounded-pill px-2 py-1" style="font-size: 11px;">
                                     {{ ucfirst($order->order_status) }}
                                 </span>
@@ -405,6 +405,7 @@
             @endif
         </div>
     </div>
+@endsection
 
 @push('scripts')
 <!-- Chart.js CDN -->
