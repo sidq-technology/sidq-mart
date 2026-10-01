@@ -19,6 +19,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Customer\CustomerAuthController;
 use App\Http\Controllers\Customer\CustomerDashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +50,9 @@ Route::get('/order-success/{order_number}', [CheckoutController::class, 'success
 Route::post('/order/{order_number}/add-upsell', [CheckoutController::class, 'addUpsellItem'])->name('order.add-upsell');
 Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('coupon.apply');
 Route::post('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
+
+// Order Tracking
+Route::get('/order-tracking', [OrderTrackingController::class, 'index'])->name('order.tracking');
 
 /*
 |--------------------------------------------------------------------------

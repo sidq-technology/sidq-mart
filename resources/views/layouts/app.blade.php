@@ -127,13 +127,30 @@
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Top Announcement Bar -->
-    @if($notice = \App\Models\Setting::get('notice_text'))
+    @php
+        $topNotice = \App\Models\Setting::get('notice_text');
+        $topPhone = \App\Models\Setting::get('contact_phone');
+    @endphp
+    @if($topNotice || $topPhone)
     <div class="top-bar-notice">
         <div class="container d-flex justify-content-between align-items-center">
-            <span><i class="fas fa-bullhorn me-1"></i> {{ $notice }}</span>
-            <span class="d-none d-md-inline">
-                <i class="fas fa-phone-alt me-1"></i> হটলাইন: <a href="tel:{{ \App\Models\Setting::get('contact_phone') }}" class="text-white text-decoration-none">{{ \App\Models\Setting::get('contact_phone') }}</a>
+            <span class="text-truncate pe-2">
+                @if($topNotice)
+                <i class="fas fa-bullhorn me-1"></i> {{ $topNotice }}
+                @endif
             </span>
+            <div class="d-flex align-items-center gap-2 gap-md-3 flex-shrink-0">
+                <a href="{{ route('order.tracking') }}" class="btn btn-sm btn-danger py-0 px-2.5 rounded-pill text-white fw-medium shadow-xs d-inline-flex align-items-center gap-1" style="font-size: 12px; line-height: 22px; height: 24px;">
+                    <i class="fas fa-truck-fast"></i>
+                    <span>অর্ডার ট্র্যাক করুন</span>
+                </a>
+                @if($topPhone)
+                <span class="d-none d-md-inline text-white-50">|</span>
+                <span class="d-none d-md-inline">
+                    <i class="fas fa-phone-alt me-1 text-warning"></i> হটলাইন: <a href="tel:{{ $topPhone }}" class="text-white text-decoration-none">{{ $topPhone }}</a>
+                </span>
+                @endif
+            </div>
         </div>
     </div>
     @endif

@@ -43,7 +43,7 @@
 
                     <!-- Customer Name -->
                     <div class="mb-3">
-                        <label for="customer_name" class="form-label">আপনার নাম (Full Name) <span class="text-danger">*</span></label>
+                        <label for="customer_name" class="form-label">আপনার নাম <span class="text-danger">*</span></label>
                         <input type="text" name="customer_name" id="customer_name" class="form-control @error('customer_name') is-invalid @enderror" value="{{ old('customer_name', auth()->user()->name ?? ($savedGuest['customer_name'] ?? '')) }}" placeholder="সম্পূর্ণ নাম লিখুন" required>
                         @error('customer_name')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -52,7 +52,7 @@
 
                     <!-- Customer Phone -->
                     <div class="mb-3">
-                        <label for="customer_phone" class="form-label">মোবাইল নাম্বার (Mobile Number) <span class="text-danger">*</span></label>
+                        <label for="customer_phone" class="form-label">মোবাইল নাম্বার <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted fw-bold">+88</span>
                             <input type="tel" name="customer_phone" id="customer_phone" class="form-control @error('customer_phone') is-invalid @enderror" value="{{ old('customer_phone', auth()->user()->phone ?? ($savedGuest['customer_phone'] ?? '')) }}" required>
@@ -60,12 +60,11 @@
                         @error('customer_phone')
                         <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
-                        <div class="form-text text-muted">অর্ডার কনফার্ম করার জন্য এই নম্বরে যোগাযোগ করা হবে।</div>
                     </div>
 
                     <!-- Shipping Address -->
                     <div class="mb-3">
-                        <label for="shipping_address" class="form-label">সম্পূর্ণ ঠিকানা (Full Delivery Address) <span class="text-danger">*</span></label>
+                        <label for="shipping_address" class="form-label">সম্পূর্ণ ঠিকানা <span class="text-danger">*</span></label>
                         <textarea name="shipping_address" id="shipping_address" rows="3" class="form-control @error('shipping_address') is-invalid @enderror" placeholder="বাড়ি নম্বর, রোড নম্বর, এলাকা, থানা, জেলা বিস্তারিত লিখুন..." required>{{ old('shipping_address', auth()->user()->address ?? ($savedGuest['shipping_address'] ?? '')) }}</textarea>
                         @error('shipping_address')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -113,7 +112,7 @@
                     <!-- Payment Information Section (Configured dynamically in Admin) -->
                     <div class="mb-4">
                         <label class="form-label d-block fw-bold border-bottom pb-2">
-                            <i class="fas fa-wallet text-danger me-1"></i> মূল্য পরিশোধের মাধ্যম (Payment Method)
+                            <i class="fas fa-wallet text-danger me-1"></i> পেমেন্ট মেথড
                         </label>
 
                         @php
@@ -131,7 +130,7 @@
                         <div class="form-check p-3 rounded-2 border mb-2 bg-light">
                             <input class="form-check-input ms-0 me-2" type="radio" name="payment_method" id="payCod" value="cod" {{ $defaultPay === 'cod' ? 'checked' : '' }} onchange="togglePaymentInstructions('cod')">
                             <label class="form-check-label fw-bold" for="payCod">
-                                <i class="fas fa-money-bill-wave text-success me-1"></i> ক্যাশ অন ডেলিভারি (Cash on Delivery)
+                                <i class="fas fa-money-bill-wave text-success me-1"></i> ক্যাশ অন ডেলিভারি
                             </label>
                             <div class="mt-2 text-muted small ps-4" id="codInstructions">
                                 {{ $paymentSettings['cod_instructions'] }}
@@ -192,7 +191,7 @@
 
                     <!-- Submit Order Button -->
                     <button type="submit" class="btn btn-primary-sidq w-100 py-3 fs-5 shadow-sm">
-                        <i class="fas fa-lock me-2"></i> অর্ডার কনফার্ম করুন (Confirm Order)
+                        <i class="fas fa-lock me-2"></i> অর্ডার কনফার্ম করুন
                     </button>
                 </form>
             </div>

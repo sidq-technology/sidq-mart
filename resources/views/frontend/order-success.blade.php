@@ -95,7 +95,7 @@
                         <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
                             <div class="flex-grow-1">
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                    <span class="badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span>
+                                    <span class="badge bg-dark text-white border small fw-medium">Overview</span>
                                     <span class="badge bg-white text-dark border small fw-normal text-uppercase">
                                         <i class="fas fa-wallet text-secondary me-1"></i> {{ $order->payment_method }}
                                     </span>
@@ -128,7 +128,10 @@
                         <div class="collapse mt-3 pt-3 border-top" id="orderDetailsCollapse">
                             <!-- Full Delivery Details -->
                             <div class="mb-3">
-                                <div class="small fw-bold text-dark mb-1"><i class="fas fa-map-marker-alt text-danger me-1"></i> ডেলিভারির ঠিকানা:</div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="small fw-bold text-dark"><i class="fas fa-map-marker-alt text-danger me-1"></i> ডেলিভারির ঠিকানা:</div>
+                                    <span class="badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span>
+                                </div>
                                 <div class="p-2 bg-white rounded border small text-secondary">{{ $order->shipping_address }}</div>
                             </div>
 
