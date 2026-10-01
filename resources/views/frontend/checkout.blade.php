@@ -32,13 +32,19 @@
                 </div>
                 @endif
 
+                <div id="autoFillNotice" class="alert alert-success alert-dismissible fade show d-none py-2 px-3 small align-items-center mb-3 rounded-3" role="alert">
+                    <i class="fas fa-magic text-success me-2"></i>
+                    <span>আপনার পূর্ববর্তী অর্ডারের তথ্য থেকে ফর্মটি স্বয়ংক্রিয়ভাবে পূরণ করা হয়েছে।</span>
+                    <button type="button" class="btn-close btn-sm p-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
                 <form action="{{ route('checkout.store') }}" method="POST" id="checkoutForm">
                     @csrf
 
                     <!-- Customer Name -->
                     <div class="mb-3">
                         <label for="customer_name" class="form-label">আপনার নাম (Full Name) <span class="text-danger">*</span></label>
-                        <input type="text" name="customer_name" id="customer_name" class="form-control @error('customer_name') is-invalid @enderror" value="{{ old('customer_name', auth()->user()->name ?? '') }}" placeholder="সম্পূর্ণ নাম লিখুন" required>
+                        <input type="text" name="customer_name" id="customer_name" class="form-control @error('customer_name') is-invalid @enderror" value="{{ old('customer_name', auth()->user()->name ?? ($savedGuest['customer_name'] ?? '')) }}" placeholder="সম্পূর্ণ নাম লিখুন" required>
                         @error('customer_name')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -49,7 +55,7 @@
                         <label for="customer_phone" class="form-label">মোবাইল নাম্বার (Mobile Number) <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted fw-bold">+88</span>
-                            <input type="tel" name="customer_phone" id="customer_phone" class="form-control @error('customer_phone') is-invalid @enderror" value="{{ old('customer_phone', auth()->user()->phone ?? '') }}" placeholder="01XXXXXXXXX (১১ ডিজিট)" required>
+                            <input type="tel" name="customer_phone" id="customer_phone" class="form-control @error('customer_phone') is-invalid @enderror" value="{{ old('customer_phone', auth()->user()->phone ?? ($savedGuest['customer_phone'] ?? '')) }}" required>
                         </div>
                         @error('customer_phone')
                         <div class="text-danger small mt-1">{{ $message }}</div>
@@ -60,22 +66,25 @@
                     <!-- Shipping Address -->
                     <div class="mb-3">
                         <label for="shipping_address" class="form-label">সম্পূর্ণ ঠিকানা (Full Delivery Address) <span class="text-danger">*</span></label>
-                        <textarea name="shipping_address" id="shipping_address" rows="3" class="form-control @error('shipping_address') is-invalid @enderror" placeholder="বাড়ি নম্বর, রোড নম্বর, এলাকা, থানা, জেলা বিস্তারিত লিখুন..." required>{{ old('shipping_address', auth()->user()->address ?? '') }}</textarea>
+                        <textarea name="shipping_address" id="shipping_address" rows="3" class="form-control @error('shipping_address') is-invalid @enderror" placeholder="বাড়ি নম্বর, রোড নম্বর, এলাকা, থানা, জেলা বিস্তারিত লিখুন..." required>{{ old('shipping_address', auth()->user()->address ?? ($savedGuest['shipping_address'] ?? '')) }}</textarea>
                         @error('shipping_address')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <!-- Delivery Zone Selection -->
+                    @php
+                        $selectedZone = old('delivery_zone', $savedGuest['delivery_zone'] ?? 'inside_dhaka');
+                    @endphp
                     <div class="mb-4">
                         <label class="form-label d-block">ডেলিভারি এরিয়া নির্বাচন করুন <span class="text-danger">*</span></label>
                         
                         <div class="row g-2">
                             <!-- Inside Dhaka -->
                             <div class="col-12 col-sm-6">
-                                <label class="delivery-zone-card d-flex align-items-center justify-content-between active" id="labelInsideDhaka" for="zoneInsideDhaka">
+                                <label class="delivery-zone-card d-flex align-items-center justify-content-between {{ $selectedZone === 'inside_dhaka' ? 'active' : '' }}" id="labelInsideDhaka" for="zoneInsideDhaka">
                                     <div class="d-flex align-items-center">
-                                        <input type="radio" name="delivery_zone" id="zoneInsideDhaka" value="inside_dhaka" class="form-check-input me-2 mt-0" checked onchange="updateDeliveryCharge('inside_dhaka')">
+                                        <input type="radio" name="delivery_zone" id="zoneInsideDhaka" value="inside_dhaka" class="form-check-input me-2 mt-0" {{ $selectedZone === 'inside_dhaka' ? 'checked' : '' }} onchange="updateDeliveryCharge('inside_dhaka')">
                                         <div>
                                             <div class="fw-bold">ঢাকার ভিতরে</div>
                                             <small class="text-muted">হোম ডেলিভারি (১-২ দিন)</small>
@@ -87,9 +96,9 @@
 
                             <!-- Outside Dhaka -->
                             <div class="col-12 col-sm-6">
-                                <label class="delivery-zone-card d-flex align-items-center justify-content-between" id="labelOutsideDhaka" for="zoneOutsideDhaka">
+                                <label class="delivery-zone-card d-flex align-items-center justify-content-between {{ $selectedZone === 'outside_dhaka' ? 'active' : '' }}" id="labelOutsideDhaka" for="zoneOutsideDhaka">
                                     <div class="d-flex align-items-center">
-                                        <input type="radio" name="delivery_zone" id="zoneOutsideDhaka" value="outside_dhaka" class="form-check-input me-2 mt-0" onchange="updateDeliveryCharge('outside_dhaka')">
+                                        <input type="radio" name="delivery_zone" id="zoneOutsideDhaka" value="outside_dhaka" class="form-check-input me-2 mt-0" {{ $selectedZone === 'outside_dhaka' ? 'checked' : '' }} onchange="updateDeliveryCharge('outside_dhaka')">
                                         <div>
                                             <div class="fw-bold">ঢাকার বাহিরে</div>
                                             <small class="text-muted">হোম ডেলিভারি (২-৩ দিন)</small>
@@ -384,21 +393,107 @@
         }, 600);
     }
 
+    // ==========================================
+    // Guest Customer Profile Persistence (LocalStorage)
+    // ==========================================
+    function saveGuestInfoToLocal() {
+        try {
+            const name = document.getElementById('customer_name')?.value?.trim() || '';
+            const phone = document.getElementById('customer_phone')?.value?.trim() || '';
+            const address = document.getElementById('shipping_address')?.value?.trim() || '';
+            const zoneInput = document.querySelector('input[name="delivery_zone"]:checked');
+            const zone = zoneInput ? zoneInput.value : 'inside_dhaka';
+
+            if (name || phone || address) {
+                localStorage.setItem('sidq_saved_guest_info', JSON.stringify({
+                    customer_name: name,
+                    customer_phone: phone,
+                    shipping_address: address,
+                    delivery_zone: zone
+                }));
+            }
+        } catch(e) {}
+    }
+
+    function loadGuestInfoFromLocal() {
+        try {
+            const savedRaw = localStorage.getItem('sidq_saved_guest_info');
+            if (!savedRaw) return;
+
+            const saved = JSON.parse(savedRaw);
+            let filledAny = false;
+
+            const nameEl = document.getElementById('customer_name');
+            const phoneEl = document.getElementById('customer_phone');
+            const addressEl = document.getElementById('shipping_address');
+
+            if (nameEl && !nameEl.value && saved.customer_name) {
+                nameEl.value = saved.customer_name;
+                filledAny = true;
+            }
+            if (phoneEl && !phoneEl.value && saved.customer_phone) {
+                phoneEl.value = saved.customer_phone;
+                filledAny = true;
+            }
+            if (addressEl && !addressEl.value && saved.shipping_address) {
+                addressEl.value = saved.shipping_address;
+                filledAny = true;
+            }
+            if (saved.delivery_zone && (saved.delivery_zone === 'inside_dhaka' || saved.delivery_zone === 'outside_dhaka')) {
+                const zoneRadio = document.querySelector(`input[name="delivery_zone"][value="${saved.delivery_zone}"]`);
+                if (zoneRadio && !zoneRadio.checked) {
+                    zoneRadio.checked = true;
+                    updateDeliveryCharge(saved.delivery_zone);
+                }
+            }
+
+            if (filledAny) {
+                const noticeEl = document.getElementById('autoFillNotice');
+                if (noticeEl) {
+                    noticeEl.classList.remove('d-none');
+                    noticeEl.classList.add('d-flex');
+                }
+            }
+        } catch(e) {}
+    }
+
+    // Initialize auto-fill on page load
+    loadGuestInfoFromLocal();
+
+    // Hook listeners for draft capture & local storage persistence
     ['customer_name', 'customer_phone', 'shipping_address'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.addEventListener('input', captureCheckoutDraft);
-            el.addEventListener('blur', captureCheckoutDraft);
+            el.addEventListener('input', () => {
+                captureCheckoutDraft();
+                saveGuestInfoToLocal();
+            });
+            el.addEventListener('blur', () => {
+                captureCheckoutDraft();
+                saveGuestInfoToLocal();
+            });
         }
     });
 
-    document.querySelectorAll('input[name="delivery_zone"], input[name="payment_method"]').forEach(el => {
+    document.querySelectorAll('input[name="delivery_zone"]').forEach(el => {
+        el.addEventListener('change', () => {
+            captureCheckoutDraft();
+            saveGuestInfoToLocal();
+        });
+    });
+
+    document.querySelectorAll('input[name="payment_method"]').forEach(el => {
         el.addEventListener('change', captureCheckoutDraft);
     });
 
     const noteEl = document.querySelector('textarea[name="customer_note"]');
     if (noteEl) {
         noteEl.addEventListener('input', captureCheckoutDraft);
+    }
+
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', saveGuestInfoToLocal);
     }
 </script>
 @endpush

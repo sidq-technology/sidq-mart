@@ -13,7 +13,7 @@
     <div class="container header-main px-3 px-lg-2">
         <div class="row align-items-center g-2 g-lg-3">
             <!-- Brand Logo -->
-            <div class="col-6 col-lg-3 d-flex align-items-center">
+            <div class="col-6 col-lg-2 col-xl-2 d-flex align-items-center">
                 <a href="{{ route('home') }}" class="header-logo">
                     @if($siteLogo)
                         <img src="{{ $siteLogo }}" alt="{{ $siteName }}">
@@ -24,7 +24,7 @@
             </div>
 
             <!-- Search Bar -->
-            <div class="col-12 col-lg-6 order-3 order-lg-2">
+            <div class="col-12 col-lg-5 col-xl-5 order-3 order-lg-2">
                 <form action="{{ route('search') }}" method="GET" class="header-search-form" autocomplete="off">
                     <input type="text" name="q" id="mainSearchInput" class="form-control" placeholder="পণ্য খুঁজুন (Search anything...)" value="{{ request('q') }}" aria-label="Search">
                     <button type="submit" aria-label="Search Button">
@@ -36,11 +36,11 @@
             </div>
 
             <!-- User Account, Cart Widget, Order Button & Mobile Menu Toggle -->
-            <div class="col-6 col-lg-3 order-2 order-lg-3 d-flex justify-content-end align-items-center gap-2 gap-sm-3">
+            <div class="col-6 col-lg-5 col-xl-5 order-2 order-lg-3 d-flex justify-content-end align-items-center gap-2 gap-sm-3">
                 <!-- User Account Dropdown / Login Button -->
                 @auth
-                <div class="dropdown">
-                    <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-1 py-1 px-2 border rounded-pill shadow-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 13px;">
+                <div class="dropdown flex-shrink-0">
+                    <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-1 py-1 px-2 border rounded-pill shadow-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 13px; white-space: nowrap;">
                         <span class="rounded-circle d-inline-flex align-items-center justify-content-center text-white" style="width: 26px; height: 26px; background: var(--color-brand-accent); font-size: 11px;">
                             {{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
                         </span>
@@ -70,30 +70,27 @@
                     </ul>
                 </div>
                 @else
-                <button type="button" class="btn btn-outline-secondary d-flex align-items-center gap-1 py-1 px-2 px-sm-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#customerAuthModal" style="font-size: 13px;">
+                <button type="button" class="btn btn-outline-secondary flex-shrink-0 d-flex align-items-center gap-1 py-1 px-2 px-sm-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#customerAuthModal" style="font-size: 13px; white-space: nowrap;">
                     <i class="fas fa-user-circle" style="color: var(--color-brand-accent); font-size: 16px;"></i>
                     <span class="d-none d-sm-inline fw-semibold">লগইন</span>
                 </button>
                 @endauth
 
                 <!-- Cart Widget (Hidden on mobile, visible on desktop/tablet) -->
-                <div class="header-cart-widget d-none d-md-flex" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" role="button" aria-label="View Cart">
+                <div class="header-cart-widget flex-shrink-0 d-none d-md-inline-flex align-items-center" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" role="button" aria-label="View Cart">
                     <div class="header-cart-icon">
                         <i class="fas fa-shopping-basket"></i>
                         <span class="header-cart-badge cart-count-badge">{{ $cartCount }}</span>
                     </div>
-                    <div class="d-none d-sm-block text-start lh-1">
-                        <div class="text-muted" style="font-size: 11px;">মোট টাকা</div>
-                        <strong class="cart-subtotal-val" style="font-size: 14px;">{{ $cartSubtotal }} ৳</strong>
-                    </div>
+                    <span class="cart-subtotal-val fw-bold text-dark ms-1" style="font-size: 14px;">{{ $cartSubtotal }} ৳</span>
                 </div>
 
-                <a href="{{ route('checkout') }}" class="btn btn-primary-sidq d-none d-sm-inline-flex py-2 px-3" style="min-height: 40px; font-size: 13px;">
-                    অর্ডার করুন
+                <a href="{{ route('checkout') }}" class="btn btn-primary-sidq flex-shrink-0 d-none d-sm-inline-flex align-items-center justify-content-center py-2 px-3 fw-bold text-nowrap" style="min-height: 38px; font-size: 13px; white-space: nowrap;">
+                    <i class="fas fa-shopping-cart me-1"></i> অর্ডার করুন
                 </a>
 
                 <!-- Mobile Menu Hamburger Button (Positioned on the Right Side) -->
-                <button class="btn btn-outline-dark d-lg-none py-1 px-2 d-inline-flex align-items-center justify-content-center rounded-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenuDrawer" aria-label="Toggle Navigation" style="height: 38px; width: 38px;">
+                <button class="btn btn-outline-dark d-lg-none py-1 px-2 d-inline-flex align-items-center justify-content-center rounded-2 flex-shrink-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenuDrawer" aria-label="Toggle Navigation" style="height: 38px; width: 38px;">
                     <i class="fas fa-bars fs-5"></i>
                 </button>
             </div>

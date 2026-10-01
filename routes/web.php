@@ -46,6 +46,7 @@ Route::post('/buy-now/{product:slug}', [CheckoutController::class, 'buyNow'])->n
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 Route::post('/checkout/capture-draft', [CheckoutController::class, 'captureDraft'])->name('checkout.capture-draft');
 Route::get('/order-success/{order_number}', [CheckoutController::class, 'success'])->name('order.success');
+Route::post('/order/{order_number}/add-upsell', [CheckoutController::class, 'addUpsellItem'])->name('order.add-upsell');
 Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('coupon.apply');
 Route::post('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
 
@@ -83,7 +84,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     | Protected Admin Console Routes (RBAC Protected)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth', 'admin'])->group(function () {
+    Route::middleware(['auth', 'admin', 'demo.readonly'])->group(function () {
         Route::get('/', fn() => redirect()->route('admin.dashboard'));
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

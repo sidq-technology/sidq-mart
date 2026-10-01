@@ -12,8 +12,10 @@ class SettingController extends Controller
     public function index()
     {
         $settings = Setting::getAll();
+        $allProducts = \App\Models\Product::where('is_active', true)->orderBy('name')->get();
+        $selectedUpsellProductIds = json_decode($settings['upsell_product_ids'] ?? '[]', true) ?: [];
 
-        return view('admin.settings.index', compact('settings'));
+        return view('admin.settings.index', compact('settings', 'allProducts', 'selectedUpsellProductIds'));
     }
 
     public function update(Request $request)
@@ -67,6 +69,11 @@ class SettingController extends Controller
             'theme_primary_color',
             'theme_secondary_color',
             'admin_bg_tint',
+
+            // Thank You Page 1-Click Upsell
+            'upsell_badge_text',
+            'upsell_heading',
+            'upsell_subtitle',
         ];
 
         foreach ($fields as $field) {
@@ -82,6 +89,19 @@ class SettingController extends Controller
                 }
                 Setting::set('cod_enabled', $codVal);
             }
+        }
+
+        // Handle Upsell Toggle & Products
+        if ($request->has('upsell_settings_submitted')) {
+            Setting::set('upsell_enabled', $request->has('upsell_enabled') ? '1' : '0');
+            $upsellIds = $request->input('upsell_product_ids', []);
+            if (is_array($upsellIds)) {
+                $upsellIds = array_values(array_unique(array_filter($upsellIds)));
+                $upsellIds = array_slice($upsellIds, 0, 3); // Max 3 products
+            } else {
+                $upsellIds = [];
+            }
+            Setting::set('upsell_product_ids', json_encode($upsellIds));
         }
 
         // Handle Logo Upload

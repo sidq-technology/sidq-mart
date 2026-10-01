@@ -114,6 +114,32 @@ class Product extends Model
         return $this->sale_price ?? $this->regular_price;
     }
 
+    public function getFinalPriceAttribute(): float
+    {
+        return (float) ($this->sale_price ?? $this->regular_price ?? 0);
+    }
+
+    public function getPriceAttribute(): float
+    {
+        return (float) ($this->regular_price ?? 0);
+    }
+
+    public function getIsOnSaleAttribute(): bool
+    {
+        return !empty($this->sale_price) && $this->sale_price < $this->regular_price;
+    }
+
+    public function getDiscountPercentageAttribute(): int
+    {
+        if (!empty($this->discount_percent)) {
+            return (int) $this->discount_percent;
+        }
+        if (!empty($this->regular_price) && !empty($this->sale_price) && $this->regular_price > $this->sale_price) {
+            return (int) round((($this->regular_price - $this->sale_price) / $this->regular_price) * 100);
+        }
+        return 0;
+    }
+
     public function getPrimaryImageUrlAttribute()
     {
         if ($this->primary_image && file_exists(public_path('storage/' . $this->primary_image))) {

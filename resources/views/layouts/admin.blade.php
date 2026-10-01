@@ -543,6 +543,13 @@
             </div>
         </header>
 
+        @if(auth()->check() && auth()->user()->isDemoAdmin())
+        <div class="alert alert-warning border-0 rounded-0 mb-0 py-2 px-3 text-center fw-bold shadow-xs d-flex align-items-center justify-content-center gap-2" style="background: #fffbeb; color: #b45309; font-size: 13px; border-bottom: 1px solid #fde68a !important;">
+            <i class="fas fa-shield-alt text-warning fs-5"></i>
+            <span><strong>ডেমো মোড (Read-Only Preview):</strong> আপনি অ্যাডমিন প্যানেলের সকল তথ্য ও ফিচার ঘুরে দেখতে পারবেন। কোনো ডাটা তৈরি, পরিবর্তন বা মুছে ফেলা যাবে না।</span>
+        </div>
+        @endif
+
         <!-- Content -->
         <div class="admin-content">
             <!-- Flash messages -->

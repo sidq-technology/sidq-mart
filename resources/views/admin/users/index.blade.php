@@ -90,6 +90,7 @@
                     <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>সুপার অ্যাডমিন (Administrator)</option>
                     <option value="shop_manager" {{ request('role') === 'shop_manager' ? 'selected' : '' }}>শপ ম্যানেজার (Shop Manager)</option>
                     <option value="employee" {{ request('role') === 'employee' ? 'selected' : '' }}>এমপ্লয়ি / স্টাফ (Employee)</option>
+                    <option value="demo_admin" {{ request('role') === 'demo_admin' ? 'selected' : '' }}>ডেমো অ্যাডমিন (Read-Only Demo)</option>
                     <option value="customer" {{ request('role') === 'customer' ? 'selected' : '' }}>সাধারণ গ্রাহক (Customer)</option>
                 </select>
             </div>
@@ -273,6 +274,7 @@
                                 <option value="customer">সাধারণ গ্রাহক (Customer - শুধুমাত্র শপিং)</option>
                                 <option value="employee">এমপ্লয়ি / স্টাফ (Employee - অর্ডার প্রসেসিং)</option>
                                 <option value="shop_manager">শপ ম্যানেজার (Shop Manager - পণ্য ও অর্ডার)</option>
+                                <option value="demo_admin">ডেমো অ্যাডমিন (Read-Only Demo - শুধু দেখতে পারবে)</option>
                                 <option value="admin">সুপার অ্যাডমিন (Administrator - পূর্ণ ক্ষমতা)</option>
                             </select>
                         </div>
@@ -365,6 +367,7 @@
                                 <option value="customer">সাধারণ গ্রাহক (Customer - শুধুমাত্র শপিং)</option>
                                 <option value="employee">এমপ্লয়ি / স্টাফ (Employee - অর্ডার প্রসেসিং)</option>
                                 <option value="shop_manager">শপ ম্যানেজার (Shop Manager - পণ্য ও অর্ডার)</option>
+                                <option value="demo_admin">ডেমো অ্যাডমিন (Read-Only Demo - শুধু দেখতে পারবে)</option>
                                 <option value="admin">সুপার অ্যাডমিন (Administrator - পূর্ণ ক্ষমতা)</option>
                             </select>
                         </div>
@@ -427,7 +430,7 @@
             const checks = document.querySelectorAll(containerSelector);
             const box = document.querySelector(containerSelector.replace('.create-perm-check', '#create_permission_box').replace('.edit-perm-check', '#edit_permission_box'));
 
-            if (role === 'admin') {
+            if (role === 'admin' || role === 'demo_admin') {
                 checks.forEach(c => { c.checked = true; c.disabled = true; });
                 if (box) box.style.opacity = '0.7';
             } else if (role === 'customer') {
@@ -479,7 +482,7 @@
                 }
 
                 const checks = document.querySelectorAll('.edit-perm-check');
-                if (role === 'admin') {
+                if (role === 'admin' || role === 'demo_admin') {
                     checks.forEach(c => { c.checked = true; c.disabled = true; });
                 } else if (role === 'customer') {
                     checks.forEach(c => { c.checked = false; c.disabled = true; });

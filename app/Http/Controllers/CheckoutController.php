@@ -84,6 +84,12 @@ class CheckoutController extends Controller
             $paymentSettings['cod_enabled'] = true;
         }
 
+        // Retrieve saved guest details if guest user
+        $savedGuest = [];
+        if (!auth()->check() && request()->hasCookie('sidq_saved_guest_profile')) {
+            $savedGuest = json_decode(request()->cookie('sidq_saved_guest_profile'), true) ?: [];
+        }
+
         return view('frontend.checkout', compact(
             'items',
             'subtotal',
@@ -92,7 +98,8 @@ class CheckoutController extends Controller
             'freeThreshold',
             'appliedCoupon',
             'discountAmount',
-            'paymentSettings'
+            'paymentSettings',
+            'savedGuest'
         ));
     }
 
@@ -134,8 +141,8 @@ class CheckoutController extends Controller
             'customer_note' => 'nullable|string|max:500',
         ], [
             'customer_name.required' => 'আপনার নাম প্রদান করুন।',
-            'customer_phone.required' => '১১ ডিজিটের সঠিক মোবাইল নাম্বার প্রদান করুন।',
-            'customer_phone.regex' => 'অনুগ্রহ করে সঠিক বাংলাদেশি মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)।',
+            'customer_phone.required' => 'অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন',
+            'customer_phone.regex' => 'অনুগ্রহ করে সঠিক মোবাইল নম্বর দিন',
             'shipping_address.required' => 'ডেলিভারির সম্পূর্ণ ঠিকানা প্রদান করুন।',
             'shipping_address.min' => 'ডেলিভারি ঠিকানা অন্তত ৩ অক্ষরের হতে হবে।',
             'delivery_zone.required' => 'ডেলিভারি এরিয়া (ঢাকার ভিতরে বা বাহিরে) নির্বাচন করুন।',
@@ -235,8 +242,16 @@ class CheckoutController extends Controller
             \Log::error('Failed to clean up draft order: ' . $e->getMessage());
         }
 
+        $guestProfileCookie = cookie()->forever('sidq_saved_guest_profile', json_encode([
+            'customer_name' => $validated['customer_name'],
+            'customer_phone' => $validated['customer_phone'],
+            'shipping_address' => $validated['shipping_address'],
+            'delivery_zone' => $validated['delivery_zone'],
+        ]));
+
         return redirect()->route('order.success', $order->order_number)
-            ->with('success', 'আপনার অর্ডারটি সফলভাবে সম্পন্ন হয়েছে! ধন্যবাদ।');
+            ->with('success', 'আপনার অর্ডারটি সফলভাবে সম্পন্ন হয়েছে! ধন্যবাদ।')
+            ->withCookie($guestProfileCookie);
     }
 
     public function captureDraft(Request $request, CartService $cart)
@@ -359,9 +374,148 @@ class CheckoutController extends Controller
 
     public function success(string $orderNumber)
     {
+        $order = Order::with(['items.product'])->where('order_number', $orderNumber)->firstOrFail();
+
+        $upsellEnabled = Setting::get('upsell_enabled', '0') === '1';
+        $upsellBadgeText = Setting::get('upsell_badge_text', 'স্পেশাল অফার — ০৳ অতিরিক্ত ডেলিভারি চার্জ');
+        $upsellHeading = Setting::get('upsell_heading', '🎉 আপনার জন্য স্পেশাল অফার! একই ডেলিভারিতে যুক্ত করুন');
+        $upsellSubtitle = Setting::get('upsell_subtitle', 'অতিরিক্ত কোনো ডেলিভারি চার্জ ছাড়াই ১ ক্লিকে আপনার পার্সেলে যোগ করুন');
+        $upsellProducts = collect();
+
+        if ($upsellEnabled && $order->order_status === 'pending') {
+            $orderedProductIds = $order->items->pluck('product_id')->filter()->unique()->toArray();
+            $rawUpsellIds = json_decode(Setting::get('upsell_product_ids', '[]'), true) ?: [];
+
+            if (!empty($rawUpsellIds)) {
+                $upsellProducts = Product::where('is_active', true)
+                    ->where(function ($q) {
+                        $q->where('manage_stock', false)->orWhere('stock', '>', 0);
+                    })
+                    ->whereIn('id', $rawUpsellIds)
+                    ->whereNotIn('id', $orderedProductIds)
+                    ->take(3)
+                    ->get();
+            }
+
+            // Fallback: If no products selected or all selected products already in order
+            if ($upsellProducts->isEmpty()) {
+                $categoryIds = $order->items->map(function ($item) {
+                    return $item->product?->category_id;
+                })->filter()->unique()->toArray();
+
+                if (!empty($categoryIds)) {
+                    $upsellProducts = Product::where('is_active', true)
+                        ->where(function ($q) {
+                            $q->where('manage_stock', false)->orWhere('stock', '>', 0);
+                        })
+                        ->whereIn('category_id', $categoryIds)
+                        ->whereNotIn('id', $orderedProductIds)
+                        ->latest()
+                        ->take(3)
+                        ->get();
+                }
+            }
+
+            // Fallback 2: If still empty, fetch latest active products
+            if ($upsellProducts->isEmpty()) {
+                $upsellProducts = Product::where('is_active', true)
+                    ->where(function ($q) {
+                        $q->where('manage_stock', false)->orWhere('stock', '>', 0);
+                    })
+                    ->whereNotIn('id', $orderedProductIds)
+                    ->latest()
+                    ->take(3)
+                    ->get();
+            }
+        }
+
+        return view('frontend.order-success', compact(
+            'order',
+            'upsellEnabled',
+            'upsellBadgeText',
+            'upsellHeading',
+            'upsellSubtitle',
+            'upsellProducts'
+        ));
+    }
+
+    public function addUpsellItem(Request $request, string $orderNumber)
+    {
         $order = Order::with('items')->where('order_number', $orderNumber)->firstOrFail();
 
-        return view('frontend.order-success', compact('order'));
+        if ($order->order_status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'এই অর্ডারের স্ট্যাটাস পরিবর্তন হয়ে যাওয়ায় নতুন পণ্য যোগ করা সম্ভব নয়।'
+            ], 422);
+        }
+
+        $productId = (int) $request->input('product_id');
+        $product = Product::where('id', $productId)->where('is_active', true)->first();
+
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'পণ্যটি খুঁজে পাওয়া যায়নি।'
+            ], 404);
+        }
+
+        if ($product->manage_stock && $product->stock < 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'দুঃখিত, পণ্যটি বর্তমানে স্টক আউট।'
+            ], 422);
+        }
+
+        $existingItem = $order->items()->where('product_id', $product->id)->first();
+        if ($existingItem) {
+            return response()->json([
+                'success' => false,
+                'message' => 'এই পণ্যটি ইতিমধ্যে আপনার অর্ডারে রয়েছে।'
+            ], 422);
+        }
+
+        $unitPrice = (float) $product->final_price;
+        $quantity = 1;
+        $totalPrice = $unitPrice * $quantity;
+
+        $orderItem = $order->items()->create([
+            'product_id' => $product->id,
+            'variant_id' => null,
+            'product_name' => $product->name,
+            'product_image' => $product->primary_image_url,
+            'unit_price' => $unitPrice,
+            'quantity' => $quantity,
+            'total_price' => $totalPrice,
+        ]);
+
+        if ($product->manage_stock) {
+            $product->decrement('stock', $quantity);
+        }
+
+        // Single parcel delivery: shipping charge remains unchanged
+        $newSubtotal = (float) $order->subtotal + $totalPrice;
+        $newGrandTotal = (float) $order->grand_total + $totalPrice;
+
+        $order->update([
+            'subtotal' => $newSubtotal,
+            'grand_total' => $newGrandTotal,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'পণ্যটি সফলভাবে আপনার বর্তমান অর্ডারে যুক্ত করা হয়েছে!',
+            'item' => [
+                'id' => $orderItem->id,
+                'name' => $orderItem->product_name,
+                'image' => $orderItem->product_image,
+                'unit_price' => number_format($orderItem->unit_price, 0),
+                'quantity' => $orderItem->quantity,
+                'total_price' => number_format($orderItem->total_price, 0),
+            ],
+            'subtotal' => number_format($newSubtotal, 0),
+            'grand_total' => number_format($newGrandTotal, 0),
+        ]);
     }
 
     public function applyCoupon(Request $request, CartService $cart)

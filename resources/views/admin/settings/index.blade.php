@@ -563,6 +563,108 @@
                     </div>
                 </div>
             </div>
+        <!-- ==========================================
+             7. POST-PURCHASE UPSELL (THANK YOU PAGE)
+        =========================================== -->
+        <input type="hidden" name="upsell_settings_submitted" value="1">
+        <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header d-flex align-items-center justify-content-between"
+                 data-bs-toggle="collapse" 
+                 data-bs-target="#secUpsell" 
+                 aria-expanded="false"
+                 role="button">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 18px;">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">৭. পোস্ট-পারচেজ ১-ক্লিক আপসেল (Post-Purchase Upsell)</h6>
+                        <span class="text-muted small">থ্যাঙ্ক ইউ পেজে ১-ক্লিকে অতিরিক্ত প্রোডাক্ট অর্ডারে যুক্ত করার বিশেষ সুবিধা</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    @if(($settings['upsell_enabled'] ?? '0') == '1')
+                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1 small">সক্রিয় (Active)</span>
+                    @else
+                        <span class="badge bg-light text-muted border px-2 py-1 small">নিষ্ক্রিয় (Disabled)</span>
+                    @endif
+                    <i class="fas fa-chevron-down text-muted accordion-arrow"></i>
+                </div>
+            </div>
+
+            <div id="secUpsell" class="collapse">
+                <div class="card-body p-3 p-sm-4 border-top">
+                    <!-- Toggle switch -->
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mb-4 border">
+                        <div>
+                            <div class="fw-bold text-dark mb-1">
+                                <i class="fas fa-bolt text-warning me-1"></i> পোস্ট-পারচেজ আপসেল ফিচার চালু রাখুন
+                            </div>
+                            <div class="text-muted small">চালু থাকলে কাস্টমার অর্ডার সফল হওয়ার পর থ্যাঙ্ক ইউ পেজে ১-ক্লিকে অতিরিক্ত প্রোডাক্ট পার্সেলে যুক্ত করতে পারবেন। বন্ধ থাকলে শুধু সাধারণ অর্ডার কনফার্মেশন দেখাবে।</div>
+                        </div>
+                        <div class="form-check form-switch fs-4 mb-0 ms-3">
+                            <input class="form-check-input" type="checkbox" role="switch" name="upsell_enabled" id="upsell_enabled" value="1" {{ ($settings['upsell_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="upsell_badge_text" class="form-label small fw-bold text-dark mb-1">আপসেল অফার ব্যাজ / টাইপ টেক্সট (Offer Badge Text)</label>
+                            <input type="text" name="upsell_badge_text" id="upsell_badge_text" class="form-control" value="{{ old('upsell_badge_text', $settings['upsell_badge_text'] ?? 'স্পেশাল অফার — ০৳ অতিরিক্ত ডেলিভারি চার্জ') }}" placeholder="যেমন: স্পেশাল অফার — ০৳ অতিরিক্ত ডেলিভারি চার্জ">
+                            <div class="form-text small">থ্যাঙ্ক ইউ পেজের আপসেল বক্সের শীর্ষে ছোট পিল ব্যাজে প্রদর্শিত অফারের টাইপ বা সংক্ষিপ্ত অফার টেক্সট (খালি রাখলে ব্যাজটি লুকানো থাকবে)।</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="upsell_heading" class="form-label small fw-bold text-dark mb-1">আপসেল সেকশন হেডিং (Title)</label>
+                            <input type="text" name="upsell_heading" id="upsell_heading" class="form-control" value="{{ old('upsell_heading', $settings['upsell_heading'] ?? '🎉 আপনার জন্য স্পেশাল অফার! একই ডেলিভারিতে যুক্ত করুন') }}" placeholder="যেমন: 🎉 আপনার জন্য স্পেশাল অফার!">
+                            <div class="form-text small">থ্যাঙ্ক ইউ পেজে আপসেল প্রোডাক্টের উপরে বড় শিরোনাম।</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="upsell_subtitle" class="form-label small fw-bold text-dark mb-1">আপসেল সাব-টাইটেল (Subtitle / Offer Text)</label>
+                            <input type="text" name="upsell_subtitle" id="upsell_subtitle" class="form-control" value="{{ old('upsell_subtitle', $settings['upsell_subtitle'] ?? 'অতিরিক্ত কোনো ডেলিভারি চার্জ ছাড়াই ১ ক্লিকে আপনার পার্সেলে যোগ করুন') }}" placeholder="যেমন: একই ডেলিভারি চার্জে আরও প্রোডাক্ট নিন">
+                            <div class="form-text small">অফারের বিস্তারিত বা অতিরিক্ত ডেলিভারি ফ্রি সংক্রান্ত তথ্য।</div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <label class="form-label small fw-bold text-dark mb-0">
+                                    নির্দিষ্ট আপসেল প্রোডাক্ট সিলেক্ট করুন (সর্বোচ্চ ৩টি প্রোডাক্ট)
+                                </label>
+                                <span class="badge bg-secondary-subtle text-secondary small fw-medium" id="upsellCountBadge">
+                                    {{ count($selectedUpsellProductIds) }}/৩ সিলেক্টেড
+                                </span>
+                            </div>
+
+                            <div class="alert alert-light border small text-muted mb-3 py-2 px-3">
+                                <i class="fas fa-info-circle text-primary me-1"></i>
+                                <strong>স্মার্ট ক্যাটাগরি ফলব্যাক:</strong> আপনি যদি এখানে কোনো নির্দিষ্ট প্রোডাক্ট সিলেক্ট না করেন (অথবা কাস্টমার ইতিমধ্যে এই প্রোডাক্টটি অর্ডার করে থাকে), তাহলে সিস্টেম স্বয়ংক্রিয়ভাবে কাস্টমারের অর্ডারের ক্যাটাগরি থেকে ৩টি প্রাসঙ্গিক (Related) প্রোডাক্ট থ্যাঙ্ক ইউ পেজে দেখাবে।
+                            </div>
+
+                            <!-- Product selection list with search and max 3 limit -->
+                            <div class="border rounded-3 p-3 bg-white" style="max-height: 280px; overflow-y: auto;">
+                                <input type="text" id="upsellProductSearch" class="form-control form-control-sm mb-3" placeholder="🔍 প্রোডাক্ট খুঁজুন...">
+                                <div class="row g-2" id="upsellProductsList">
+                                    @forelse($allProducts as $prod)
+                                        <div class="col-12 col-md-6 upsell-product-item" data-name="{{ strtolower($prod->name) }}">
+                                            <label class="d-flex align-items-center gap-2 p-2 rounded border bg-light cursor-pointer mb-0 h-100 hover-shadow-sm">
+                                                <input class="form-check-input upsell-checkbox mt-0" type="checkbox" name="upsell_product_ids[]" value="{{ $prod->id }}" {{ in_array($prod->id, $selectedUpsellProductIds) ? 'checked' : '' }}>
+                                                <img src="{{ $prod->primary_image_url }}" alt="" class="rounded" style="width: 38px; height: 38px; object-fit: cover;">
+                                                <div class="flex-grow-1 overflow-hidden">
+                                                    <div class="text-truncate fw-semibold small text-dark">{{ $prod->name }}</div>
+                                                    <div class="small text-muted">{{ number_format($prod->final_price, 0) }} ৳</div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    @empty
+                                        <div class="col-12 text-muted small p-2">কোনো প্রোডাক্ট পাওয়া যায়নি।</div>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -694,6 +796,51 @@
                 updateLivePreview();
             });
         });
+
+        // 3. Upsell Products Selector (Limit to 3 and Search)
+        const upsellCheckboxes = document.querySelectorAll('.upsell-checkbox');
+        const upsellCountBadge = document.getElementById('upsellCountBadge');
+        const upsellProductSearch = document.getElementById('upsellProductSearch');
+        const upsellItems = document.querySelectorAll('.upsell-product-item');
+
+        function updateUpsellBadge() {
+            const checkedCount = document.querySelectorAll('.upsell-checkbox:checked').length;
+            if (upsellCountBadge) {
+                upsellCountBadge.textContent = `${checkedCount}/৩ সিলেক্টেড`;
+                if (checkedCount >= 3) {
+                    upsellCountBadge.className = 'badge bg-warning text-dark small fw-medium';
+                } else if (checkedCount > 0) {
+                    upsellCountBadge.className = 'badge bg-success text-white small fw-medium';
+                } else {
+                    upsellCountBadge.className = 'badge bg-secondary-subtle text-secondary small fw-medium';
+                }
+            }
+        }
+
+        upsellCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function () {
+                const checked = document.querySelectorAll('.upsell-checkbox:checked');
+                if (checked.length > 3) {
+                    this.checked = false;
+                    alert('আপনি সর্বোচ্চ ৩টি আপসেল প্রোডাক্ট নির্বাচন করতে পারবেন।');
+                }
+                updateUpsellBadge();
+            });
+        });
+
+        if (upsellProductSearch) {
+            upsellProductSearch.addEventListener('input', function () {
+                const term = this.value.toLowerCase().trim();
+                upsellItems.forEach(item => {
+                    const name = item.dataset.name || '';
+                    if (!term || name.includes(term)) {
+                        item.classList.remove('d-none');
+                    } else {
+                        item.classList.add('d-none');
+                    }
+                });
+            });
+        }
     });
 </script>
 @endpush

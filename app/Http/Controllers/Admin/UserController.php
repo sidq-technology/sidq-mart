@@ -28,7 +28,7 @@ class UserController extends Controller
         }
 
         if ($role = $request->input('role')) {
-            if (in_array($role, [User::ROLE_ADMIN, User::ROLE_SHOP_MANAGER, User::ROLE_EMPLOYEE, User::ROLE_CUSTOMER])) {
+            if (in_array($role, [User::ROLE_ADMIN, User::ROLE_SHOP_MANAGER, User::ROLE_EMPLOYEE, User::ROLE_DEMO_ADMIN, User::ROLE_CUSTOMER])) {
                 $query->where('role', $role);
             }
         }
@@ -40,6 +40,7 @@ class UserController extends Controller
             'admins'    => User::where('role', User::ROLE_ADMIN)->count(),
             'managers'  => User::where('role', User::ROLE_SHOP_MANAGER)->count(),
             'employees' => User::where('role', User::ROLE_EMPLOYEE)->count(),
+            'demos'     => User::where('role', User::ROLE_DEMO_ADMIN)->count(),
             'customers' => User::where('role', User::ROLE_CUSTOMER)->count(),
         ];
 
@@ -48,6 +49,7 @@ class UserController extends Controller
             User::ROLE_ADMIN        => array_keys(User::getAllPermissionsList()),
             User::ROLE_SHOP_MANAGER => User::getDefaultRolePermissions(User::ROLE_SHOP_MANAGER),
             User::ROLE_EMPLOYEE     => User::getDefaultRolePermissions(User::ROLE_EMPLOYEE),
+            User::ROLE_DEMO_ADMIN   => array_keys(User::getAllPermissionsList()),
             User::ROLE_CUSTOMER     => [],
         ];
 
@@ -64,7 +66,7 @@ class UserController extends Controller
             'email'       => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone'       => ['nullable', 'string', 'max:30'],
             'address'     => ['nullable', 'string', 'max:500'],
-            'role'        => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_SHOP_MANAGER, User::ROLE_EMPLOYEE, User::ROLE_CUSTOMER])],
+            'role'        => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_SHOP_MANAGER, User::ROLE_EMPLOYEE, User::ROLE_DEMO_ADMIN, User::ROLE_CUSTOMER])],
             'permissions' => ['nullable', 'array'],
             'password'    => ['required', 'string', 'min:6'],
         ]);
@@ -105,7 +107,7 @@ class UserController extends Controller
             'email'       => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone'       => ['nullable', 'string', 'max:30'],
             'address'     => ['nullable', 'string', 'max:500'],
-            'role'        => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_SHOP_MANAGER, User::ROLE_EMPLOYEE, User::ROLE_CUSTOMER])],
+            'role'        => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_SHOP_MANAGER, User::ROLE_EMPLOYEE, User::ROLE_DEMO_ADMIN, User::ROLE_CUSTOMER])],
             'permissions' => ['nullable', 'array'],
             'password'    => ['nullable', 'string', 'min:6'],
         ]);
