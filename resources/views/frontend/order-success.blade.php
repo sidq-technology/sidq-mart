@@ -251,27 +251,6 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        // Track Additional Upsell Purchase
-                        try {
-                            const upsellVal = parseFloat(data.item.total_price) || 0;
-                            if (typeof fbq === 'function') {
-                                fbq('track', 'Purchase', {
-                                    content_type: 'product',
-                                    content_ids: [String(prodId)],
-                                    value: upsellVal,
-                                    currency: 'BDT',
-                                    num_items: 1
-                                });
-                            }
-                            if (typeof ttq === 'object') {
-                                ttq.track('CompletePayment', {
-                                    content_type: 'product',
-                                    value: upsellVal,
-                                    currency: 'BDT'
-                                });
-                            }
-                        } catch (err) {}
-
                         // Change button to success state
                         this.classList.remove('btn-danger', 'btn-primary-sidq');
                         this.classList.add('btn-success');
