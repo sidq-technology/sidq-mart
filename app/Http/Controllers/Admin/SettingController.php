@@ -72,9 +72,15 @@ class SettingController extends Controller
         foreach ($fields as $field) {
             if ($request->has($field)) {
                 Setting::set($field, $request->input($field));
-            } elseif (in_array($field, ['cod_enabled', 'bkash_enabled', 'nagad_enabled', 'rocket_enabled'])) {
+            } elseif (in_array($field, ['bkash_enabled', 'nagad_enabled', 'rocket_enabled'])) {
                 // Checkbox unselected
                 Setting::set($field, '0');
+            } elseif ($field === 'cod_enabled') {
+                $codVal = $request->input('cod_enabled', '0');
+                if ($codVal === '0' && !$request->has('bkash_enabled') && !$request->has('nagad_enabled')) {
+                    $codVal = '1'; // Guarantee at least one payment method stays enabled
+                }
+                Setting::set('cod_enabled', $codVal);
             }
         }
 

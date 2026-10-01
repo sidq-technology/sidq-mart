@@ -373,6 +373,18 @@
                     @endif
                 </a>
             </li>
+            <li class="admin-nav-item {{ request()->routeIs('admin.failed-orders.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.failed-orders.index') }}">
+                    <i class="fas fa-exclamation-circle text-danger"></i>
+                    <span>Failed Orders</span>
+                    @php 
+                        $failedOrderCount = \App\Models\FailedOrder::where('is_recovered', false)->count(); 
+                    @endphp
+                    @if($failedOrderCount > 0)
+                    <span class="badge rounded-pill ms-auto bg-danger" style="font-size: 11px;">{{ $failedOrderCount }}</span>
+                    @endif
+                </a>
+            </li>
             @endif
 
             @if(auth()->user()->canDo('products.view'))
@@ -445,6 +457,12 @@
                 <a href="{{ route('admin.settings.index') }}">
                     <i class="fas fa-sliders-h"></i>
                     <span>Settings</span>
+                </a>
+            </li>
+            <li class="admin-nav-item {{ request()->routeIs('admin.security.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.security.index') }}">
+                    <i class="fas fa-shield-alt text-success"></i>
+                    <span>Security</span>
                 </a>
             </li>
             @endif

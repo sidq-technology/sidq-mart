@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class Category extends Model
@@ -33,6 +34,16 @@ class Category extends Model
             if (empty($category->slug)) {
                 $category->slug = Str::slug($category->name);
             }
+        });
+
+        static::saved(function () {
+            Cache::forget('nav_categories_tree');
+            Cache::forget('home_top_categories');
+        });
+
+        static::deleted(function () {
+            Cache::forget('nav_categories_tree');
+            Cache::forget('home_top_categories');
         });
     }
 

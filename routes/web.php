@@ -5,10 +5,12 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FailedOrderController;
 use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\IntegrationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\SecurityController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SupportController;
 use App\Http\Controllers\Admin\UserController;
@@ -41,6 +43,7 @@ Route::get('/cart/drawer', [CartController::class, 'drawer'])->name('cart.drawer
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/buy-now/{product:slug}', [CheckoutController::class, 'buyNow'])->name('buy.now');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::post('/checkout/capture-draft', [CheckoutController::class, 'captureDraft'])->name('checkout.capture-draft');
 Route::get('/order-success/{order_number}', [CheckoutController::class, 'success'])->name('order.success');
 Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('coupon.apply');
 Route::post('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
@@ -99,6 +102,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/orders/{order}', [OrderController::class, 'destroy'])
             ->middleware('permission:orders.delete')
             ->name('orders.destroy');
+
+        // Failed & Incomplete Orders
+        Route::get('/failed-orders', [FailedOrderController::class, 'index'])
+            ->middleware('permission:orders.view')
+            ->name('failed-orders.index');
+        Route::get('/failed-orders/{id}', [FailedOrderController::class, 'show'])
+            ->middleware('permission:orders.view')
+            ->name('failed-orders.show');
+        Route::post('/failed-orders/{id}/status', [FailedOrderController::class, 'updateStatus'])
+            ->middleware('permission:orders.manage')
+            ->name('failed-orders.update-status');
+        Route::post('/failed-orders/{id}/convert', [FailedOrderController::class, 'convertToOrder'])
+            ->middleware('permission:orders.manage')
+            ->name('failed-orders.convert');
+        Route::delete('/failed-orders/{id}', [FailedOrderController::class, 'destroy'])
+            ->middleware('permission:orders.delete')
+            ->name('failed-orders.destroy');
 
         // Products Catalog
         Route::get('/products', [AdminProductController::class, 'index'])
@@ -163,6 +183,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/settings', [SettingController::class, 'update'])
             ->middleware('permission:settings.manage')
             ->name('settings.update');
+
+        // Security & Order Fraud Protection
+        Route::get('/security', [SecurityController::class, 'index'])
+            ->middleware('permission:settings.manage')
+            ->name('security.index');
+        Route::post('/security', [SecurityController::class, 'update'])
+            ->middleware('permission:settings.manage')
+            ->name('security.update');
+        Route::post('/security/ip/add', [SecurityController::class, 'addIp'])
+            ->middleware('permission:settings.manage')
+            ->name('security.ip.add');
+        Route::post('/security/ip/remove', [SecurityController::class, 'removeIp'])
+            ->middleware('permission:settings.manage')
+            ->name('security.ip.remove');
 
         // Help & Developer Support Portal
         Route::get('/support', [SupportController::class, 'index'])

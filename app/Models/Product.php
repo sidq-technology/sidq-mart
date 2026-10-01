@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class Product extends Model
@@ -53,6 +54,22 @@ class Product extends Model
         static::updating(function ($product) {
             if ($product->regular_price && $product->sale_price && $product->regular_price > $product->sale_price) {
                 $product->discount_percent = (int) round((($product->regular_price - $product->sale_price) / $product->regular_price) * 100);
+            }
+        });
+
+        static::saved(function () {
+            Cache::forget('home_flash_sales');
+            Cache::forget('home_featured_products');
+            for ($i = 1; $i <= 10; $i++) {
+                Cache::forget("home_all_products_p_{$i}");
+            }
+        });
+
+        static::deleted(function () {
+            Cache::forget('home_flash_sales');
+            Cache::forget('home_featured_products');
+            for ($i = 1; $i <= 10; $i++) {
+                Cache::forget("home_all_products_p_{$i}");
             }
         });
     }

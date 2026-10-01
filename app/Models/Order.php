@@ -25,6 +25,7 @@ class Order extends Model
         'transaction_id',
         'order_status',
         'customer_note',
+        'ip_address',
         'admin_notes',
     ];
 

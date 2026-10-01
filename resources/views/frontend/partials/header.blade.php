@@ -1,5 +1,7 @@
 @php
-    $categories = \App\Models\Category::where('is_active', true)->whereNull('parent_id')->with('children')->orderBy('sort_order')->get();
+    $categories = \Illuminate\Support\Facades\Cache::remember('nav_categories_tree', 3600, function () {
+        return \App\Models\Category::where('is_active', true)->whereNull('parent_id')->with('children')->orderBy('sort_order')->get();
+    });
     $cartService = app(\App\Services\CartService::class);
     $cartCount = $cartService->getCount();
     $cartSubtotal = $cartService->getSubtotal();
@@ -8,8 +10,8 @@
 @endphp
 
 <header class="sidq-header">
-    <div class="container header-main">
-        <div class="row align-items-center g-3">
+    <div class="container header-main px-3 px-lg-2">
+        <div class="row align-items-center g-2 g-lg-3">
             <!-- Brand Logo -->
             <div class="col-6 col-lg-3 d-flex align-items-center">
                 <a href="{{ route('home') }}" class="header-logo">

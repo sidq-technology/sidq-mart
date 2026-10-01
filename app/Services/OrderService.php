@@ -55,6 +55,7 @@ class OrderService
                 'transaction_id' => $data['transaction_id'] ?? null,
                 'order_status' => 'pending',
                 'customer_note' => $data['customer_note'] ?? null,
+                'ip_address' => $data['ip_address'] ?? request()->ip(),
             ]);
 
             foreach ($items as $item) {

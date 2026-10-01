@@ -196,7 +196,15 @@ a:hover {
 }
 
 .header-main {
-    padding: 12px 0;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+@media (max-width: 991.98px) {
+    .header-main {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
 }
 
 .header-logo img {

@@ -21,6 +21,17 @@
                 </div>
                 @endguest
 
+                @if(isset($errors) && $errors->any())
+                <div class="alert alert-danger mb-4 shadow-xs border-0 rounded-3">
+                    <div class="fw-bold mb-1"><i class="fas fa-exclamation-triangle me-2"></i>অর্ডার সম্পন্ন করতে নিচের তথ্যগুলো সঠিক করুন:</div>
+                    <ul class="mb-0 ps-3 small">
+                        @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
                 <form action="{{ route('checkout.store') }}" method="POST" id="checkoutForm">
                     @csrf
 
@@ -96,10 +107,20 @@
                             <i class="fas fa-wallet text-danger me-1"></i> মূল্য পরিশোধের মাধ্যম (Payment Method)
                         </label>
 
+                        @php
+                            $defaultPay = old('payment_method');
+                            if (!$defaultPay) {
+                                if ($paymentSettings['cod_enabled']) $defaultPay = 'cod';
+                                elseif ($paymentSettings['bkash_enabled']) $defaultPay = 'bkash';
+                                elseif ($paymentSettings['nagad_enabled']) $defaultPay = 'nagad';
+                                else $defaultPay = 'cod';
+                            }
+                        @endphp
+
                         <!-- Option 1: Cash on Delivery -->
                         @if($paymentSettings['cod_enabled'])
                         <div class="form-check p-3 rounded-2 border mb-2 bg-light">
-                            <input class="form-check-input ms-0 me-2" type="radio" name="payment_method" id="payCod" value="cod" checked onchange="togglePaymentInstructions('cod')">
+                            <input class="form-check-input ms-0 me-2" type="radio" name="payment_method" id="payCod" value="cod" {{ $defaultPay === 'cod' ? 'checked' : '' }} onchange="togglePaymentInstructions('cod')">
                             <label class="form-check-label fw-bold" for="payCod">
                                 <i class="fas fa-money-bill-wave text-success me-1"></i> ক্যাশ অন ডেলিভারি (Cash on Delivery)
                             </label>
@@ -112,18 +133,18 @@
                         <!-- Option 2: bKash -->
                         @if($paymentSettings['bkash_enabled'])
                         <div class="form-check p-3 rounded-2 border mb-2">
-                            <input class="form-check-input ms-0 me-2" type="radio" name="payment_method" id="payBkash" value="bkash" onchange="togglePaymentInstructions('bkash')">
+                            <input class="form-check-input ms-0 me-2" type="radio" name="payment_method" id="payBkash" value="bkash" {{ $defaultPay === 'bkash' ? 'checked' : '' }} onchange="togglePaymentInstructions('bkash')">
                             <label class="form-check-label fw-bold text-danger" for="payBkash">
                                 <i class="fas fa-mobile-alt me-1"></i> বিকাশ (bKash)
                             </label>
-                            <div class="mt-2 ps-4 d-none" id="bkashDetails">
+                            <div class="mt-2 ps-4 {{ $defaultPay === 'bkash' ? '' : 'd-none' }}" id="bkashDetails">
                                 <div class="alert alert-danger py-2 mb-2 small">
                                     <strong>বিকাশ নম্বর:</strong> {{ $paymentSettings['bkash_number'] }} ({{ $paymentSettings['bkash_type'] }})<br>
                                     {{ $paymentSettings['bkash_instructions'] }}
                                 </div>
                                 <div class="mt-2">
                                     <label for="bkash_trx" class="form-label small">বিকাশ ট্রানজেকশন আইডি (bKash TrxID):</label>
-                                    <input type="text" name="transaction_id" id="bkash_trx" class="form-control form-control-sm" placeholder="যেমন: 9J4K2L8M...">
+                                    <input type="text" name="transaction_id" id="bkash_trx" class="form-control form-control-sm" value="{{ old('transaction_id') }}" placeholder="যেমন: 9J4K2L8M...">
                                 </div>
                             </div>
                         </div>
@@ -132,22 +153,26 @@
                         <!-- Option 3: Nagad -->
                         @if($paymentSettings['nagad_enabled'])
                         <div class="form-check p-3 rounded-2 border mb-2">
-                            <input class="form-check-input ms-0 me-2" type="radio" name="payment_method" id="payNagad" value="nagad" onchange="togglePaymentInstructions('nagad')">
+                            <input class="form-check-input ms-0 me-2" type="radio" name="payment_method" id="payNagad" value="nagad" {{ $defaultPay === 'nagad' ? 'checked' : '' }} onchange="togglePaymentInstructions('nagad')">
                             <label class="form-check-label fw-bold text-warning" for="payNagad">
                                 <i class="fas fa-mobile-alt me-1"></i> নগদ (Nagad)
                             </label>
-                            <div class="mt-2 ps-4 d-none" id="nagadDetails">
+                            <div class="mt-2 ps-4 {{ $defaultPay === 'nagad' ? '' : 'd-none' }}" id="nagadDetails">
                                 <div class="alert alert-warning py-2 mb-2 small">
                                     <strong>নগদ নম্বর:</strong> {{ $paymentSettings['nagad_number'] }} ({{ $paymentSettings['nagad_type'] }})<br>
                                     {{ $paymentSettings['nagad_instructions'] }}
                                 </div>
                                 <div class="mt-2">
                                     <label for="nagad_trx" class="form-label small">নগদ ট্রানজেকশন আইডি (Nagad TrxID):</label>
-                                    <input type="text" name="transaction_id" id="nagad_trx" class="form-control form-control-sm" placeholder="যেমন: 7H8N2K5L...">
+                                    <input type="text" name="transaction_id" id="nagad_trx" class="form-control form-control-sm" value="{{ old('transaction_id') }}" placeholder="যেমন: 7H8N2K5L...">
                                 </div>
                             </div>
                         </div>
                         @endif
+
+                        @error('payment_method')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- Customer Order Notes -->
@@ -317,6 +342,60 @@
             }
         })
         .then(() => location.reload());
+    }
+
+    // ==========================================
+    // Abandoned / Failed Checkout Auto-Capture
+    // ==========================================
+    let captureTimer = null;
+    function captureCheckoutDraft() {
+        clearTimeout(captureTimer);
+        captureTimer = setTimeout(() => {
+            const name = document.getElementById('customer_name')?.value?.trim() || '';
+            const phone = document.getElementById('customer_phone')?.value?.trim() || '';
+            const address = document.getElementById('shipping_address')?.value?.trim() || '';
+            const zoneInput = document.querySelector('input[name="delivery_zone"]:checked');
+            const deliveryZone = zoneInput ? zoneInput.value : 'inside_dhaka';
+            const payInput = document.querySelector('input[name="payment_method"]:checked');
+            const paymentMethod = payInput ? payInput.value : 'cod';
+            const note = document.querySelector('textarea[name="customer_note"]')?.value?.trim() || '';
+
+            if (phone.length >= 3 || name.length >= 2 || address.length >= 3) {
+                fetch("{{ route('checkout.capture-draft') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": CSRF_TOKEN,
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({
+                        customer_name: name,
+                        customer_phone: phone,
+                        shipping_address: address,
+                        delivery_zone: deliveryZone,
+                        payment_method: paymentMethod,
+                        customer_note: note
+                    })
+                }).catch(() => {});
+            }
+        }, 600);
+    }
+
+    ['customer_name', 'customer_phone', 'shipping_address'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', captureCheckoutDraft);
+            el.addEventListener('blur', captureCheckoutDraft);
+        }
+    });
+
+    document.querySelectorAll('input[name="delivery_zone"], input[name="payment_method"]').forEach(el => {
+        el.addEventListener('change', captureCheckoutDraft);
+    });
+
+    const noteEl = document.querySelector('textarea[name="customer_note"]');
+    if (noteEl) {
+        noteEl.addEventListener('input', captureCheckoutDraft);
     }
 </script>
 @endpush

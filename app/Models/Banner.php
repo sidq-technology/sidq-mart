@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Banner extends Model
 {
@@ -21,6 +22,17 @@ class Banner extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            Cache::forget('home_banners');
+        });
+
+        static::deleted(function () {
+            Cache::forget('home_banners');
+        });
+    }
 
     public function getImageUrlAttribute()
     {

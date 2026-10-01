@@ -14,7 +14,7 @@ class OrderController extends Controller
         $status = $request->input('status');
         $search = $request->input('search');
 
-        $orders = Order::with('items')
+        $orders = Order::with(['items.product', 'user'])
             ->when($status, function ($q) use ($status) {
                 $q->where('order_status', $status);
             })
