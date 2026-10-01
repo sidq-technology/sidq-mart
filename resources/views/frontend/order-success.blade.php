@@ -181,6 +181,56 @@
     document.addEventListener('DOMContentLoaded', function () {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
+        // E-Commerce Tracking: Purchase / Conversion Event
+        try {
+            const orderGrandTotal = {{ (float) $order->grand_total }};
+            const orderShipping = {{ (float) $order->shipping_charge }};
+            const orderNumber = '{{ $order->order_number }}';
+            const orderItemIds = [ {!! implode(',', $order->items->pluck('product_id')->filter()->map(fn($id) => "'$id'")->toArray()) !!} ];
+            const totalQty = {{ (int) $order->items->sum('quantity') }};
+
+            // Meta (Facebook) Pixel: Purchase
+            if (typeof fbq === 'function') {
+                fbq('track', 'Purchase', {
+                    content_type: 'product',
+                    content_ids: orderItemIds,
+                    value: orderGrandTotal,
+                    currency: 'BDT',
+                    num_items: totalQty
+                });
+            }
+
+            // TikTok Pixel: CompletePayment
+            if (typeof ttq === 'object') {
+                ttq.track('CompletePayment', {
+                    content_type: 'product',
+                    value: orderGrandTotal,
+                    currency: 'BDT'
+                });
+            }
+
+            // Google Tag Manager / GA4: purchase
+            if (window.dataLayer) {
+                window.dataLayer.push({
+                    event: 'purchase',
+                    ecommerce: {
+                        transaction_id: orderNumber,
+                        value: orderGrandTotal,
+                        shipping: orderShipping,
+                        currency: 'BDT',
+                        items: {!! json_encode($order->items->map(fn($it) => [
+                            'item_id' => (string)$it->product_id,
+                            'item_name' => (string)$it->product_name,
+                            'price' => (float)$it->unit_price,
+                            'quantity' => (int)$it->quantity,
+                        ])) !!}
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Tracking Error (Purchase):', e);
+        }
+
         document.querySelectorAll('.btn-add-upsell').forEach(button => {
             button.addEventListener('click', function () {
                 const prodId = this.dataset.productId;
@@ -201,6 +251,27 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
+                        // Track Additional Upsell Purchase
+                        try {
+                            const upsellVal = parseFloat(data.item.total_price) || 0;
+                            if (typeof fbq === 'function') {
+                                fbq('track', 'Purchase', {
+                                    content_type: 'product',
+                                    content_ids: [String(prodId)],
+                                    value: upsellVal,
+                                    currency: 'BDT',
+                                    num_items: 1
+                                });
+                            }
+                            if (typeof ttq === 'object') {
+                                ttq.track('CompletePayment', {
+                                    content_type: 'product',
+                                    value: upsellVal,
+                                    currency: 'BDT'
+                                });
+                            }
+                        } catch (err) {}
+
                         // Change button to success state
                         this.classList.remove('btn-danger', 'btn-primary-sidq');
                         this.classList.add('btn-success');

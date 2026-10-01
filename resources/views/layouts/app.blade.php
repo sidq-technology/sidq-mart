@@ -227,6 +227,38 @@
                     loadCartDrawer();
                     const offcanvas = new bootstrap.Offcanvas(document.getElementById('cartDrawer'));
                     offcanvas.show();
+
+                    // Track AddToCart for Meta Pixel, TikTok & GTM
+                    try {
+                        if (typeof fbq === 'function') {
+                            fbq('track', 'AddToCart', {
+                                content_ids: [String(productId)],
+                                content_type: 'product',
+                                currency: 'BDT'
+                            });
+                        }
+                        if (typeof ttq === 'object') {
+                            ttq.track('AddToCart', {
+                                contents: [{
+                                    content_id: String(productId),
+                                    quantity: quantity
+                                }],
+                                currency: 'BDT'
+                            });
+                        }
+                        if (window.dataLayer) {
+                            window.dataLayer.push({
+                                event: 'add_to_cart',
+                                ecommerce: {
+                                    currency: 'BDT',
+                                    items: [{
+                                        item_id: String(productId),
+                                        quantity: quantity
+                                    }]
+                                }
+                            });
+                        }
+                    } catch (trackErr) {}
                 }
             })
             .catch(err => console.error("Error adding to cart:", err));

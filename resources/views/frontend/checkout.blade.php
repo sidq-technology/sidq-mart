@@ -282,6 +282,51 @@
     let currentDiscount = {{ $discountAmount }};
     let currentShipping = insideDhakaFee;
 
+    // E-Commerce Tracking: InitiateCheckout Event
+    try {
+        const cartSubtotal = {{ (float) $subtotal }};
+        const cartItemCount = {{ count($items) }};
+        const cartItemIds = [ {!! implode(',', array_map(fn($item) => "'" . ($item['product_id'] ?? '') . "'", $items)) !!} ];
+
+        // Meta Pixel: InitiateCheckout
+        if (typeof fbq === 'function') {
+            fbq('track', 'InitiateCheckout', {
+                num_items: cartItemCount,
+                content_ids: cartItemIds,
+                content_type: 'product',
+                value: cartSubtotal,
+                currency: 'BDT'
+            });
+        }
+
+        // TikTok Pixel: InitiateCheckout
+        if (typeof ttq === 'object') {
+            ttq.track('InitiateCheckout', {
+                value: cartSubtotal,
+                currency: 'BDT'
+            });
+        }
+
+        // Google Tag Manager / GA4: begin_checkout
+        if (window.dataLayer) {
+            window.dataLayer.push({
+                event: 'begin_checkout',
+                ecommerce: {
+                    currency: 'BDT',
+                    value: cartSubtotal,
+                    items: {!! json_encode(array_map(fn($item) => [
+                        'item_id' => (string)($item['product_id'] ?? ''),
+                        'item_name' => (string)($item['name'] ?? ''),
+                        'price' => (float)($item['unit_price'] ?? 0),
+                        'quantity' => (int)($item['quantity'] ?? 1),
+                    ], $items)) !!}
+                }
+            });
+        }
+    } catch (e) {
+        console.error('Tracking Error (InitiateCheckout):', e);
+    }
+
     function updateDeliveryCharge(zone) {
         if (zone === 'outside_dhaka') {
             currentShipping = outsideDhakaFee;

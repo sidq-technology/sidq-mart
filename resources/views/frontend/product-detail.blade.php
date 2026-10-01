@@ -721,6 +721,61 @@
             if (firstSize) firstSize.click();
         }
 
+        // E-Commerce Tracking: ViewContent Event
+        try {
+            const productPrice = {{ (float) $product->final_price }};
+            const productName = @json($product->name);
+            const productId = '{{ $product->id }}';
+            const categoryName = @json($product->category->name ?? 'General');
+
+            // Meta Pixel: ViewContent
+            if (typeof fbq === 'function') {
+                fbq('track', 'ViewContent', {
+                    content_name: productName,
+                    content_category: categoryName,
+                    content_ids: [productId],
+                    content_type: 'product',
+                    value: productPrice,
+                    currency: 'BDT'
+                });
+            }
+
+            // TikTok Pixel: ViewContent
+            if (typeof ttq === 'object') {
+                ttq.track('ViewContent', {
+                    contents: [{
+                        content_id: productId,
+                        content_name: productName,
+                        content_category: categoryName,
+                        quantity: 1,
+                        price: productPrice
+                    }],
+                    value: productPrice,
+                    currency: 'BDT'
+                });
+            }
+
+            // Google Tag Manager / GA4: view_item
+            if (window.dataLayer) {
+                window.dataLayer.push({
+                    event: 'view_item',
+                    ecommerce: {
+                        currency: 'BDT',
+                        value: productPrice,
+                        items: [{
+                            item_id: productId,
+                            item_name: productName,
+                            item_category: categoryName,
+                            price: productPrice,
+                            quantity: 1
+                        }]
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Tracking Error (ViewContent):', e);
+        }
+
         const orderForm = document.getElementById('pdpOrderForm');
         if (orderForm) {
             orderForm.addEventListener('submit', function(e) {
@@ -736,6 +791,36 @@
                     document.getElementById('pdpVariationsBox')?.scrollIntoView({ behavior: 'smooth' });
                     return false;
                 }
+
+                // Track AddToCart / InitiateCheckout when clicking Order Now
+                try {
+                    const qty = parseInt(document.getElementById('pdpQtyInput')?.value) || 1;
+                    const price = currentPrice || {{ (float) $product->final_price }};
+                    const prodName = @json($product->name);
+                    const prodId = '{{ $product->id }}';
+
+                    if (typeof fbq === 'function') {
+                        fbq('track', 'AddToCart', {
+                            content_name: prodName,
+                            content_ids: [prodId],
+                            content_type: 'product',
+                            value: price * qty,
+                            currency: 'BDT'
+                        });
+                    }
+                    if (typeof ttq === 'object') {
+                        ttq.track('AddToCart', {
+                            contents: [{
+                                content_id: prodId,
+                                content_name: prodName,
+                                quantity: qty,
+                                price: price
+                            }],
+                            value: price * qty,
+                            currency: 'BDT'
+                        });
+                    }
+                } catch (err) {}
             });
         }
     });
@@ -754,6 +839,33 @@
 
         const qty = parseInt(document.getElementById('pdpQtyInput').value) || 1;
         const variantId = document.getElementById('selectedVariantId')?.value || null;
+        const price = currentPrice || {{ (float) $product->final_price }};
+
+        // Track AddToCart
+        try {
+            if (typeof fbq === 'function') {
+                fbq('track', 'AddToCart', {
+                    content_name: @json($product->name),
+                    content_ids: ['{{ $product->id }}'],
+                    content_type: 'product',
+                    value: price * qty,
+                    currency: 'BDT'
+                });
+            }
+            if (typeof ttq === 'object') {
+                ttq.track('AddToCart', {
+                    contents: [{
+                        content_id: '{{ $product->id }}',
+                        content_name: @json($product->name),
+                        quantity: qty,
+                        price: price
+                    }],
+                    value: price * qty,
+                    currency: 'BDT'
+                });
+            }
+        } catch (err) {}
+
         addToCart({{ $product->id }}, qty, variantId);
     }
 </script>

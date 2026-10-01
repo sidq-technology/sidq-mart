@@ -544,6 +544,18 @@
 
             <div id="secMarketing" class="collapse">
                 <div class="card-body p-3 p-sm-4 border-top">
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mb-3 border">
+                        <div>
+                            <div class="fw-bold text-dark mb-1">
+                                <i class="fab fa-facebook text-primary me-1"></i> ফেসবুক / মেটা পিক্সেল ট্র্যাকিং চালু রাখুন
+                            </div>
+                            <div class="text-muted small">চালু থাকলে স্টোরফ্রন্টের প্রতিটি পেজে PageView, ViewContent, AddToCart, InitiateCheckout ও Purchase ইভেন্ট স্বয়ংক্রিয়ভাবে ট্র্যাক হবে।</div>
+                        </div>
+                        <div class="form-check form-switch fs-4 mb-0 ms-3">
+                            <input class="form-check-input" type="checkbox" role="switch" name="meta_pixel_enabled" id="meta_pixel_enabled" value="1" {{ ($settings['meta_pixel_enabled'] ?? '1') == '1' ? 'checked' : '' }}>
+                        </div>
+                    </div>
+
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
                             <label for="meta_pixel_id" class="form-label small fw-bold text-dark mb-1">ফেসবুক / মেটা পিক্সেল আইডি (Meta Pixel ID)</label>

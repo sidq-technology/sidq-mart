@@ -64,6 +64,7 @@ class SettingController extends Controller
 
             // Analytics & Pixel
             'meta_pixel_id',
+            'meta_pixel_enabled',
 
             // Theme & Brand Color Customization
             'theme_primary_color',
@@ -79,7 +80,7 @@ class SettingController extends Controller
         foreach ($fields as $field) {
             if ($request->has($field)) {
                 Setting::set($field, $request->input($field));
-            } elseif (in_array($field, ['bkash_enabled', 'nagad_enabled', 'rocket_enabled'])) {
+            } elseif (in_array($field, ['bkash_enabled', 'nagad_enabled', 'rocket_enabled', 'meta_pixel_enabled'])) {
                 // Checkbox unselected
                 Setting::set($field, '0');
             } elseif ($field === 'cod_enabled') {
