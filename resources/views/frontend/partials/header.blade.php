@@ -10,11 +10,8 @@
 <header class="sidq-header">
     <div class="container header-main">
         <div class="row align-items-center g-3">
-            <!-- Mobile Menu Toggle & Brand Logo -->
-            <div class="col-6 col-lg-3 d-flex align-items-center gap-2">
-                <button class="btn btn-outline-dark d-lg-none py-1 px-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenuDrawer" aria-label="Toggle Navigation">
-                    <i class="fas fa-bars fs-5"></i>
-                </button>
+            <!-- Brand Logo -->
+            <div class="col-6 col-lg-3 d-flex align-items-center">
                 <a href="{{ route('home') }}" class="header-logo">
                     @if($siteLogo)
                         <img src="{{ $siteLogo }}" alt="{{ $siteName }}">
@@ -36,7 +33,7 @@
                 </form>
             </div>
 
-            <!-- Cart Widget, Account & Checkout Quick Link -->
+            <!-- User Account, Cart Widget, Order Button & Mobile Menu Toggle -->
             <div class="col-6 col-lg-3 order-2 order-lg-3 d-flex justify-content-end align-items-center gap-2 gap-sm-3">
                 <!-- User Account Dropdown / Login Button -->
                 @auth
@@ -71,14 +68,14 @@
                     </ul>
                 </div>
                 @else
-                <button type="button" class="btn btn-outline-secondary d-flex align-items-center gap-1 py-2 px-2 px-sm-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#customerAuthModal" style="font-size: 13px;">
+                <button type="button" class="btn btn-outline-secondary d-flex align-items-center gap-1 py-1 px-2 px-sm-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#customerAuthModal" style="font-size: 13px;">
                     <i class="fas fa-user-circle" style="color: var(--color-brand-accent); font-size: 16px;"></i>
                     <span class="d-none d-sm-inline fw-semibold">লগইন</span>
                 </button>
                 @endauth
 
-                <!-- Cart Widget -->
-                <div class="header-cart-widget" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" role="button" aria-label="View Cart">
+                <!-- Cart Widget (Hidden on mobile, visible on desktop/tablet) -->
+                <div class="header-cart-widget d-none d-md-flex" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" role="button" aria-label="View Cart">
                     <div class="header-cart-icon">
                         <i class="fas fa-shopping-basket"></i>
                         <span class="header-cart-badge cart-count-badge">{{ $cartCount }}</span>
@@ -92,6 +89,11 @@
                 <a href="{{ route('checkout') }}" class="btn btn-primary-sidq d-none d-sm-inline-flex py-2 px-3" style="min-height: 40px; font-size: 13px;">
                     অর্ডার করুন
                 </a>
+
+                <!-- Mobile Menu Hamburger Button (Positioned on the Right Side) -->
+                <button class="btn btn-outline-dark d-lg-none py-1 px-2 d-inline-flex align-items-center justify-content-center rounded-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenuDrawer" aria-label="Toggle Navigation" style="height: 38px; width: 38px;">
+                    <i class="fas fa-bars fs-5"></i>
+                </button>
             </div>
         </div>
     </div>

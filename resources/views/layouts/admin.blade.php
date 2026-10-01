@@ -314,6 +314,10 @@
         @media (max-width: 991.98px) {
             .admin-sidebar {
                 transform: translateX(-100%);
+                width: 280px !important;
+                max-width: 82vw !important;
+                border-top-right-radius: 18px;
+                border-bottom-right-radius: 18px;
             }
             .admin-sidebar.show {
                 transform: translateX(0);

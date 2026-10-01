@@ -43,6 +43,17 @@
             --color-action-primary-bg: {{ \App\Models\Setting::get('theme_secondary_color', '#c9251a') }};
             --color-text-error: {{ \App\Models\Setting::get('theme_secondary_color', '#c9251a') }};
         }
+
+        html, body {
+            overflow-x: hidden !important;
+            max-width: 100vw !important;
+            width: 100% !important;
+        }
+
+        body.modal-open,
+        body.offcanvas-open {
+            padding-right: 0 !important;
+        }
     </style>
 
     <!-- Marketing & Analytics Tracking Integrations (Engineered by SIDQ Technology) -->

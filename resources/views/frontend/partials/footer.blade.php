@@ -122,7 +122,7 @@
             </div>
 
             <!-- Our Social Page -->
-            <div class="col-6 col-sm-6 col-xl-3">
+            <div class="col-12 col-sm-6 col-xl-3 mt-3 mt-sm-0">
                 <h5>Our Social Page</h5>
                 <div class="d-flex flex-wrap gap-2 pt-1 mb-3">
                     <a href="https://facebook.com" target="_blank" class="footer-social-icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -131,8 +131,8 @@
                     <a href="https://youtube.com" target="_blank" class="footer-social-icon" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                 </div>
                 <div class="mt-2">
-                    <span class="badge bg-danger py-2 px-3 fw-normal" style="font-size: 13px;">
-                        <i class="fas fa-truck me-1"></i> ক্যাশ অন ডেলিভারি সারা বাংলাদেশে
+                    <span class="badge bg-danger py-2 px-3 fw-normal text-wrap text-start" style="font-size: 13px; line-height: 1.4; display: inline-flex; align-items: center; max-width: 100%; white-space: normal;">
+                        <i class="fas fa-truck me-2 flex-shrink-0"></i> <span>ক্যাশ অন ডেলিভারি সারা বাংলাদেশে</span>
                     </span>
                 </div>
             </div>
@@ -140,9 +140,9 @@
     </div>
 
     <!-- Bottom Copyright & Powered By Strip -->
-    <div class="footer-bottom-bar">
+    <div class="footer-bottom-bar text-center">
         <div class="container">
-            <span>&copy; {{ date('Y') }} {{ $siteName }}. সর্বস্বত্ব সংরক্ষিত। | Powered by <strong>SIDQ Technology</strong></span>
+            <span class="d-inline-block small text-wrap" style="max-width: 100%; word-break: break-word;">&copy; {{ date('Y') }} {{ $siteName }}. সর্বস্বত্ব সংরক্ষিত। | Powered by <strong>SIDQ Technology</strong></span>
         </div>
     </div>
 </footer>
