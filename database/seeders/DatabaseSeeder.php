@@ -77,6 +77,29 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Demo Admin (Read-Only Demo User)
+        User::updateOrCreate(
+            ['email' => 'demo@sdiqtech.com'],
+            [
+                'name' => 'Demo User',
+                'phone' => '01759983638',
+                'role' => User::ROLE_DEMO_ADMIN,
+                'password' => Hash::make('demoadmin123'),
+                'permissions' => User::getDefaultRolePermissions(User::ROLE_DEMO_ADMIN),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'demo@sidqmart.com'],
+            [
+                'name' => 'Demo Admin',
+                'phone' => '01700000000',
+                'role' => User::ROLE_DEMO_ADMIN,
+                'password' => Hash::make('demoadmin123'),
+                'permissions' => User::getDefaultRolePermissions(User::ROLE_DEMO_ADMIN),
+            ]
+        );
+
         // 2. Settings (Dynamic website name, logo, payment information, delivery charges)
         $settings = [
             'site_name' => 'SIDQ MART',

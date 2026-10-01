@@ -84,10 +84,13 @@
 |---|---|---|---|---|
 | 👑 **Super Admin** | SIDQ Technology Administrator | `admin@sidqmart.com` | `admin123` | `/admin` |
 | 🛠️ **Tech Support Admin** | SIDQ Technology Support | `admin@sidqtech.com` | `admin123` | `/admin` |
+| 🧪 **Demo Admin (Read-Only)** | Demo User | `demo@sdiqtech.com` | `demoadmin123` | `/admin` |
+| 🧪 **Demo Admin (Read-Only)** | Demo Admin | `demo@sidqmart.com` | `demoadmin123` | `/admin` |
 | 🏪 **Shop Manager** | সাকিব হাসান (শপ ম্যানেজার) | `manager@sidqmart.com` | `password123` | `/admin` |
 | 📦 **Employee / Staff** | রাকিব ইসলাম (এমপ্লয়ি) | `employee@sidqmart.com` | `password123` | `/admin` |
 | 👤 **Customer (গ্রাহক)** | তানভীর আহমেদ (গ্রাহক) | `customer@sidqmart.com` | `password123` | `/login` |
 
+> 🧪 **ডেমো অ্যাডমিন মোড (Read-Only Demo):** `demo@sdiqtech.com` (পাসওয়ার্ড: `demoadmin123`) দিয়ে লগইন করলে ক্লায়েন্ট বা পরিদর্শকরা পুরো অ্যাডমিন প্যানেলের সব অপশন দেখতে পারবেন, কিন্তু সিস্টেমের সিকিউরিটি স্বার্থে কোনো ডাটা মুছে ফেলা বা পরিবর্তন করতে পারবেন না।
 > 🔒 **সিকিউরিটি নোট:** প্রোডাকশন বা লাইভ সার্ভারে ডেপ্লয় করার পর অ্যাডমিন প্যানেল থেকে ডিফল্ট পাসওয়ার্ড পরিবর্তন করার জন্য অনুরোধ করা হচ্ছে।
 
 ---
