@@ -429,13 +429,50 @@ class CheckoutController extends Controller
             }
         }
 
+        // Fetch up to 4 similar / recommended products for Thank You page
+        $orderedIds = $order->items->pluck('product_id')->filter()->unique()->toArray();
+        $upsellIds = $upsellProducts->pluck('id')->toArray();
+        $excludeIds = array_values(array_unique(array_merge($orderedIds, $upsellIds)));
+
+        $categoryIds = $order->items->map(function ($item) {
+            return $item->product?->category_id;
+        })->filter()->unique()->toArray();
+
+        $similarProducts = collect();
+        if (!empty($categoryIds)) {
+            $similarProducts = Product::where('is_active', true)
+                ->where(function ($q) {
+                    $q->where('manage_stock', false)->orWhere('stock', '>', 0);
+                })
+                ->whereIn('category_id', $categoryIds)
+                ->whereNotIn('id', $excludeIds)
+                ->latest()
+                ->take(4)
+                ->get();
+        }
+
+        if ($similarProducts->count() < 4) {
+            $needed = 4 - $similarProducts->count();
+            $moreExcludeIds = array_values(array_unique(array_merge($excludeIds, $similarProducts->pluck('id')->toArray())));
+            $moreProducts = Product::where('is_active', true)
+                ->where(function ($q) {
+                    $q->where('manage_stock', false)->orWhere('stock', '>', 0);
+                })
+                ->whereNotIn('id', $moreExcludeIds)
+                ->latest()
+                ->take($needed)
+                ->get();
+            $similarProducts = $similarProducts->concat($moreProducts);
+        }
+
         return view('frontend.order-success', compact(
             'order',
             'upsellEnabled',
             'upsellBadgeText',
             'upsellHeading',
             'upsellSubtitle',
-            'upsellProducts'
+            'upsellProducts',
+            'similarProducts'
         ));
     }
 

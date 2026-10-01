@@ -3,22 +3,24 @@
 @section('title', 'অর্ডার সফল হয়েছে - ' . $order->order_number . ' | ' . \App\Models\Setting::get('site_name', 'SIDQ MART'))
 
 @section('content')
-<div class="container my-5">
+<div class="container my-4 my-md-5">
     <div class="row justify-content-center">
-        <div class="col-12 col-md-9 col-lg-8">
-            <div class="card border-0 shadow-sm p-4 p-md-5 rounded-4 text-center mb-4">
+        <div class="col-12 col-md-10 col-lg-9">
+            
+            <!-- Main Success Card -->
+            <div class="card border-0 shadow-sm p-3 p-sm-4 p-md-5 rounded-4 text-center mb-4">
                 <div class="mb-3">
-                    <span class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm" style="width: 72px; height: 72px;">
+                    <span class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm" style="width: 68px; height: 68px;">
                         <i class="fas fa-check fa-2x"></i>
                     </span>
                 </div>
 
-                <h2 class="fw-bold text-dark mb-1">অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!</h2>
-                <p class="text-muted">আপনার অর্ডারের জন্য আন্তরিক ধন্যবাদ। আমাদের প্রতিনিধি শীঘ্রই আপনার সাথে যোগাযোগ করবেন।</p>
+                <h2 class="fw-bold text-dark mb-1 fs-3 fs-md-2">অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!</h2>
+                <p class="text-muted small mb-3">আপনার অর্ডারের জন্য আন্তরিক ধন্যবাদ। আমাদের প্রতিনিধি শীঘ্রই আপনার সাথে যোগাযোগ করবেন।</p>
 
-                <div class="alert alert-light border py-3 my-3">
-                    <span class="text-muted d-block small">অর্ডার রেফারেন্স নম্বর:</span>
-                    <strong class="fs-4 text-danger">{{ $order->order_number }}</strong>
+                <div class="alert alert-light border py-2 py-sm-3 my-2 my-sm-3 d-inline-block w-100 rounded-3">
+                    <span class="text-muted d-block small" style="font-size: 12px;">অর্ডার রেফারেন্স নম্বর:</span>
+                    <strong class="fs-4 text-danger tabular-nums">{{ $order->order_number }}</strong>
                 </div>
 
                 <!-- Toast / Notification Box for 1-Click Upsell -->
@@ -28,19 +30,19 @@
                      Post-Purchase 1-Click Upsell Section
                 =========================================== -->
                 @if(!empty($upsellEnabled) && $upsellProducts->isNotEmpty())
-                <div class="card border-0 rounded-4 p-3 p-md-4 my-4 text-start shadow-sm" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 2px dashed #f59e0b !important;">
+                <div class="card border-0 rounded-4 p-3 p-md-4 my-3 my-md-4 text-start shadow-sm" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 2px dashed #f59e0b !important;">
                     <div class="text-center mb-3">
                         @if(!empty($upsellBadgeText))
-                        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-white border border-warning text-warning-emphasis small fw-bold mb-2 shadow-xs">
+                        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-white border border-warning text-warning-emphasis small fw-bold mb-2 shadow-xs" style="font-size: 11.5px;">
                             <i class="fas fa-fire text-danger"></i>
                             <span>{{ $upsellBadgeText }}</span>
                         </div>
                         @endif
-                        <h4 class="fw-bold text-dark mb-1">{{ $upsellHeading }}</h4>
+                        <h4 class="fw-bold text-dark mb-1 fs-5 fs-md-4">{{ $upsellHeading }}</h4>
                         <p class="text-muted small mb-0">{{ $upsellSubtitle }}</p>
                     </div>
 
-                    <div class="row g-3 justify-content-center">
+                    <div class="row g-2 g-md-3 justify-content-center">
                         @foreach($upsellProducts as $upsellProd)
                         <div class="col-12 col-sm-{{ $upsellProducts->count() === 1 ? '10 col-md-8' : ($upsellProducts->count() === 2 ? '6' : '6 col-md-4') }}" id="upsellCard-{{ $upsellProd->id }}">
                             <div class="card h-100 border bg-white rounded-3 shadow-xs p-3 text-center d-flex flex-column justify-content-between">
@@ -79,98 +81,148 @@
                 </div>
                 @endif
 
-                <!-- Order Details Summary -->
-                <div class="text-start mt-4">
-                    <h5 class="fw-bold border-bottom pb-2 mb-3">ডেলিভারির তথ্য</h5>
-                    <div class="row g-2 small mb-4">
-                        <div class="col-sm-6">
-                            <span class="text-muted">গ্রাহকের নাম:</span>
-                            <div class="fw-bold">{{ $order->customer_name }}</div>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted">মোবাইল নম্বর:</span>
-                            <div class="fw-bold">{{ $order->customer_phone }}</div>
-                        </div>
-                        <div class="col-12 mt-2">
-                            <span class="text-muted">ডেলিভারি ঠিকানা:</span>
-                            <div class="fw-bold">{{ $order->shipping_address }}</div>
-                        </div>
-                        <div class="col-sm-6 mt-2">
-                            <span class="text-muted">পেমেন্ট মেথড:</span>
-                            <div class="fw-bold text-uppercase">{{ $order->payment_method }} ({{ $order->payment_status }})</div>
-                        </div>
-                        <div class="col-sm-6 mt-2">
-                            <span class="text-muted">অর্ডার স্ট্যাটাস:</span>
-                            <span class="badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span>
-                        </div>
-                    </div>
+                <!-- ==========================================
+                     Compact Collapsed Order Overview Bar
+                =========================================== -->
+                <div class="mt-3 text-start">
+                    <div class="card border rounded-3 p-3 bg-light shadow-2xs">
+                        <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                    <span class="badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span>
+                                    <span class="badge bg-white text-dark border small fw-normal text-uppercase">
+                                        <i class="fas fa-wallet text-secondary me-1"></i> {{ $order->payment_method }}
+                                    </span>
+                                </div>
+                                <div class="fw-bold text-dark fs-6">{{ $order->customer_name }}</div>
+                                <div class="text-muted small">
+                                    <i class="fas fa-phone-alt me-1 text-secondary"></i> {{ $order->customer_phone }}
+                                </div>
+                            </div>
 
-                    <h5 class="fw-bold border-bottom pb-2 mb-3">অর্ডারকৃত পণ্যসমূহ</h5>
-                    <div class="table-responsive mb-4">
-                        <table class="table table-sm align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>পণ্য</th>
-                                    <th>মূল্য</th>
-                                    <th>পরিমাণ</th>
-                                    <th class="text-end">মোট</th>
-                                </tr>
-                            </thead>
-                            <tbody id="orderItemsBody">
-                                @foreach($order->items as $item)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            @if($item->product_image)
-                                            <img src="{{ $item->product_image }}" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                                            @endif
-                                            <div>
-                                                <div class="fw-medium">{{ $item->product_name }}</div>
-                                                @if(!empty($item->variant_text))
-                                                <small class="text-danger fw-semibold d-block" style="font-size: 11px;">{{ $item->variant_text }}</small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>৳{{ number_format($item->unit_price, 0) }}</td>
-                                    <td>{{ $item->quantity }}</td>
-                                    <td class="text-end fw-bold">৳{{ number_format($item->total_price, 0) }}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot class="border-top">
-                                <tr>
-                                    <th colspan="3" class="text-end">সাবটোটাল:</th>
-                                    <th class="text-end" id="orderSubtotalText">৳{{ number_format($order->subtotal, 0) }}</th>
-                                </tr>
-                                <tr>
-                                    <th colspan="3" class="text-end">ডেলিভারি চার্জ:</th>
-                                    <th class="text-end">৳{{ number_format($order->shipping_charge, 0) }}</th>
-                                </tr>
-                                @if($order->discount_amount > 0)
-                                <tr>
-                                    <th colspan="3" class="text-end text-success">ডিসকাউন্ট:</th>
-                                    <th class="text-end text-success">-৳{{ number_format($order->discount_amount, 0) }}</th>
-                                </tr>
-                                @endif
-                                <tr class="fs-5">
-                                    <th colspan="3" class="text-end text-danger">সর্বমোট বিল:</th>
-                                    <th class="text-end text-danger fw-bold" id="orderGrandTotalText">৳{{ number_format($order->grand_total, 0) }}</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                            <div class="d-flex align-items-center justify-content-between justify-content-sm-end w-100 w-sm-auto gap-3 pt-2 pt-sm-0 border-top border-sm-0">
+                                <div class="text-start text-sm-end">
+                                    <span class="text-muted small d-block" style="font-size: 11px;">সর্বমোট বিল</span>
+                                    <span class="fs-4 fw-bold text-danger tabular-nums" id="overviewCompactTotal">৳{{ number_format($order->grand_total, 0) }}</span>
+                                </div>
+                                <button class="btn btn-sm btn-white bg-white border text-dark fw-semibold px-3 py-2 rounded-2 shadow-2xs d-inline-flex align-items-center gap-2 collapsed" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#orderDetailsCollapse" 
+                                        aria-expanded="false" 
+                                        aria-controls="orderDetailsCollapse"
+                                        id="btnToggleOrderDetails">
+                                    <span id="toggleDetailsText">বিস্তারিত দেখুন</span>
+                                    <i class="fas fa-chevron-down text-muted transition-transform" id="toggleDetailsIcon" style="transition: transform 0.25s ease;"></i>
+                                </button>
+                            </div>
+                        </div>
 
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                        <a href="{{ route('home') }}" class="btn btn-secondary-sidq">
-                            <i class="fas fa-home me-1"></i> হোম পেজে যান
-                        </a>
-                        <button type="button" class="btn btn-outline-dark" onclick="window.print()">
-                            <i class="fas fa-print me-1"></i> প্রিন্ট ইনভয়েস
-                        </button>
+                        <!-- Collapsible Full Order Breakdown (Default: Collapsed) -->
+                        <div class="collapse mt-3 pt-3 border-top" id="orderDetailsCollapse">
+                            <!-- Full Delivery Details -->
+                            <div class="mb-3">
+                                <div class="small fw-bold text-dark mb-1"><i class="fas fa-map-marker-alt text-danger me-1"></i> ডেলিভারির ঠিকানা:</div>
+                                <div class="p-2 bg-white rounded border small text-secondary">{{ $order->shipping_address }}</div>
+                            </div>
+
+                            <!-- Full Order Items Table -->
+                            <div class="table-responsive mb-3 bg-white rounded border">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>পণ্য</th>
+                                            <th>মূল্য</th>
+                                            <th>পরিমাণ</th>
+                                            <th class="text-end">মোট</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="orderItemsBody">
+                                        @foreach($order->items as $item)
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if($item->product_image)
+                                                    <img src="{{ $item->product_image }}" class="rounded me-2" style="width: 36px; height: 36px; object-fit: cover;">
+                                                    @endif
+                                                    <div>
+                                                        <div class="fw-medium text-dark small">{{ $item->product_name }}</div>
+                                                        @if(!empty($item->variant_text))
+                                                        <small class="text-danger fw-semibold d-block" style="font-size: 10px;">{{ $item->variant_text }}</small>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="small">৳{{ number_format($item->unit_price, 0) }}</td>
+                                            <td class="small">{{ $item->quantity }}</td>
+                                            <td class="text-end fw-bold small">৳{{ number_format($item->total_price, 0) }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="border-top small">
+                                        <tr>
+                                            <th colspan="3" class="text-end text-muted">সাবটোটাল:</th>
+                                            <th class="text-end" id="orderSubtotalText">৳{{ number_format($order->subtotal, 0) }}</th>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="3" class="text-end text-muted">ডেলিভারি চার্জ:</th>
+                                            <th class="text-end">৳{{ number_format($order->shipping_charge, 0) }}</th>
+                                        </tr>
+                                        @if($order->discount_amount > 0)
+                                        <tr>
+                                            <th colspan="3" class="text-end text-success">ডিসকাউন্ট:</th>
+                                            <th class="text-end text-success">-৳{{ number_format($order->discount_amount, 0) }}</th>
+                                        </tr>
+                                        @endif
+                                        <tr class="fs-6">
+                                            <th colspan="3" class="text-end text-danger fw-bold">সর্বমোট বিল:</th>
+                                            <th class="text-end text-danger fw-bold" id="orderGrandTotalText">৳{{ number_format($order->grand_total, 0) }}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-2">
+                                <a href="{{ route('home') }}" class="btn btn-sm btn-secondary-sidq">
+                                    <i class="fas fa-home me-1"></i> হোম পেজে যান
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="window.print()">
+                                    <i class="fas fa-print me-1"></i> প্রিন্ট ইনভয়েস
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ==========================================
+                 Similar / Recommended Items (Up to 4 Products)
+            =========================================== -->
+            @if(isset($similarProducts) && $similarProducts->isNotEmpty())
+            <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 text-start mb-4 bg-white">
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2 fs-5">
+                            <i class="fas fa-sparkles text-warning"></i>
+                            <span>আপনার পছন্দ হতে পারে এমন আরও পণ্য</span>
+                        </h5>
+                        <p class="text-muted small mb-0">আমাদের স্টোরের অন্যান্য সেরা ও জনপ্রিয় কালেকশন</p>
+                    </div>
+                    <a href="{{ route('shop.index') }}" class="btn btn-sm btn-outline-danger d-none d-sm-inline-flex align-items-center gap-1">
+                        সবগুলো দেখুন <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="row row-cols-2 row-cols-md-4 g-2 g-md-3">
+                    @foreach($similarProducts as $simProduct)
+                    <div class="col">
+                        @include('frontend.partials.product-card', ['product' => $simProduct])
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
         </div>
     </div>
 </div>
@@ -181,7 +233,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-        // E-Commerce Tracking: Purchase / Conversion Event
+        // E-Commerce Tracking: Purchase Event (Fires once on page load)
         try {
             const orderGrandTotal = {{ (float) $order->grand_total }};
             const orderShipping = {{ (float) $order->shipping_charge }};
@@ -231,6 +283,23 @@
             console.error('Tracking Error (Purchase):', e);
         }
 
+        // Toggle Details Collapse Button Label & Icon
+        const collapseEl = document.getElementById('orderDetailsCollapse');
+        const toggleText = document.getElementById('toggleDetailsText');
+        const toggleIcon = document.getElementById('toggleDetailsIcon');
+
+        if (collapseEl && toggleText && toggleIcon) {
+            collapseEl.addEventListener('show.bs.collapse', function () {
+                toggleText.textContent = 'লুকিয়ে রাখুন';
+                toggleIcon.style.transform = 'rotate(180deg)';
+            });
+            collapseEl.addEventListener('hide.bs.collapse', function () {
+                toggleText.textContent = 'বিস্তারিত দেখুন';
+                toggleIcon.style.transform = 'rotate(0deg)';
+            });
+        }
+
+        // 1-Click Upsell AJAX Handler
         document.querySelectorAll('.btn-add-upsell').forEach(button => {
             button.addEventListener('click', function () {
                 const prodId = this.dataset.productId;
@@ -264,23 +333,23 @@
                             tr.innerHTML = `
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        ${data.item.image ? `<img src="${data.item.image}" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">` : ''}
+                                        ${data.item.image ? `<img src="${data.item.image}" class="rounded me-2" style="width: 36px; height: 36px; object-fit: cover;">` : ''}
                                         <div>
-                                            <div class="fw-medium">${data.item.name}</div>
+                                            <div class="fw-medium text-dark small">${data.item.name}</div>
                                             <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 10px;">
                                                 <i class="fas fa-bolt me-1"></i> ১-ক্লিক আপসেল (ফ্রি ডেলিভারি)
                                             </span>
                                         </div>
                                     </div>
                                 </td>
-                                <td>৳${data.item.unit_price}</td>
-                                <td>${data.item.quantity}</td>
-                                <td class="text-end fw-bold text-success">৳${data.item.total_price}</td>
+                                <td class="small">৳${data.item.unit_price}</td>
+                                <td class="small">${data.item.quantity}</td>
+                                <td class="text-end fw-bold text-success small">৳${data.item.total_price}</td>
                             `;
                             tbody.appendChild(tr);
                         }
 
-                        // Update Subtotal & Grand Total
+                        // Update Table Subtotal & Grand Total
                         const subtotalEl = document.getElementById('orderSubtotalText');
                         if (subtotalEl && data.subtotal) {
                             subtotalEl.textContent = `৳${data.subtotal}`;
@@ -290,10 +359,16 @@
                         const grandTotalEl = document.getElementById('orderGrandTotalText');
                         if (grandTotalEl && data.grand_total) {
                             grandTotalEl.textContent = `৳${data.grand_total}`;
-                            grandTotalEl.style.transition = 'transform 0.25s ease';
-                            grandTotalEl.style.transform = 'scale(1.15)';
+                        }
+
+                        // Update Visible Compact Total
+                        const compactTotalEl = document.getElementById('overviewCompactTotal');
+                        if (compactTotalEl && data.grand_total) {
+                            compactTotalEl.textContent = `৳${data.grand_total}`;
+                            compactTotalEl.style.transition = 'transform 0.25s ease';
+                            compactTotalEl.style.transform = 'scale(1.15)';
                             setTimeout(() => {
-                                grandTotalEl.style.transform = 'scale(1)';
+                                compactTotalEl.style.transform = 'scale(1)';
                             }, 350);
                         }
 
