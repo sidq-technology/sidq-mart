@@ -77,7 +77,7 @@
                                             data-product-id="{{ $upsellProd->id }}"
                                             data-product-name="{{ $upsellProd->name }}">
                                         <i class="fas fa-cart-plus fs-5"></i>
-                                        <span>অর্ডারে যুক্ত করুন (+ ১-ক্লিক)</span>
+                                        <span>অর্ডারে যুক্ত করুন</span>
                                     </button>
                                 </div>
                             </div>
