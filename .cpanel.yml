@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=$HOME/public_html/
+    - /bin/rsync -av --exclude='.env' --exclude='.env.*' --exclude='.git*' --exclude='.cpanel.yml' ./ $DEPLOYPATH
