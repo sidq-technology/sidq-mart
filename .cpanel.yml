@@ -1,6 +1,5 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=$HOME/sidqtech.com/
-    - /bin/mkdir -p $DEPLOYPATH
-    - /bin/rsync -av --exclude='.env' --exclude='.env.*' --exclude='.git*' --exclude='.cpanel.yml' ./ $DEPLOYPATH
+    - export DEPLOYPATH=/home/ordhangi/sidqtech.com
+    - /bin/cp -R * $DEPLOYPATH
