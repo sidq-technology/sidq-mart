@@ -6,12 +6,20 @@
             <div class="modal-header border-0 pb-0 bg-white">
                 <div class="w-100 d-flex justify-content-between align-items-center mb-2">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle p-2 d-inline-flex align-items-center justify-content-center text-white" style="background: var(--color-brand-accent, #f13124); width: 34px; height: 34px;">
-                            <i class="fas fa-user-circle"></i>
-                        </span>
-                        <h5 class="modal-title fw-bold text-dark mb-0" id="customerAuthModalLabel">
-                            {{ \App\Models\Setting::get('site_name', 'SIDQ MART') }}
-                        </h5>
+                        @php
+                            $modalLogo = \App\Models\Setting::get('site_logo');
+                            $modalSiteName = \App\Models\Setting::get('site_name', 'SIDQ MART');
+                        @endphp
+                        @if($modalLogo)
+                            <img src="{{ $modalLogo }}" alt="{{ $modalSiteName }}" style="max-height: 38px; max-width: 170px; object-fit: contain;">
+                        @else
+                            <span class="rounded-circle p-2 d-inline-flex align-items-center justify-content-center text-white" style="background: var(--color-brand-accent, #f13124); width: 34px; height: 34px;">
+                                <i class="fas fa-user-circle"></i>
+                            </span>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="customerAuthModalLabel">
+                                {{ $modalSiteName }}
+                            </h5>
+                        @endif
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
