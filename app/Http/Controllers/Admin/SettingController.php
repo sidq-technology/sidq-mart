@@ -108,13 +108,13 @@ class SettingController extends Controller
         // Handle Logo Upload
         if ($request->hasFile('site_logo')) {
             $path = $request->file('site_logo')->store('settings', 'public');
-            Setting::set('site_logo', asset('storage/' . $path));
+            Setting::set('site_logo', 'storage/' . $path);
         }
 
         // Handle Favicon Upload
         if ($request->hasFile('site_favicon')) {
             $path = $request->file('site_favicon')->store('settings', 'public');
-            Setting::set('site_favicon', asset('storage/' . $path));
+            Setting::set('site_favicon', 'storage/' . $path);
         }
 
         Cache::forget('app_settings_all');

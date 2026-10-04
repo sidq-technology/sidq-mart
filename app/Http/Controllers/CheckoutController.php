@@ -388,9 +388,7 @@ class CheckoutController extends Controller
 
             if (!empty($rawUpsellIds)) {
                 $upsellProducts = Product::where('is_active', true)
-                    ->where(function ($q) {
-                        $q->where('manage_stock', false)->orWhere('stock', '>', 0);
-                    })
+                    ->where('stock_quantity', '>', 0)
                     ->whereIn('id', $rawUpsellIds)
                     ->whereNotIn('id', $orderedProductIds)
                     ->take(3)
@@ -405,9 +403,7 @@ class CheckoutController extends Controller
 
                 if (!empty($categoryIds)) {
                     $upsellProducts = Product::where('is_active', true)
-                        ->where(function ($q) {
-                            $q->where('manage_stock', false)->orWhere('stock', '>', 0);
-                        })
+                        ->where('stock_quantity', '>', 0)
                         ->whereIn('category_id', $categoryIds)
                         ->whereNotIn('id', $orderedProductIds)
                         ->latest()
@@ -419,9 +415,7 @@ class CheckoutController extends Controller
             // Fallback 2: If still empty, fetch latest active products
             if ($upsellProducts->isEmpty()) {
                 $upsellProducts = Product::where('is_active', true)
-                    ->where(function ($q) {
-                        $q->where('manage_stock', false)->orWhere('stock', '>', 0);
-                    })
+                    ->where('stock_quantity', '>', 0)
                     ->whereNotIn('id', $orderedProductIds)
                     ->latest()
                     ->take(3)
@@ -441,9 +435,7 @@ class CheckoutController extends Controller
         $similarProducts = collect();
         if (!empty($categoryIds)) {
             $similarProducts = Product::where('is_active', true)
-                ->where(function ($q) {
-                    $q->where('manage_stock', false)->orWhere('stock', '>', 0);
-                })
+                ->where('stock_quantity', '>', 0)
                 ->whereIn('category_id', $categoryIds)
                 ->whereNotIn('id', $excludeIds)
                 ->latest()
@@ -455,9 +447,7 @@ class CheckoutController extends Controller
             $needed = 4 - $similarProducts->count();
             $moreExcludeIds = array_values(array_unique(array_merge($excludeIds, $similarProducts->pluck('id')->toArray())));
             $moreProducts = Product::where('is_active', true)
-                ->where(function ($q) {
-                    $q->where('manage_stock', false)->orWhere('stock', '>', 0);
-                })
+                ->where('stock_quantity', '>', 0)
                 ->whereNotIn('id', $moreExcludeIds)
                 ->latest()
                 ->take($needed)
@@ -497,7 +487,7 @@ class CheckoutController extends Controller
             ], 404);
         }
 
-        if ($product->manage_stock && $product->stock < 1) {
+        if ($product->stock_quantity < 1) {
             return response()->json([
                 'success' => false,
                 'message' => 'দুঃখিত, পণ্যটি বর্তমানে স্টক আউট।'
@@ -526,8 +516,8 @@ class CheckoutController extends Controller
             'total_price' => $totalPrice,
         ]);
 
-        if ($product->manage_stock) {
-            $product->decrement('stock', $quantity);
+        if ($product->stock_quantity > 0) {
+            $product->decrement('stock_quantity', $quantity);
         }
 
         // Single parcel delivery: shipping charge remains unchanged

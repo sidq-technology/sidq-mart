@@ -13,7 +13,7 @@
     <div class="container header-main px-3 px-lg-2">
         <div class="row align-items-center g-2 g-lg-3">
             <!-- Brand Logo -->
-            <div class="col-6 col-lg-2 col-xl-2 d-flex align-items-center">
+            <div class="col-7 col-sm-6 col-lg-2 col-xl-2 d-flex align-items-center">
                 <a href="{{ route('home') }}" class="header-logo">
                     @if($siteLogo)
                         <img src="{{ $siteLogo }}" alt="{{ $siteName }}">
@@ -36,7 +36,7 @@
             </div>
 
             <!-- User Account, Cart Widget, Order Button & Mobile Menu Toggle -->
-            <div class="col-6 col-lg-5 col-xl-5 order-2 order-lg-3 d-flex justify-content-end align-items-center gap-2 gap-sm-3">
+            <div class="col-5 col-sm-6 col-lg-5 col-xl-5 order-2 order-lg-3 d-flex justify-content-end align-items-center gap-2 gap-sm-3">
                 <!-- User Account Dropdown / Login Button -->
                 @auth
                 <div class="dropdown flex-shrink-0">

@@ -104,8 +104,8 @@ class DatabaseSeeder extends Seeder
         $settings = [
             'site_name' => 'SIDQ MART',
             'site_slogan' => 'SIDQ MART — Online Shopping In Bangladesh | Powered by SIDQ Technology',
-            'site_logo' => asset('images/sidq-mart-logo.svg'),
-            'site_favicon' => asset('favicon.png'),
+            'site_logo' => 'images/sidq-mart-logo.svg',
+            'site_favicon' => 'favicon.png',
             'contact_phone' => '01711223344',
             'contact_email' => 'support@sidqmart.com',
             'whatsapp_number' => '01711223344',
