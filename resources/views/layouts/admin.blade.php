@@ -582,7 +582,7 @@
         </div>
 
         <footer class="py-3 px-4 border-top text-center text-muted small" style="background: rgba(255, 255, 255, 0.6); border-color: var(--admin-mint-border) !important;">
-            &copy; {{ date('Y') }} {{ \App\Models\Setting::get('site_name', 'SIDQ MART') }} — Engineered &amp; Powered by <strong class="text-dark">SIDQ Technology</strong>
+            &copy; {{ date('Y') }} {{ \App\Models\Setting::get('site_name', 'SIDQ MART') }} — Engineered &amp; Powered by <a href="https://sidqtech.com" target="_blank" rel="noopener noreferrer" class="text-dark fw-bold text-decoration-none">SIDQ Technology</a>
         </footer>
     </div>
 

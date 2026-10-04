@@ -105,7 +105,7 @@
 
             <div class="modal-footer border-top bg-light py-2 px-4 justify-content-center">
                 <small class="text-muted" style="font-size: 12px;">
-                    সুরক্ষিত ও পরিচালিত <strong class="text-dark">SIDQ Technology</strong>
+                    সুরক্ষিত ও পরিচালিত <a href="https://sidqtech.com" target="_blank" rel="noopener noreferrer" class="text-dark fw-bold text-decoration-none">SIDQ Technology</a>
                 </small>
             </div>
         </div>

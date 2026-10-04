@@ -141,7 +141,7 @@
     <!-- Bottom Copyright & Powered By Strip -->
     <div class="footer-bottom-bar text-center">
         <div class="container">
-            <span class="d-inline-block small text-wrap" style="max-width: 100%; word-break: break-word;">&copy; {{ date('Y') }} {{ $siteName }}. সর্বস্বত্ব সংরক্ষিত। | Powered by <strong>SIDQ Technology</strong></span>
+            <span class="d-inline-block small text-wrap" style="max-width: 100%; word-break: break-word;">&copy; {{ date('Y') }} {{ $siteName }}. সর্বস্বত্ব সংরক্ষিত। | Powered by <a href="https://sidqtech.com" target="_blank" rel="noopener noreferrer">SIDQ Technology</a></span>
         </div>
     </div>
 </footer>

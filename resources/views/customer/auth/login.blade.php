@@ -91,7 +91,7 @@
 
                     <div class="card-footer bg-light border-0 py-3 text-center">
                         <small class="text-muted">
-                            Powered by <strong class="text-dark">SIDQ Technology</strong>
+                            Powered by <a href="https://sidqtech.com" target="_blank" rel="noopener noreferrer" class="text-dark fw-bold text-decoration-none">SIDQ Technology</a>
                         </small>
                     </div>
                 </div>

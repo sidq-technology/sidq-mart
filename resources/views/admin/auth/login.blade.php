@@ -110,7 +110,7 @@
                 <i class="fas fa-arrow-left me-1"></i> প্রধান ওয়েবসাইটে ফিরে যান
             </a>
             <div class="text-muted" style="font-size: 11px;">
-                Powered by <strong class="text-dark">SIDQ Technology</strong>
+                Powered by <a href="https://sidqtech.com" target="_blank" rel="noopener noreferrer" class="text-dark fw-bold text-decoration-none">SIDQ Technology</a>
             </div>
         </div>
     </div>
