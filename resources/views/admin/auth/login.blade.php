@@ -71,7 +71,7 @@
                 <label for="email" class="form-label small fw-bold">অ্যাডমিন ইমেইল</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light"><i class="fas fa-envelope text-muted"></i></span>
-                    <input type="email" name="email" id="email" class="form-control" value="{{ old('email', 'admin@sidqmart.com') }}" required autofocus>
+                    <input type="email" name="email" id="email" class="form-control" placeholder="admin@example.com" value="{{ old('email') }}" required autofocus>
                 </div>
             </div>
 
@@ -88,7 +88,6 @@
                     <input type="checkbox" name="remember" id="remember" class="form-check-input">
                     <label class="form-check-label small" for="remember">মনে রাখুন</label>
                 </div>
-                <span class="small text-muted">ডিফল্ট: admin123</span>
             </div>
 
             <button type="submit" class="btn btn-admin-login w-100">
