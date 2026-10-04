@@ -71,7 +71,7 @@
                 <label for="email" class="form-label small fw-bold">অ্যাডমিন ইমেইল</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light"><i class="fas fa-envelope text-muted"></i></span>
-                    <input type="email" name="email" id="email" class="form-control" placeholder="admin@example.com" value="{{ old('email') }}" required autofocus>
+                    <input type="email" name="email" id="email" class="form-control" value="{{ old('email') }}" required autofocus>
                 </div>
             </div>
 
@@ -79,7 +79,7 @@
                 <label for="password" class="form-label small fw-bold">পাসওয়ার্ড</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light"><i class="fas fa-lock text-muted"></i></span>
-                    <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
+                    <input type="password" name="password" id="password" class="form-control" required>
                 </div>
             </div>
 
