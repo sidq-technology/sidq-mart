@@ -18,14 +18,11 @@ class CustomerDashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Match orders by user_id OR customer phone/email
+        // Match orders by user_id OR customer phone
         $ordersQuery = Order::query()->where(function ($q) use ($user) {
             $q->where('user_id', $user->id);
-            if ($user->phone) {
+            if (!empty($user->phone)) {
                 $q->orWhere('customer_phone', $user->phone);
-            }
-            if ($user->email) {
-                $q->orWhere('customer_email', $user->email);
             }
         });
 
@@ -50,11 +47,8 @@ class CustomerDashboardController extends Controller
 
         $query = Order::query()->where(function ($q) use ($user) {
             $q->where('user_id', $user->id);
-            if ($user->phone) {
+            if (!empty($user->phone)) {
                 $q->orWhere('customer_phone', $user->phone);
-            }
-            if ($user->email) {
-                $q->orWhere('customer_email', $user->email);
             }
         });
 
@@ -76,8 +70,7 @@ class CustomerDashboardController extends Controller
 
         // Authorization check
         $isOwner = ($order->user_id === $user->id) ||
-                   ($user->phone && $order->customer_phone === $user->phone) ||
-                   ($user->email && $order->customer_email === $user->email);
+                   (!empty($user->phone) && $order->customer_phone === $user->phone);
 
         if (!$isOwner && !$user->hasAdminAccess()) {
             abort(403, 'এই অর্ডারের তথ্য দেখার অনুমতি আপনার নেই।');
