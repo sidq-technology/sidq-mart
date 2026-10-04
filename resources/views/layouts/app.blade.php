@@ -188,13 +188,6 @@
     <!-- Footer Section -->
     @include('frontend.partials.footer')
 
-    <!-- Floating WhatsApp / Contact Button -->
-    @if($phone = \App\Models\Setting::get('contact_phone'))
-    <a href="https://wa.me/88{{ preg_replace('/[^0-9]/', '', $phone) }}" target="_blank" class="floating-contact-btn" title="Contact on WhatsApp" aria-label="WhatsApp Us">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-    @endif
-
     <!-- Offcanvas Cart Drawer -->
     <div class="offcanvas offcanvas-end" tabindex="-1" id="cartDrawer" aria-labelledby="cartDrawerLabel">
         <div class="offcanvas-header border-bottom">
@@ -425,14 +418,17 @@
     @if(\App\Models\Setting::get('whatsapp_chat_enabled') == '1' && $waNumber = \App\Models\Setting::get('whatsapp_number'))
     @php
         $cleanWa = preg_replace('/[^0-9]/', '', $waNumber);
-        $waMsg = urlencode(\App\Models\Setting::get('whatsapp_default_message', 'Hello SIDQ MART! I need assistance with an order.'));
+        if (str_starts_with($cleanWa, '01')) {
+            $cleanWa = '88' . $cleanWa;
+        }
+        $waMsg = urlencode(\App\Models\Setting::get('whatsapp_default_message', 'Hello! I need assistance with an order.'));
         $waPos = \App\Models\Setting::get('whatsapp_widget_position', 'bottom-right');
     @endphp
     <a href="https://wa.me/{{ $cleanWa }}?text={{ $waMsg }}" target="_blank" rel="noopener noreferrer" 
        class="position-fixed d-flex align-items-center justify-content-center text-white text-decoration-none shadow"
-       style="{{ $waPos === 'bottom-left' ? 'left: 20px;' : 'right: 20px;' }} bottom: 85px; z-index: 1040; width: 56px; height: 56px; border-radius: 50%; background: #25d366; transition: transform 0.2s ease, box-shadow 0.2s ease;"
+       style="{{ $waPos === 'bottom-left' ? 'left: 24px;' : 'right: 24px;' }} bottom: 24px; z-index: 1040; width: 56px; height: 56px; border-radius: 50%; background: #25d366; transition: transform 0.2s ease, box-shadow 0.2s ease;"
        onmouseover="this.style.transform='scale(1.1)';" onmouseout="this.style.transform='scale(1)';"
-       title="Chat with SIDQ MART on WhatsApp">
+       title="Chat on WhatsApp">
         <i class="fab fa-whatsapp" style="font-size: 32px;"></i>
     </a>
     @endif
