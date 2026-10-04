@@ -51,12 +51,22 @@
 </head>
 <body>
     <div class="login-card">
+        @php
+            $siteLogo = \App\Models\Setting::get('site_logo');
+            $siteName = \App\Models\Setting::get('site_name', 'SIDQ MART');
+        @endphp
         <div class="text-center mb-4">
-            <div class="d-inline-flex p-3 rounded-circle bg-danger bg-opacity-10 text-danger mb-2">
-                <i class="fas fa-user-shield fa-2x"></i>
-            </div>
-            <h4 class="fw-bold text-dark mb-1">{{ \App\Models\Setting::get('site_name', 'SIDQ MART') }}</h4>
-            <p class="text-muted small">অ্যাডমিন কন্ট্রোল প্যানেল</p>
+            @if(!empty($siteLogo))
+                <div class="mb-3 d-flex justify-content-center align-items-center">
+                    <img src="{{ $siteLogo }}" alt="{{ $siteName }}" style="max-height: 52px; max-width: 220px; object-fit: contain;">
+                </div>
+            @else
+                <div class="d-inline-flex p-3 rounded-circle bg-danger bg-opacity-10 text-danger mb-2">
+                    <i class="fas fa-user-shield fa-2x"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-1">{{ $siteName }}</h4>
+            @endif
+            <p class="text-muted small mb-0">অ্যাডমিন কন্ট্রোল প্যানেল</p>
         </div>
 
         @if($errors->any())
