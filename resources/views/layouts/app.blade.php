@@ -460,63 +460,63 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 58px;
-        height: 58px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
         color: #ffffff !important;
         text-decoration: none !important;
-        box-shadow: 0 8px 24px rgba(18, 140, 126, 0.38);
+        box-shadow: 0 6px 18px rgba(18, 140, 126, 0.35);
         transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
     }
     .support-floating-btn:hover {
         transform: scale(1.08) translateY(-2px);
-        box-shadow: 0 12px 28px rgba(18, 140, 126, 0.48);
+        box-shadow: 0 10px 24px rgba(18, 140, 126, 0.45);
         color: #ffffff !important;
     }
     .support-main-icon {
-        font-size: 26px;
+        font-size: 21px;
         color: #ffffff;
         transition: transform 0.2s ease;
     }
     .support-floating-btn:hover .support-main-icon {
         transform: scale(1.05);
     }
-    /* Online dot with animated ripple */
+    /* Red live online dot with animated ripple */
     .support-online-dot {
         position: absolute;
-        top: 2px;
-        right: 2px;
-        width: 14px;
-        height: 14px;
-        background-color: #22c55e;
-        border: 2.5px solid #ffffff;
+        top: 1px;
+        right: 1px;
+        width: 12px;
+        height: 12px;
+        background-color: #ef4444;
+        border: 2px solid #ffffff;
         border-radius: 50%;
         display: inline-block;
         z-index: 2;
     }
     .support-online-pulse {
         position: absolute;
-        top: -2.5px;
-        left: -2.5px;
-        width: 14px;
-        height: 14px;
+        top: -2px;
+        left: -2px;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
-        background-color: #22c55e;
+        background-color: #ef4444;
         animation: supportRadarPulse 2s infinite ease-out;
-        opacity: 0.75;
+        opacity: 0.85;
     }
     @keyframes supportRadarPulse {
         0% {
             transform: scale(1);
-            opacity: 0.9;
+            opacity: 0.95;
         }
         70% {
-            transform: scale(2.4);
+            transform: scale(2.5);
             opacity: 0;
         }
         100% {
-            transform: scale(2.4);
+            transform: scale(2.5);
             opacity: 0;
         }
     }
@@ -525,29 +525,29 @@
         position: absolute;
         bottom: -1px;
         left: -1px;
-        width: 20px;
-        height: 20px;
+        width: 17px;
+        height: 17px;
         background: #ffffff;
         color: #25d366;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 11px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        font-size: 9.5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.18);
         border: 1.5px solid #ffffff;
     }
     /* Hover Callout Pill */
     .support-callout-pill {
         position: absolute;
-        right: 68px;
+        right: 58px;
         top: 50%;
         transform: translateY(-50%) translateX(10px);
         background: #0f172a;
         color: #ffffff;
-        padding: 6px 12px;
+        padding: 5px 11px;
         border-radius: 20px;
-        font-size: 12px;
+        font-size: 11.5px;
         font-weight: 600;
         white-space: nowrap;
         opacity: 0;
@@ -559,7 +559,7 @@
     }
     .support-floating-wrapper[style*="left"] .support-callout-pill {
         right: auto;
-        left: 68px;
+        left: 58px;
         transform: translateY(-50%) translateX(-10px);
     }
     .support-floating-btn:hover .support-callout-pill {
@@ -570,8 +570,43 @@
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        background-color: #22c55e;
-        box-shadow: 0 0 6px #22c55e;
+        background-color: #ef4444;
+        box-shadow: 0 0 6px #ef4444;
+    }
+
+    /* Mobile Responsive Sizing */
+    @media (max-width: 576px) {
+        .support-floating-wrapper {
+            bottom: 18px !important;
+        }
+        .support-floating-wrapper:not([style*="left"]) {
+            right: 16px !important;
+        }
+        .support-floating-wrapper[style*="left"] {
+            left: 16px !important;
+        }
+        .support-floating-btn {
+            width: 42px;
+            height: 42px;
+        }
+        .support-main-icon {
+            font-size: 18px;
+        }
+        .support-online-dot {
+            top: 0px;
+            right: 0px;
+            width: 11px;
+            height: 11px;
+        }
+        .support-online-pulse {
+            width: 11px;
+            height: 11px;
+        }
+        .support-wa-tag {
+            width: 15px;
+            height: 15px;
+            font-size: 8.5px;
+        }
     }
     </style>
     @endif
