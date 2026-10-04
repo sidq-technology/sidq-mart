@@ -929,3 +929,37 @@ a:hover {
     color: var(--color-brand-accent);
 }
 
+/* Auth Modal Tabs & Brand Theme Integration */
+.auth-nav-tabs {
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+}
+
+.auth-nav-tabs .nav-link {
+    color: #475569;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.auth-nav-tabs .nav-link:hover {
+    color: var(--color-brand-accent, #f13124);
+}
+
+.auth-nav-tabs .nav-link.active {
+    background-color: var(--color-brand-accent, #f13124) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(241, 49, 36, 0.28) !important;
+}
+
+#customerAuthModal .form-check-input:checked {
+    background-color: var(--color-brand-accent, #f13124);
+    border-color: var(--color-brand-accent, #f13124);
+}
+
+#customerAuthModal .form-control:focus {
+    border-color: var(--color-brand-accent, #f13124);
+    box-shadow: 0 0 0 0.2rem rgba(241, 49, 36, 0.15);
+}
+

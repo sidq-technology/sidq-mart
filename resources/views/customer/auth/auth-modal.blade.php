@@ -3,10 +3,10 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             <!-- Modal Header with Tabs -->
-            <div class="modal-header border-0 pb-0" style="background: #f8fffa;">
-                <div class="w-100 d-flex justify-content-between align-items-center mb-3">
+            <div class="modal-header border-0 pb-0 bg-white">
+                <div class="w-100 d-flex justify-content-between align-items-center mb-2">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle p-2 d-inline-flex align-items-center justify-content-center text-white" style="background: var(--color-brand-accent); width: 34px; height: 34px;">
+                        <span class="rounded-circle p-2 d-inline-flex align-items-center justify-content-center text-white" style="background: var(--color-brand-accent, #f13124); width: 34px; height: 34px;">
                             <i class="fas fa-user-circle"></i>
                         </span>
                         <h5 class="modal-title fw-bold text-dark mb-0" id="customerAuthModalLabel">
@@ -17,8 +17,8 @@
                 </div>
             </div>
 
-            <div class="px-4 pt-2" style="background: #f8fffa;">
-                <ul class="nav nav-pills nav-fill bg-white p-1 rounded-3 border" id="authTab" role="tablist">
+            <div class="px-4 pt-1 bg-white">
+                <ul class="nav nav-pills nav-fill p-1 rounded-3 auth-nav-tabs" id="authTab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active fw-bold py-2 rounded-2" id="login-tab" data-bs-toggle="pill" data-bs-target="#modal-login-pane" type="button" role="tab" aria-selected="true">
                             <i class="fas fa-sign-in-alt me-1"></i> লগইন (Login)
@@ -191,6 +191,35 @@
                     btn.innerHTML = origText;
                 });
             });
-        }
     });
 </script>
+
+<style>
+.auth-nav-tabs {
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+}
+.auth-nav-tabs .nav-link {
+    color: #475569;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: none;
+}
+.auth-nav-tabs .nav-link:hover {
+    color: var(--color-brand-accent, #f13124);
+}
+.auth-nav-tabs .nav-link.active {
+    background-color: var(--color-brand-accent, #f13124) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(241, 49, 36, 0.28) !important;
+}
+#customerAuthModal .form-check-input:checked {
+    background-color: var(--color-brand-accent, #f13124);
+    border-color: var(--color-brand-accent, #f13124);
+}
+#customerAuthModal .form-control:focus {
+    border-color: var(--color-brand-accent, #f13124);
+    box-shadow: 0 0 0 0.2rem rgba(241, 49, 36, 0.15);
+}
+</style>
