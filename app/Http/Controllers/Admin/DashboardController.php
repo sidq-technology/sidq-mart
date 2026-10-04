@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -123,10 +124,78 @@ class DashboardController extends Controller
             'total_customers' => User::where('role', 'customer')->count(),
         ];
 
+        // Trend Data for Chart.js
+        $trendDaysCount = ($period === '7_days') ? 7 : (($period === 'today') ? 1 : 30);
+        $daysTrend = [];
+
+        if ($period === 'today') {
+            for ($h = 0; $h <= 23; $h++) {
+                $hKey = str_pad($h, 2, '0', STR_PAD_LEFT);
+                $label = date('g A', strtotime("$hKey:00"));
+                $daysTrend[$hKey] = [
+                    'label' => $label,
+                    'revenue' => 0,
+                    'orders' => 0,
+                ];
+            }
+            $todayOrders = Order::whereDate('created_at', $today)
+                ->where('order_status', '!=', 'cancelled')
+                ->get(['created_at', 'grand_total']);
+            foreach ($todayOrders as $order) {
+                $hKey = $order->created_at->format('H');
+                if (isset($daysTrend[$hKey])) {
+                    $daysTrend[$hKey]['revenue'] += (float) $order->grand_total;
+                    $daysTrend[$hKey]['orders'] += 1;
+                }
+            }
+        } else {
+            for ($i = $trendDaysCount - 1; $i >= 0; $i--) {
+                $d = Carbon::now()->subDays($i)->format('Y-m-d');
+                $daysTrend[$d] = [
+                    'label' => Carbon::parse($d)->format('d M'),
+                    'revenue' => 0,
+                    'orders' => 0,
+                ];
+            }
+            $trendStartDate = Carbon::now()->subDays($trendDaysCount - 1)->startOfDay();
+            $trendOrders = Order::where('created_at', '>=', $trendStartDate)
+                ->where('order_status', '!=', 'cancelled')
+                ->get(['created_at', 'grand_total']);
+            foreach ($trendOrders as $order) {
+                $dateKey = $order->created_at->format('Y-m-d');
+                if (isset($daysTrend[$dateKey])) {
+                    $daysTrend[$dateKey]['revenue'] += (float) $order->grand_total;
+                    $daysTrend[$dateKey]['orders'] += 1;
+                }
+            }
+        }
+
+        // Payment Method breakdown
+        $paymentMethodsBreakdown = (clone $orderQuery)
+            ->where('order_status', '!=', 'cancelled')
+            ->select('payment_method', DB::raw('count(*) as count'), DB::raw('sum(grand_total) as total'))
+            ->groupBy('payment_method')
+            ->get();
+
+        // Delivery Zone breakdown
+        $zoneBreakdown = (clone $orderQuery)
+            ->where('order_status', '!=', 'cancelled')
+            ->select('delivery_zone', DB::raw('count(*) as count'), DB::raw('sum(grand_total) as total'), DB::raw('sum(shipping_charge) as shipping_total'))
+            ->groupBy('delivery_zone')
+            ->get();
+
         // Recent orders (always "As Now" real-time) with eager loading
         $recentOrders = Order::with('items.product')->latest()->take(8)->get();
         $lowStockProducts = Product::where('stock_quantity', '<=', 5)->take(5)->get();
 
-        return view('admin.dashboard', compact('period', 'metrics', 'recentOrders', 'lowStockProducts'));
+        return view('admin.dashboard', compact(
+            'period',
+            'metrics',
+            'recentOrders',
+            'lowStockProducts',
+            'daysTrend',
+            'paymentMethodsBreakdown',
+            'zoneBreakdown'
+        ));
     }
 }

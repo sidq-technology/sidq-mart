@@ -106,6 +106,75 @@
     </div>
 </div>
 
+<!-- 1.5 Interactive Analytics & Performance Charts (Revenue Trend & Payment Channels) -->
+<div class="row g-4 mb-4">
+    <!-- Revenue & Order Volume Velocity Trend Chart -->
+    <div class="col-12 col-xl-8">
+        <div class="card admin-surface-card h-100 shadow-sm border">
+            <div class="card-header bg-transparent border-bottom py-3 px-3 px-sm-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <i class="fas fa-chart-line text-danger"></i>
+                        <span>বিক্রয় ও অর্ডার গতিধারা (Revenue & Order Trend)</span>
+                    </h6>
+                    <small class="text-muted">দৈনিক বিক্রয় আয় এবং অর্ডারের সংখ্যা বিশ্লেষণ</small>
+                </div>
+                <span class="badge bg-light text-dark border px-2.5 py-1 small fw-medium">
+                    @if($period === 'today')
+                        Today (আজকের ঘণ্টাভিত্তিক)
+                    @elseif($period === '7_days')
+                        Last 7 Days (বিগত ৭ দিন)
+                    @else
+                        Last 30 Days (বিগত ৩০ দিন)
+                    @endif
+                </span>
+            </div>
+            <div class="card-body px-3 px-sm-4 pb-3 pt-2">
+                <div style="position: relative; height: 260px; width: 100%; max-width: 100%; overflow: hidden;">
+                    <canvas id="dashboardRevenueChart" style="max-width: 100% !important;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Channels & Delivery Zones Breakdown -->
+    <div class="col-12 col-xl-4">
+        <div class="card admin-surface-card h-100 shadow-sm border">
+            <div class="card-header bg-transparent border-bottom py-3 px-3 px-sm-4">
+                <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                    <i class="fas fa-chart-pie text-primary"></i>
+                    <span>পেমেন্ট চ্যানেল ও জোন বণ্টন</span>
+                </h6>
+                <small class="text-muted">গেটওয়ে এবং ডেলিভারি অঞ্চলভিত্তিক হিসাব</small>
+            </div>
+            <div class="card-body px-3 px-sm-4 pb-3 pt-1">
+                <div style="position: relative; height: 160px; width: 100%; max-width: 100%; overflow: hidden;" class="my-2">
+                    <canvas id="dashboardPaymentChart" style="max-width: 100% !important;"></canvas>
+                </div>
+
+                <div class="pt-2 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 11px;">ডেলিভারি অঞ্চল (Zones)</span>
+                    </div>
+                    @forelse($zoneBreakdown as $zone)
+                    <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                        <div>
+                            <span class="fw-semibold text-dark text-capitalize small">
+                                {{ $zone->delivery_zone === 'inside_dhaka' ? 'ঢাকার ভেতরে (Inside Dhaka)' : ($zone->delivery_zone === 'outside_dhaka' ? 'ঢাকার বাইরে (Outside Dhaka)' : ucfirst($zone->delivery_zone)) }}
+                            </span>
+                            <div class="text-muted" style="font-size: 11px;">{{ $zone->count }} টি অর্ডার (ডেলিভারি ফি: ৳{{ number_format($zone->shipping_total, 0) }})</div>
+                        </div>
+                        <span class="fw-bold text-dark small">৳{{ number_format($zone->total, 0) }}</span>
+                    </div>
+                    @empty
+                    <div class="text-muted small py-2 text-center">কোনো জোন রেকর্ড পাওয়া যায়নি।</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4">
     <!-- 2. Recent Orders Table (As Now) -->
     <div class="col-12 col-xl-8">
@@ -483,3 +552,164 @@
 }
 </style>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Revenue & Orders Trend Chart
+    const trendData = @json(array_values($daysTrend));
+    const labels = trendData.map(d => d.label);
+    const revenues = trendData.map(d => d.revenue);
+    const orderCounts = trendData.map(d => d.orders);
+
+    const trendCanvas = document.getElementById('dashboardRevenueChart');
+    if (trendCanvas) {
+        const trendCtx = trendCanvas.getContext('2d');
+        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--admin-primary').trim() || '#f13124';
+
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'বিক্রয় আয় (৳)',
+                        data: revenues,
+                        borderColor: primaryColor,
+                        backgroundColor: 'rgba(241, 49, 36, 0.08)',
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: labels.length > 15 ? 2 : 4,
+                        pointHoverRadius: 6,
+                        borderWidth: 2.5,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'অর্ডারের সংখ্যা',
+                        data: orderCounts,
+                        borderColor: '#0f172a',
+                        backgroundColor: 'transparent',
+                        borderWidth: 1.8,
+                        borderDash: [3, 3],
+                        pointRadius: labels.length > 15 ? 1.5 : 3,
+                        pointHoverRadius: 5,
+                        tension: 0.3,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 12,
+                            font: { family: "'Outfit', sans-serif", size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.datasetIndex === 0) {
+                                    return ' বিক্রয়: ৳' + Number(context.parsed.y).toLocaleString();
+                                }
+                                return ' অর্ডার: ' + context.parsed.y + ' টি';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { maxRotation: 45, minRotation: 0, font: { family: "'Outfit', sans-serif", size: 10 } }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        grid: { color: 'rgba(226, 232, 240, 0.5)' },
+                        ticks: {
+                            callback: function(value) {
+                                return '৳' + Number(value).toLocaleString();
+                            },
+                            font: { family: "'Outfit', sans-serif", size: 10 }
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        ticks: { stepSize: 1, font: { family: "'Outfit', sans-serif", size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Payment Method Distribution Chart
+    const paymentCanvas = document.getElementById('dashboardPaymentChart');
+    if (paymentCanvas) {
+        const paymentBreakdown = @json($paymentMethodsBreakdown);
+        const pLabels = paymentBreakdown.map(p => {
+            if (p.payment_method === 'cod') return 'COD';
+            if (p.payment_method === 'bkash') return 'bKash';
+            if (p.payment_method === 'nagad') return 'Nagad';
+            if (p.payment_method === 'rocket') return 'Rocket';
+            return p.payment_method ? p.payment_method.toUpperCase() : 'Unknown';
+        });
+        const pTotals = paymentBreakdown.map(p => Number(p.total));
+
+        const paymentCtx = paymentCanvas.getContext('2d');
+        new Chart(paymentCtx, {
+            type: 'doughnut',
+            data: {
+                labels: pLabels.length > 0 ? pLabels : ['No Orders Yet'],
+                datasets: [{
+                    data: pTotals.length > 0 ? pTotals : [1],
+                    backgroundColor: [
+                        '#0f172a',
+                        '#e2136e',
+                        '#f7941d',
+                        '#8b5cf6',
+                        '#3b82f6',
+                        '#94a3b8'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 8,
+                            font: { size: 10.5, family: "'Outfit', sans-serif" }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (pTotals.length === 0) return ' কোনো অর্ডার নেই';
+                                return ' ' + context.label + ': ৳' + Number(context.parsed).toLocaleString();
+                            }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+});
+</script>
+@endpush
