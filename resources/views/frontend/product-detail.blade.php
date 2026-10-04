@@ -76,8 +76,15 @@
                 </div>
 
                 @if($product->short_description)
-                <div class="mb-4 text-secondary">
-                    {!! nl2br(e($product->short_description)) !!}
+                <div class="pdp-short-desc-highlight mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-1.5">
+                        <span class="pdp-desc-badge">
+                            <i class="fas fa-sparkles me-1 text-warning"></i> পণ্যের বিশেষত্ব ও অফার
+                        </span>
+                    </div>
+                    <div class="pdp-desc-text">
+                        {!! nl2br(e($product->short_description)) !!}
+                    </div>
                 </div>
                 @endif
 
