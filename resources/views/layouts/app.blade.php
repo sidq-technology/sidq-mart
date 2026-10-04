@@ -414,7 +414,7 @@
     <!-- Customer Authentication Modal Popup -->
     @include('customer.auth.auth-modal')
 
-    <!-- WhatsApp Floating Live Chat Widget (Engineered by SIDQ Technology) -->
+    <!-- Floating Live Support Widget (Engineered by SIDQ Technology) -->
     @if(\App\Models\Setting::get('whatsapp_chat_enabled') == '1' && $waNumber = \App\Models\Setting::get('whatsapp_number'))
     @php
         $cleanWa = preg_replace('/[^0-9]/', '', $waNumber);
@@ -424,13 +424,156 @@
         $waMsg = urlencode(\App\Models\Setting::get('whatsapp_default_message', 'Hello! I need assistance with an order.'));
         $waPos = \App\Models\Setting::get('whatsapp_widget_position', 'bottom-right');
     @endphp
-    <a href="https://wa.me/{{ $cleanWa }}?text={{ $waMsg }}" target="_blank" rel="noopener noreferrer" 
-       class="position-fixed d-flex align-items-center justify-content-center text-white text-decoration-none shadow"
-       style="{{ $waPos === 'bottom-left' ? 'left: 24px;' : 'right: 24px;' }} bottom: 24px; z-index: 1040; width: 56px; height: 56px; border-radius: 50%; background: #25d366; transition: transform 0.2s ease, box-shadow 0.2s ease;"
-       onmouseover="this.style.transform='scale(1.1)';" onmouseout="this.style.transform='scale(1)';"
-       title="Chat on WhatsApp">
-        <i class="fab fa-whatsapp" style="font-size: 32px;"></i>
-    </a>
+    <div class="support-floating-wrapper" style="{{ $waPos === 'bottom-left' ? 'left: 24px;' : 'right: 24px;' }} bottom: 24px;">
+        <a href="https://wa.me/{{ $cleanWa }}?text={{ $waMsg }}" target="_blank" rel="noopener noreferrer" 
+           class="support-floating-btn"
+           aria-label="অনলাইন কাস্টমার সাপোর্ট"
+           title="কাস্টমার সাপোর্ট অ্যাসিস্ট্যান্ট (অনলাইন)">
+            <!-- Online Indicator Dot with Radar Pulse -->
+            <span class="support-online-dot" aria-hidden="true">
+                <span class="support-online-pulse"></span>
+            </span>
+
+            <!-- Custom Support Manager Icon -->
+            <i class="fas fa-headset support-main-icon"></i>
+
+            <!-- Mini WhatsApp Indicator Tag -->
+            <span class="support-wa-tag" title="WhatsApp Support">
+                <i class="fab fa-whatsapp"></i>
+            </span>
+
+            <!-- Tooltip / Callout Pill on Hover -->
+            <span class="support-callout-pill shadow-sm">
+                <span class="status-indicator"></span>
+                <span>সাপোর্ট অনলাইন</span>
+            </span>
+        </a>
+    </div>
+
+    <style>
+    .support-floating-wrapper {
+        position: fixed;
+        z-index: 1040;
+    }
+    .support-floating-btn {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+        color: #ffffff !important;
+        text-decoration: none !important;
+        box-shadow: 0 8px 24px rgba(18, 140, 126, 0.38);
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+    }
+    .support-floating-btn:hover {
+        transform: scale(1.08) translateY(-2px);
+        box-shadow: 0 12px 28px rgba(18, 140, 126, 0.48);
+        color: #ffffff !important;
+    }
+    .support-main-icon {
+        font-size: 26px;
+        color: #ffffff;
+        transition: transform 0.2s ease;
+    }
+    .support-floating-btn:hover .support-main-icon {
+        transform: scale(1.05);
+    }
+    /* Online dot with animated ripple */
+    .support-online-dot {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 14px;
+        height: 14px;
+        background-color: #22c55e;
+        border: 2.5px solid #ffffff;
+        border-radius: 50%;
+        display: inline-block;
+        z-index: 2;
+    }
+    .support-online-pulse {
+        position: absolute;
+        top: -2.5px;
+        left: -2.5px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background-color: #22c55e;
+        animation: supportRadarPulse 2s infinite ease-out;
+        opacity: 0.75;
+    }
+    @keyframes supportRadarPulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.9;
+        }
+        70% {
+            transform: scale(2.4);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(2.4);
+            opacity: 0;
+        }
+    }
+    /* Mini WhatsApp indicator badge */
+    .support-wa-tag {
+        position: absolute;
+        bottom: -1px;
+        left: -1px;
+        width: 20px;
+        height: 20px;
+        background: #ffffff;
+        color: #25d366;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        border: 1.5px solid #ffffff;
+    }
+    /* Hover Callout Pill */
+    .support-callout-pill {
+        position: absolute;
+        right: 68px;
+        top: 50%;
+        transform: translateY(-50%) translateX(10px);
+        background: #0f172a;
+        color: #ffffff;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .support-floating-wrapper[style*="left"] .support-callout-pill {
+        right: auto;
+        left: 68px;
+        transform: translateY(-50%) translateX(-10px);
+    }
+    .support-floating-btn:hover .support-callout-pill {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
+    .support-callout-pill .status-indicator {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #22c55e;
+        box-shadow: 0 0 6px #22c55e;
+    }
+    </style>
     @endif
 
     @if($customFooter = \App\Models\Setting::get('custom_footer_scripts'))
