@@ -89,5 +89,14 @@ class OrderService
 
             return $order;
         });
+
+        // Asynchronously dispatch Order Placed SMS Notification
+        try {
+            app(\App\Services\SmsService::class)->sendOrderNotification($order, 'order_placed');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Order Placed SMS Trigger Error: ' . $e->getMessage());
+        }
+
+        return $order;
     }
 }

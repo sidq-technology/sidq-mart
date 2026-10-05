@@ -6,8 +6,16 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
         <h3 class="fw-bold mb-1 text-dark" style="font-size: 1.55rem; letter-spacing: -0.3px;">
-            <i class="fas fa-chart-line me-2" style="color: var(--admin-primary);"></i> ড্যাশবোর্ড (Dashboard Overview)
+            Dashboard Overview
         </h3>
+        @php
+            $hour = now('Asia/Dhaka')->hour;
+            $timeGreeting = $hour < 12 ? 'Morning' : ($hour < 17 ? 'Afternoon' : 'Evening');
+            $adminName = auth()->user()->name ?? 'Admin';
+        @endphp
+        <p class="text-muted mb-0" style="font-size: 14.5px;">
+            Hi <span class="fw-semibold text-dark">{{ $adminName }}</span>, Good {{ $timeGreeting }}!
+        </p>
     </div>
     
     <!-- Time-Range Filter Pills (Today, 7 Days, 30 Days, All Time) -->
@@ -45,17 +53,17 @@
     <!-- Card 1: Sales in Period -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="metric-card h-100">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-                <span class="stat-card-title">{{ $metrics['card1_title'] }}</span>
+            <div class="d-flex align-items-center gap-3">
                 <span class="stat-badge-icon" style="background: #ecfdf5; color: #059669; border: 1px solid #d1fae5;">
                     <i class="fas fa-wallet"></i>
                 </span>
-            </div>
-            <div class="stat-card-value text-dark fw-bold mb-2">৳{{ number_format($metrics['card1_value'], 0) }}</div>
-            <div class="d-flex align-items-center">
-                <span class="stat-card-sub text-success">
-                    <i class="fas fa-arrow-trend-up me-1"></i> {{ $metrics['card1_subtitle'] }}
-                </span>
+                <div class="flex-grow-1 min-w-0">
+                    <span class="stat-card-title d-block">{{ $metrics['card1_title'] }}</span>
+                    <div class="stat-card-value text-dark fw-bold my-1">৳{{ number_format($metrics['card1_value'], 0) }}</div>
+                    <div class="stat-card-sub text-success">
+                        <i class="fas fa-arrow-trend-up me-1"></i> {{ $metrics['card1_subtitle'] }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -63,17 +71,17 @@
     <!-- Card 2: Today's Sales / Delivered -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="metric-card h-100">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-                <span class="stat-card-title">{{ $metrics['card2_title'] }}</span>
+            <div class="d-flex align-items-center gap-3">
                 <span class="stat-badge-icon" style="background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe;">
                     <i class="far fa-calendar-check"></i>
                 </span>
-            </div>
-            <div class="stat-card-value text-dark fw-bold mb-2">৳{{ number_format($metrics['card2_value'], 0) }}</div>
-            <div class="d-flex align-items-center">
-                <span class="stat-card-sub text-muted">
-                    <i class="far fa-clock me-1"></i> {{ $metrics['card2_subtitle'] }}
-                </span>
+                <div class="flex-grow-1 min-w-0">
+                    <span class="stat-card-title d-block">{{ $metrics['card2_title'] }}</span>
+                    <div class="stat-card-value text-dark fw-bold my-1">৳{{ number_format($metrics['card2_value'], 0) }}</div>
+                    <div class="stat-card-sub text-muted">
+                        <i class="far fa-clock me-1"></i> {{ $metrics['card2_subtitle'] }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -81,23 +89,23 @@
     <!-- Card 3: Orders in Period & Pending -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="metric-card h-100">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-                <span class="stat-card-title">{{ $metrics['card3_title'] }}</span>
+            <div class="d-flex align-items-center gap-3">
                 <span class="stat-badge-icon" style="background: #fffbeb; color: #d97706; border: 1px solid #fef3c7;">
                     <i class="fas fa-shopping-bag"></i>
                 </span>
-            </div>
-            <div class="stat-card-value text-dark fw-bold mb-2">
-                {{ $metrics['card3_orders'] }} <span class="fs-6 fw-normal text-muted">টি</span>
-            </div>
-            <div class="d-flex align-items-center">
-                @if($metrics['card3_pending'] > 0)
-                <span class="stat-card-sub text-warning fw-semibold">
-                    <i class="fas fa-hourglass-half me-1"></i> {{ $metrics['card3_pending'] }} টি পেন্ডিং আছে
-                </span>
-                @else
-                <span class="stat-card-sub text-muted">সব প্রক্রিয়াধীন</span>
-                @endif
+                <div class="flex-grow-1 min-w-0">
+                    <span class="stat-card-title d-block">{{ $metrics['card3_title'] }}</span>
+                    <div class="stat-card-value text-dark fw-bold my-1">
+                        {{ $metrics['card3_orders'] }} <span class="fs-6 fw-normal text-muted">টি</span>
+                    </div>
+                    @if($metrics['card3_pending'] > 0)
+                    <div class="stat-card-sub text-warning fw-semibold">
+                        <i class="fas fa-hourglass-half me-1"></i> {{ $metrics['card3_pending'] }} টি পেন্ডিং আছে
+                    </div>
+                    @else
+                    <div class="stat-card-sub text-muted">সব প্রক্রিয়াধীন</div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -105,25 +113,25 @@
     <!-- Card 4: Store Products & Low Stock -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="metric-card h-100">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-                <span class="stat-card-title">স্টোর পণ্য</span>
+            <div class="d-flex align-items-center gap-3">
                 <span class="stat-badge-icon" style="background: #fff1f2; color: #e11d48; border: 1px solid #ffe4e6;">
                     <i class="fas fa-box-open"></i>
                 </span>
-            </div>
-            <div class="stat-card-value text-dark fw-bold mb-2">
-                {{ $metrics['total_products'] }} <span class="fs-6 fw-normal text-muted">টি</span>
-            </div>
-            <div class="d-flex align-items-center">
-                @if($metrics['low_stock_products'] > 0)
-                <span class="stat-card-sub text-danger fw-semibold">
-                    <i class="fas fa-triangle-exclamation me-1"></i> {{ $metrics['low_stock_products'] }} টি পণ্যের স্টক কম
-                </span>
-                @else
-                <span class="stat-card-sub text-success">
-                    <i class="fas fa-check me-1"></i> স্টক স্বাভাবিক
-                </span>
-                @endif
+                <div class="flex-grow-1 min-w-0">
+                    <span class="stat-card-title d-block">স্টোর পণ্য</span>
+                    <div class="stat-card-value text-dark fw-bold my-1">
+                        {{ $metrics['total_products'] }} <span class="fs-6 fw-normal text-muted">টি</span>
+                    </div>
+                    @if($metrics['low_stock_products'] > 0)
+                    <div class="stat-card-sub text-danger fw-semibold">
+                        <i class="fas fa-triangle-exclamation me-1"></i> {{ $metrics['low_stock_products'] }} টি পণ্যের স্টক কম
+                    </div>
+                    @else
+                    <div class="stat-card-sub text-success">
+                        <i class="fas fa-check me-1"></i> স্টক স্বাভাবিক
+                    </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -596,13 +604,13 @@
     align-items: center;
 }
 .stat-badge-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 4px;
+    width: 46px;
+    height: 46px;
+    border-radius: 6px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 19px;
     flex-shrink: 0;
 }
 .dashboard-subtitle {

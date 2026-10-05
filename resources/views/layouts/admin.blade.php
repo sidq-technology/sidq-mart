@@ -191,6 +191,55 @@
             color: var(--admin-primary);
         }
 
+        /* Hover Submenu for Finance & Marketing */
+        .admin-nav-dropdown {
+            position: relative;
+        }
+
+        .admin-submenu {
+            list-style: none;
+            padding: 4px 0 6px 16px;
+            margin: 0;
+            display: none;
+            transition: all 0.2s ease;
+        }
+
+        .admin-nav-dropdown:hover .admin-submenu,
+        .admin-nav-dropdown.open .admin-submenu {
+            display: block;
+        }
+
+        .admin-nav-dropdown:hover .nav-arrow,
+        .admin-nav-dropdown.open .nav-arrow {
+            transform: rotate(180deg);
+        }
+
+        .admin-submenu li a {
+            display: flex;
+            align-items: center;
+            padding: 8px 14px;
+            font-size: 14.5px;
+            font-weight: 500;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 8px;
+            border-left: none !important;
+            transition: all 0.15s ease;
+            gap: 10px;
+        }
+
+        .admin-submenu li a:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+            transform: translateX(3px);
+        }
+
+        .admin-submenu li.active a {
+            color: var(--admin-primary);
+            font-weight: 700;
+            background: rgba(241, 49, 36, 0.08);
+        }
+
         .admin-main {
             margin-left: 270px;
             width: calc(100% - 270px);
@@ -257,9 +306,6 @@
             padding: 16px 18px;
             border: 1px solid #eef2f6 !important;
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
@@ -451,12 +497,29 @@
             </li>
             @endif
 
-            @if(auth()->user()->canDo('finance.view'))
-            <li class="admin-nav-item {{ request()->routeIs('admin.finance.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.finance.index') }}">
-                    <i class="fas fa-wallet"></i>
-                    <span>Finance</span>
+            @if(auth()->user()->canDo('finance.view') || auth()->user()->canDo('settings.manage'))
+            <li class="admin-nav-item admin-nav-dropdown {{ (request()->routeIs('admin.finance.*') || request()->routeIs('admin.marketing.*')) ? 'active open' : '' }}">
+                <a href="{{ route('admin.finance.index') }}" class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="fas fa-wallet"></i>
+                        <span>Finance</span>
+                    </div>
+                    <i class="fas fa-chevron-down nav-arrow small text-muted" style="font-size: 11px;"></i>
                 </a>
+                <ul class="admin-submenu">
+                    <li class="{{ request()->routeIs('admin.finance.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.finance.index') }}">
+                            <i class="fas fa-chart-line me-2"></i>
+                            <span>Finance Overview</span>
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('admin.marketing.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.marketing.sms') }}">
+                            <i class="fas fa-paper-plane me-2 text-danger"></i>
+                            <span>SMS &amp; Marketing</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             @endif
 

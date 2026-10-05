@@ -75,12 +75,35 @@ class SettingController extends Controller
             'upsell_badge_text',
             'upsell_heading',
             'upsell_subtitle',
+
+            // SMS & Notification Gateway (MRAM Technologies)
+            'sms_enabled',
+            'sms_provider',
+            'sms_api_key',
+            'sms_sender_id',
+            'sms_api_url',
+            'sms_type',
+            'sms_label',
+            'sms_event_order_placed',
+            'sms_event_order_processing',
+            'sms_event_order_shipped',
+            'sms_event_order_delivered',
+            'sms_event_order_cancelled',
+            'sms_template_order_placed',
+            'sms_template_order_processing',
+            'sms_template_order_shipped',
+            'sms_template_order_delivered',
+            'sms_template_order_cancelled',
         ];
 
         foreach ($fields as $field) {
             if ($request->has($field)) {
                 Setting::set($field, $request->input($field));
-            } elseif (in_array($field, ['bkash_enabled', 'nagad_enabled', 'rocket_enabled', 'meta_pixel_enabled'])) {
+            } elseif (in_array($field, [
+                'bkash_enabled', 'nagad_enabled', 'rocket_enabled', 'meta_pixel_enabled',
+                'sms_enabled', 'sms_event_order_placed', 'sms_event_order_processing',
+                'sms_event_order_shipped', 'sms_event_order_delivered', 'sms_event_order_cancelled'
+            ])) {
                 // Checkbox unselected
                 Setting::set($field, '0');
             } elseif ($field === 'cod_enabled') {

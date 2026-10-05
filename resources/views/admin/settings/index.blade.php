@@ -679,6 +679,198 @@
             </div>
         </div>
 
+        <!-- ==========================================
+             8. SMS & NOTIFICATION GATEWAY (MRAM API)
+        =========================================== -->
+        <div class="card border bg-white rounded-3 shadow-xs overflow-hidden" id="secSmsCard">
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header d-flex align-items-center justify-content-between"
+                 data-bs-toggle="collapse" 
+                 data-bs-target="#secSms" 
+                 aria-expanded="false"
+                 role="button">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(220, 38, 38, 0.12); color: #dc2626; font-size: 18px;">
+                        <i class="fas fa-sms"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">৮. SMS নোটিফিকেশন ও গেটওয়ে (MRAM SMS Gateway &amp; Automation)</h6>
+                        <span class="text-muted small">অর্ডার ট্রানজেকশনাল SMS, MRAM API কী, সেন্ডার আইডি ও মেসেজ টেমপ্লেট</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    @if(($settings['sms_enabled'] ?? '0') == '1')
+                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1 small">সক্রিয় (Active)</span>
+                    @else
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fw-semibold px-2 py-1 small">নিষ্ক্রিয় (Disabled)</span>
+                    @endif
+                    <i class="fas fa-chevron-down text-muted accordion-arrow"></i>
+                </div>
+            </div>
+
+            <div id="secSms" class="collapse">
+                <div class="card-body p-3 p-sm-4 border-top">
+                    <!-- Master Toggle & Live Balance -->
+                    <div class="p-3 bg-light rounded-3 mb-4 border d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+                        <div>
+                            <div class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                                <i class="fas fa-power-off text-danger"></i>
+                                <span>অর্ডার SMS সার্ভিস মাস্টার সুইচ (Master Enable)</span>
+                            </div>
+                            <div class="text-muted small">চালু থাকলে গ্রাহক অর্ডার প্লেস, প্রসেসিং, ডেলিভারি বা বাতিলের সময় স্বয়ংক্রিয় SMS পাবেন। ব্যাকগ্রাউন্ড কিউ সিস্টেমের মাধ্যমে অতিদ্রুত মেসেজ পাঠানো হয়।</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="text-end d-none d-sm-block">
+                                <div class="small text-muted">লাইভ SMS ব্যালেন্স</div>
+                                <strong class="fs-6 text-dark" id="settingsLiveBalance">লোড হচ্ছে...</strong>
+                            </div>
+                            <div class="form-check form-switch fs-4 mb-0 ms-2">
+                                <input class="form-check-input" type="checkbox" role="switch" name="sms_enabled" id="sms_enabled" value="1" {{ ($settings['sms_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API Credentials -->
+                    <div class="border rounded-3 p-3 p-sm-4 mb-4 bg-white">
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                            <h6 class="fw-bold text-dark mb-0">
+                                <i class="fas fa-key text-primary me-2"></i> MRAM Technologies API ক্রেডেনশিয়াল
+                            </h6>
+                            <a href="https://sms.mram.com.bd" target="_blank" class="small text-decoration-none fw-semibold">
+                                MRAM পোর্টাল লগইন &rarr;
+                            </a>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label for="sms_api_key" class="form-label small fw-bold text-dark mb-1">API Key <span class="text-danger">*</span></label>
+                                <input type="text" name="sms_api_key" id="sms_api_key" class="form-control font-monospace" value="{{ old('sms_api_key', $settings['sms_api_key'] ?? '') }}" placeholder="যেমন: C3000981658018e2ace5c0.19099927">
+                                <div class="form-text small">MRAM ডেভেলপার ড্যাশবোর্ড থেকে প্রাপ্ত সিক্রেট API Key।</div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="sms_sender_id" class="form-label small fw-bold text-dark mb-1">Approved Sender ID <span class="text-danger">*</span></label>
+                                <input type="text" name="sms_sender_id" id="sms_sender_id" class="form-control" value="{{ old('sms_sender_id', $settings['sms_sender_id'] ?? '') }}" placeholder="যেমন: SIDQ MART বা নন-মাস্কিং আইডি">
+                                <div class="form-text small">বিটিআরসি অনুমোদিত মাস্কিং বা নন-মাস্কিং প্রেরক আইডি।</div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="sms_api_url" class="form-label small fw-bold text-dark mb-1">API Gateway Endpoint URL</label>
+                                <input type="url" name="sms_api_url" id="sms_api_url" class="form-control font-monospace" value="{{ old('sms_api_url', $settings['sms_api_url'] ?? 'https://sms.mram.com.bd/smsapi') }}">
+                                <div class="form-text small">ডিফল্ট: <code>https://sms.mram.com.bd/smsapi</code></div>
+                            </div>
+
+                            <div class="col-12 col-md-3">
+                                <label for="sms_type" class="form-label small fw-bold text-dark mb-1">Content Type</label>
+                                <select name="sms_type" id="sms_type" class="form-select">
+                                    <option value="unicode" {{ ($settings['sms_type'] ?? 'unicode') === 'unicode' ? 'selected' : '' }}>Unicode (বাংলা ও ইংরেজি)</option>
+                                    <option value="text" {{ ($settings['sms_type'] ?? '') === 'text' ? 'selected' : '' }}>Text (শুধু ইংরেজি)</option>
+                                </select>
+                                <div class="form-text small">বাংলা SMS পাঠাতে অবশ্যই Unicode সিলেক্ট রাখুন।</div>
+                            </div>
+
+                            <div class="col-12 col-md-3">
+                                <label for="sms_label" class="form-label small fw-bold text-dark mb-1">SMS Label</label>
+                                <select name="sms_label" id="sms_label" class="form-select">
+                                    <option value="transactional" selected>transactional (অর্ডার ট্রানজেকশন)</option>
+                                    <option value="promotional" {{ ($settings['sms_label'] ?? '') === 'promotional' ? 'selected' : '' }}>promotional (মার্কেটিং)</option>
+                                </select>
+                                <div class="form-text small">ট্রানজেকশনাল SMS-এর ক্ষেত্রে অনুমোদিত লেবেল।</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Event-Specific Templates & Toggles -->
+                    <div class="border rounded-3 p-3 p-sm-4 bg-white">
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">
+                                    <i class="fas fa-envelope-open-text text-danger me-2"></i> অর্ডার ইভেন্ট ও ডায়নামিক SMS টেমপ্লেট
+                                </h6>
+                                <small class="text-muted">ট্যাগগুলো ক্লিক করে সরাসরি টেমপ্লেটে যুক্ত করতে পারবেন</small>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1">
+                                <span class="badge bg-light text-dark border font-monospace">{customer_name}</span>
+                                <span class="badge bg-light text-dark border font-monospace">{order_number}</span>
+                                <span class="badge bg-light text-dark border font-monospace">{grand_total}</span>
+                                <span class="badge bg-light text-dark border font-monospace">{site_name}</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column gap-4">
+                            <!-- 1. Order Placed -->
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="form-label fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                        <i class="fas fa-shopping-cart text-success"></i>
+                                        <span>১. নতুন অর্ডার প্লেস (Order Placed)</span>
+                                    </label>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" role="switch" name="sms_event_order_placed" value="1" {{ ($settings['sms_event_order_placed'] ?? '1') == '1' ? 'checked' : '' }}>
+                                    </div>
+                                </div>
+                                <textarea name="sms_template_order_placed" class="form-control" rows="2">{{ old('sms_template_order_placed', $settings['sms_template_order_placed'] ?? 'প্রিয় {customer_name}, {site_name}-এ আপনার অর্ডার #{order_number} সফলভাবে গৃহীত হয়েছে। মোট বিল ৳{grand_total}। ধন্যবাদ!') }}</textarea>
+                            </div>
+
+                            <!-- 2. Order Processing -->
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="form-label fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                        <i class="fas fa-box text-primary"></i>
+                                        <span>২. অর্ডার প্রসেসিং (Order Processing)</span>
+                                    </label>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" role="switch" name="sms_event_order_processing" value="1" {{ ($settings['sms_event_order_processing'] ?? '1') == '1' ? 'checked' : '' }}>
+                                    </div>
+                                </div>
+                                <textarea name="sms_template_order_processing" class="form-control" rows="2">{{ old('sms_template_order_processing', $settings['sms_template_order_processing'] ?? 'প্রিয় {customer_name}, আপনার অর্ডার #{order_number} প্রসেসিং চলছে। দ্রুতই ডেলিভারি করা হবে। - {site_name}') }}</textarea>
+                            </div>
+
+                            <!-- 3. Order Shipped -->
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="form-label fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                        <i class="fas fa-truck text-warning"></i>
+                                        <span>৩. কুরিয়ারে হস্তান্তর / শিপড (Order Shipped)</span>
+                                    </label>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" role="switch" name="sms_event_order_shipped" value="1" {{ ($settings['sms_event_order_shipped'] ?? '1') == '1' ? 'checked' : '' }}>
+                                    </div>
+                                </div>
+                                <textarea name="sms_template_order_shipped" class="form-control" rows="2">{{ old('sms_template_order_shipped', $settings['sms_template_order_shipped'] ?? 'প্রিয় {customer_name}, আপনার অর্ডার #{order_number} কুরিয়ারে হস্তান্তর করা হয়েছে। খুব শীঘ্রই ডেলিভারি পাবেন। - {site_name}') }}</textarea>
+                            </div>
+
+                            <!-- 4. Order Delivered -->
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="form-label fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        <span>৪. সফল ডেলিভারি (Order Delivered)</span>
+                                    </label>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" role="switch" name="sms_event_order_delivered" value="1" {{ ($settings['sms_event_order_delivered'] ?? '1') == '1' ? 'checked' : '' }}>
+                                    </div>
+                                </div>
+                                <textarea name="sms_template_order_delivered" class="form-control" rows="2">{{ old('sms_template_order_delivered', $settings['sms_template_order_delivered'] ?? 'প্রিয় {customer_name}, আপনার অর্ডার #{order_number} সফলভাবে ডেলিভার্ড হয়েছে। আমাদের সাথে থাকার জন্য ধন্যবাদ! - {site_name}') }}</textarea>
+                            </div>
+
+                            <!-- 5. Order Cancelled -->
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="form-label fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                        <span>৫. অর্ডার বাতিল (Order Cancelled)</span>
+                                    </label>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" role="switch" name="sms_event_order_cancelled" value="1" {{ ($settings['sms_event_order_cancelled'] ?? '1') == '1' ? 'checked' : '' }}>
+                                    </div>
+                                </div>
+                                <textarea name="sms_template_order_cancelled" class="form-control" rows="2">{{ old('sms_template_order_cancelled', $settings['sms_template_order_cancelled'] ?? 'প্রিয় {customer_name}, দুঃখিত, আপনার অর্ডার #{order_number} বাতিল করা হয়েছে। প্রয়োজনে যোগাযোগ করুন: {contact_phone}। - {site_name}') }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bottom Save Action Bar -->
@@ -852,6 +1044,23 @@
                     }
                 });
             });
+        }
+
+        // 4. Fetch Live SMS Balance in Settings
+        const settingsLiveBalance = document.getElementById('settingsLiveBalance');
+        if (settingsLiveBalance) {
+            fetch('{{ route("admin.marketing.sms.balance") }}')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.balance) {
+                        settingsLiveBalance.innerText = data.balance;
+                    } else {
+                        settingsLiveBalance.innerText = 'অসংযুক্ত';
+                    }
+                })
+                .catch(() => {
+                    settingsLiveBalance.innerText = 'অসংযুক্ত';
+                });
         }
     });
 </script>

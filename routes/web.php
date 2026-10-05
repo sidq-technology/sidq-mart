@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FailedOrderController;
 use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\IntegrationController;
+use App\Http\Controllers\Admin\MarketingController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\SecurityController;
@@ -168,6 +169,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/finance', [FinanceController::class, 'index'])
             ->middleware('permission:finance.view')
             ->name('finance.index');
+
+        // Marketing & SMS Gateway
+        Route::get('/marketing/sms', [MarketingController::class, 'smsIndex'])
+            ->middleware('permission:settings.manage')
+            ->name('marketing.sms');
+        Route::post('/marketing/sms/test', [MarketingController::class, 'sendTestSms'])
+            ->middleware('permission:settings.manage')
+            ->name('marketing.sms.test');
+        Route::post('/marketing/sms/toggle', [MarketingController::class, 'quickToggle'])
+            ->middleware('permission:settings.manage')
+            ->name('marketing.sms.toggle');
+        Route::get('/marketing/sms/balance', [MarketingController::class, 'checkBalance'])
+            ->middleware('permission:settings.manage')
+            ->name('marketing.sms.balance');
 
         // Banners
         Route::resource('banners', BannerController::class)

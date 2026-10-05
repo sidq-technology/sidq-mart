@@ -55,10 +55,21 @@ class OrderController extends Controller
             'admin_notes' => 'nullable|string|max:500',
         ]);
 
+        $oldStatus = $order->order_status;
+        $newStatus = $request->input('order_status');
+
         $order->update([
-            'order_status' => $request->input('order_status'),
+            'order_status' => $newStatus,
             'admin_notes' => $request->input('admin_notes', $order->admin_notes),
         ]);
+
+        if ($oldStatus !== $newStatus) {
+            try {
+                app(\App\Services\SmsService::class)->sendOrderNotification($order, $newStatus);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Order {$newStatus} SMS Trigger Error: " . $e->getMessage());
+            }
+        }
 
         return redirect()->back()->with('success', 'অর্ডারের স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে।');
     }
