@@ -5,10 +5,9 @@
 @section('content')
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
-        <h3 class="fw-bold mb-1 text-dark">
+        <h3 class="fw-bold mb-1 text-dark" style="font-size: 1.55rem; letter-spacing: -0.3px;">
             <i class="fas fa-chart-line me-2" style="color: var(--admin-primary);"></i> ড্যাশবোর্ড (Dashboard Overview)
         </h3>
-        <p class="text-muted small mb-0">আপনার ই-কমার্স স্টোরের সার্বিক রিপোর্ট, বিক্রয় তথ্য এবং সাম্প্রতিক কার্যক্রম।</p>
     </div>
     
     <!-- Time-Range Filter Pills (Today, 7 Days, 30 Days, All Time) -->
@@ -41,66 +40,90 @@
     </div>
 </div>
 
-<!-- 1. Key Metrics Cards (Filtered Dynamically) -->
+<!-- 1. Key Metrics Cards (Modern & Lightweight) -->
 <div class="row g-3 mb-4">
     <!-- Card 1: Sales in Period -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="metric-card">
-            <div>
-                <span class="text-muted small fw-medium">{{ $metrics['card1_title'] }}</span>
-                <h4 class="fw-bold mb-0 mt-1 text-dark">৳{{ number_format($metrics['card1_value'], 0) }}</h4>
-                <small class="text-success"><i class="fas fa-chart-line me-1"></i> {{ $metrics['card1_subtitle'] }}</small>
+        <div class="metric-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="stat-card-title">{{ $metrics['card1_title'] }}</span>
+                <span class="stat-badge-icon" style="background: #ecfdf5; color: #059669; border: 1px solid #d1fae5;">
+                    <i class="fas fa-wallet"></i>
+                </span>
             </div>
-            <div class="metric-icon" style="background: rgba(16, 185, 129, 0.12); color: #059669;">
-                <i class="fas fa-money-bill-wave"></i>
+            <div class="stat-card-value text-dark fw-bold mb-2">৳{{ number_format($metrics['card1_value'], 0) }}</div>
+            <div class="d-flex align-items-center">
+                <span class="stat-card-sub text-success">
+                    <i class="fas fa-arrow-trend-up me-1"></i> {{ $metrics['card1_subtitle'] }}
+                </span>
             </div>
         </div>
     </div>
 
     <!-- Card 2: Today's Sales / Delivered -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="metric-card">
-            <div>
-                <span class="text-muted small fw-medium">{{ $metrics['card2_title'] }}</span>
-                <h4 class="fw-bold mb-0 mt-1 text-dark">৳{{ number_format($metrics['card2_value'], 0) }}</h4>
-                <small class="text-muted">{{ $metrics['card2_subtitle'] }}</small>
+        <div class="metric-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="stat-card-title">{{ $metrics['card2_title'] }}</span>
+                <span class="stat-badge-icon" style="background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe;">
+                    <i class="far fa-calendar-check"></i>
+                </span>
             </div>
-            <div class="metric-icon" style="background: rgba(59, 130, 246, 0.12); color: #2563eb;">
-                <i class="fas fa-calendar-day"></i>
+            <div class="stat-card-value text-dark fw-bold mb-2">৳{{ number_format($metrics['card2_value'], 0) }}</div>
+            <div class="d-flex align-items-center">
+                <span class="stat-card-sub text-muted">
+                    <i class="far fa-clock me-1"></i> {{ $metrics['card2_subtitle'] }}
+                </span>
             </div>
         </div>
     </div>
 
     <!-- Card 3: Orders in Period & Pending -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="metric-card">
-            <div>
-                <span class="text-muted small fw-medium">{{ $metrics['card3_title'] }}</span>
-                <h4 class="fw-bold mb-0 mt-1 text-dark">{{ $metrics['card3_orders'] }} টি</h4>
-                <small class="{{ $metrics['card3_pending'] > 0 ? 'text-warning fw-bold' : 'text-muted' }}">
-                    {{ $metrics['card3_pending'] }} টি পেন্ডিং আছে
-                </small>
+        <div class="metric-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="stat-card-title">{{ $metrics['card3_title'] }}</span>
+                <span class="stat-badge-icon" style="background: #fffbeb; color: #d97706; border: 1px solid #fef3c7;">
+                    <i class="fas fa-shopping-bag"></i>
+                </span>
             </div>
-            <div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: #d97706;">
-                <i class="fas fa-shopping-bag"></i>
+            <div class="stat-card-value text-dark fw-bold mb-2">
+                {{ $metrics['card3_orders'] }} <span class="fs-6 fw-normal text-muted">টি</span>
+            </div>
+            <div class="d-flex align-items-center">
+                @if($metrics['card3_pending'] > 0)
+                <span class="stat-card-sub text-warning fw-semibold">
+                    <i class="fas fa-hourglass-half me-1"></i> {{ $metrics['card3_pending'] }} টি পেন্ডিং আছে
+                </span>
+                @else
+                <span class="stat-card-sub text-muted">সব প্রক্রিয়াধীন</span>
+                @endif
             </div>
         </div>
     </div>
 
     <!-- Card 4: Store Products & Low Stock -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="metric-card">
-            <div>
-                <span class="text-muted small fw-medium">স্টোর পণ্য (Products)</span>
-                <h4 class="fw-bold mb-0 mt-1 text-dark">{{ $metrics['total_products'] }} টি</h4>
-                @if($metrics['low_stock_products'] > 0)
-                <small class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i> {{ $metrics['low_stock_products'] }} টি পণ্যের স্টক কম</small>
-                @else
-                <small class="text-success"><i class="fas fa-check me-1"></i> স্টক স্বাভাবিক</small>
-                @endif
+        <div class="metric-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="stat-card-title">স্টোর পণ্য</span>
+                <span class="stat-badge-icon" style="background: #fff1f2; color: #e11d48; border: 1px solid #ffe4e6;">
+                    <i class="fas fa-box-open"></i>
+                </span>
             </div>
-            <div class="metric-icon" style="background: rgba(239, 68, 68, 0.12); color: #dc2626;">
-                <i class="fas fa-box-open"></i>
+            <div class="stat-card-value text-dark fw-bold mb-2">
+                {{ $metrics['total_products'] }} <span class="fs-6 fw-normal text-muted">টি</span>
+            </div>
+            <div class="d-flex align-items-center">
+                @if($metrics['low_stock_products'] > 0)
+                <span class="stat-card-sub text-danger fw-semibold">
+                    <i class="fas fa-triangle-exclamation me-1"></i> {{ $metrics['low_stock_products'] }} টি পণ্যের স্টক কম
+                </span>
+                @else
+                <span class="stat-card-sub text-success">
+                    <i class="fas fa-check me-1"></i> স্টক স্বাভাবিক
+                </span>
+                @endif
             </div>
         </div>
     </div>
@@ -115,17 +138,17 @@
                 <div>
                     <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
                         <i class="fas fa-chart-line text-danger"></i>
-                        <span>বিক্রয় ও অর্ডার গতিধারা (Revenue & Order Trend)</span>
+                        <span>Revenue & Order Trend</span>
                     </h6>
                     <small class="text-muted">দৈনিক বিক্রয় আয় এবং অর্ডারের সংখ্যা বিশ্লেষণ</small>
                 </div>
                 <span class="badge bg-light text-dark border px-2.5 py-1 small fw-medium">
                     @if($period === 'today')
-                        Today (আজকের ঘণ্টাভিত্তিক)
+                        Today
                     @elseif($period === '7_days')
-                        Last 7 Days (বিগত ৭ দিন)
+                        Last 7 Days
                     @else
-                        Last 30 Days (বিগত ৩০ দিন)
+                        Last 30 Days
                     @endif
                 </span>
             </div>
@@ -153,18 +176,18 @@
                 </div>
 
                 <div class="pt-2 border-top">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 11px;">ডেলিভারি অঞ্চল (Zones)</span>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-uppercase fw-bold" style="font-size: 13.5px; color: #475569; letter-spacing: 0.5px;">ডেলিভারি অঞ্চল (Zones)</span>
                     </div>
                     @forelse($zoneBreakdown as $zone)
-                    <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
                         <div>
-                            <span class="fw-semibold text-dark text-capitalize small">
+                            <span class="zone-title text-capitalize">
                                 {{ $zone->delivery_zone === 'inside_dhaka' ? 'ঢাকার ভেতরে (Inside Dhaka)' : ($zone->delivery_zone === 'outside_dhaka' ? 'ঢাকার বাইরে (Outside Dhaka)' : ucfirst($zone->delivery_zone)) }}
                             </span>
-                            <div class="text-muted" style="font-size: 11px;">{{ $zone->count }} টি অর্ডার (ডেলিভারি ফি: ৳{{ number_format($zone->shipping_total, 0) }})</div>
+                            <div class="zone-meta">{{ $zone->count }} টি অর্ডার (ডেলিভারি ফি: ৳{{ number_format($zone->shipping_total, 0) }})</div>
                         </div>
-                        <span class="fw-bold text-dark small">৳{{ number_format($zone->total, 0) }}</span>
+                        <span class="zone-val">৳{{ number_format($zone->total, 0) }}</span>
                     </div>
                     @empty
                     <div class="text-muted small py-2 text-center">কোনো জোন রেকর্ড পাওয়া যায়নি।</div>
@@ -182,7 +205,7 @@
             <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center border-bottom">
                 <div class="d-flex align-items-center gap-2">
                     <h5 class="fw-bold mb-0 text-dark">
-                        <i class="fas fa-bolt text-danger me-2"></i> সাম্প্রতিক অর্ডারসমূহ (As Now)
+                        <i class="fas fa-bolt text-danger me-2"></i> সাম্প্রতিক অর্ডারসমূহ
                     </h5>
                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small">
                         <i class="fas fa-circle text-success me-1 animate-pulse" style="font-size: 8px;"></i> লাইভ
@@ -193,15 +216,15 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table align-middle mb-0 table-hover">
-                        <thead>
-                            <tr>
-                                <th class="ps-4">অর্ডার নম্বর</th>
-                                <th>গ্রাহক</th>
-                                <th>তারিখ</th>
-                                <th>বিল</th>
-                                <th>পেমেন্ট</th>
-                                <th>স্ট্যাটাস</th>
-                                <th class="text-end pe-4">অ্যাকশন</th>
+                        <thead class="table-light border-bottom">
+                            <tr style="font-size: 15px; color: #334155;">
+                                <th class="ps-4 fw-bold">অর্ডার নম্বর</th>
+                                <th class="fw-bold">গ্রাহক</th>
+                                <th class="fw-bold">তারিখ</th>
+                                <th class="fw-bold">বিল</th>
+                                <th class="fw-bold">পেমেন্ট</th>
+                                <th class="fw-bold">স্ট্যাটাস</th>
+                                <th class="text-end pe-4 fw-bold">অ্যাকশন</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -209,21 +232,21 @@
                             <!-- Entire row is clickable to view popup modal -->
                             <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#dashboardOrderModal{{ $order->id }}" class="order-table-row">
                                 <td class="ps-4">
-                                    <span class="fw-bold text-danger">
+                                    <span class="fw-bold text-danger font-monospace" style="font-size: 15.5px;">
                                         {{ $order->order_number }}
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="fw-semibold text-dark">{{ $order->customer_name }}</div>
-                                    <small class="text-muted font-monospace">{{ $order->customer_phone }}</small>
+                                    <div class="fw-bold text-dark" style="font-size: 16px;">{{ $order->customer_name }}</div>
+                                    <span class="text-secondary font-monospace" style="font-size: 14.5px;">{{ $order->customer_phone }}</span>
                                 </td>
-                                <td class="small text-muted">{{ $order->created_at->format('d M, h:i A') }}</td>
-                                <td class="fw-bold text-dark">৳{{ number_format($order->grand_total, 0) }}</td>
+                                <td style="font-size: 15px; color: #475569;">{{ $order->created_at->format('d M, h:i A') }}</td>
+                                <td class="fw-bold text-dark" style="font-size: 16.5px; font-family: 'Outfit', 'Bornomala', sans-serif;">৳{{ number_format($order->grand_total, 0) }}</td>
                                 <td>
-                                    <span class="badge bg-light text-dark border">{{ strtoupper($order->payment_method) }}</span>
+                                    <span class="badge bg-light text-dark border fw-semibold">{{ strtoupper($order->payment_method) }}</span>
                                 </td>
                                 <td>
-                                    <span class="badge {{ $order->status_badge_class }}">{{ $order->order_status }}</span>
+                                    <span class="badge {{ $order->status_badge_class }} fw-semibold">{{ $order->order_status }}</span>
                                 </td>
                                 <td class="text-end pe-4" onclick="event.stopPropagation();">
                                     <div class="d-inline-flex gap-1">
@@ -254,7 +277,7 @@
         <div class="card admin-surface-card mb-4">
             <div class="card-header bg-transparent py-3 border-bottom">
                 <h5 class="fw-bold mb-0 text-dark">
-                    <i class="fas fa-exclamation-triangle text-warning me-2"></i> স্টক সতর্কতা (Low Stock Alerts)
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i> Low Stock Alerts
                 </h5>
             </div>
             <div class="card-body p-0">
@@ -550,6 +573,57 @@
 .hover-text-primary:hover {
     color: var(--admin-primary, #dc2626) !important;
 }
+.stat-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #334155 !important;
+    font-family: 'Bornomala', sans-serif;
+    letter-spacing: -0.1px;
+}
+.stat-card-value {
+    font-size: 1.95rem;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    font-family: 'Outfit', 'Bornomala', sans-serif;
+    color: #090d16 !important;
+}
+.stat-card-sub {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Outfit', 'Bornomala', sans-serif;
+    display: inline-flex;
+    align-items: center;
+}
+.stat-badge-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+.dashboard-subtitle {
+    font-size: 15px;
+    color: #475569 !important;
+}
+.zone-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b !important;
+}
+.zone-meta {
+    font-size: 14px;
+    color: #475569 !important;
+}
+.zone-val {
+    font-size: 16.5px;
+    font-weight: 700;
+    font-family: 'Outfit', 'Bornomala', sans-serif;
+    color: #090d16 !important;
+}
 </style>
 @endsection
 
@@ -557,6 +631,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.font.family = "'Outfit', 'Bornomala', sans-serif";
+        Chart.defaults.color = '#334155';
+    }
     // 1. Revenue & Orders Trend Chart
     const trendData = @json(array_values($daysTrend));
     const labels = trendData.map(d => d.label);
@@ -610,11 +688,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     legend: {
                         position: 'top',
                         labels: {
-                            boxWidth: 12,
-                            font: { family: "'Outfit', sans-serif", size: 11 }
+                            boxWidth: 14,
+                            color: '#1e293b',
+                            font: { family: "'Outfit', 'Bornomala', sans-serif", size: 12.5, weight: '600' }
                         }
                     },
                     tooltip: {
+                        titleFont: { family: "'Outfit', 'Bornomala', sans-serif", size: 13 },
+                        bodyFont: { family: "'Outfit', 'Bornomala', sans-serif", size: 12.5 },
                         callbacks: {
                             label: function(context) {
                                 if (context.datasetIndex === 0) {
@@ -628,18 +709,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { maxRotation: 45, minRotation: 0, font: { family: "'Outfit', sans-serif", size: 10 } }
+                        ticks: { color: '#475569', maxRotation: 45, minRotation: 0, font: { family: "'Outfit', 'Bornomala', sans-serif", size: 11, weight: '500' } }
                     },
                     y: {
                         type: 'linear',
                         display: true,
                         position: 'left',
-                        grid: { color: 'rgba(226, 232, 240, 0.5)' },
+                        grid: { color: 'rgba(226, 232, 240, 0.7)' },
                         ticks: {
+                            color: '#475569',
                             callback: function(value) {
                                 return '৳' + Number(value).toLocaleString();
                             },
-                            font: { family: "'Outfit', sans-serif", size: 10 }
+                            font: { family: "'Outfit', 'Bornomala', sans-serif", size: 11, weight: '500' }
                         }
                     },
                     y1: {
@@ -647,7 +729,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         display: true,
                         position: 'right',
                         grid: { drawOnChartArea: false },
-                        ticks: { stepSize: 1, font: { family: "'Outfit', sans-serif", size: 10 } }
+                        ticks: { color: '#475569', stepSize: 1, font: { family: "'Outfit', 'Bornomala', sans-serif", size: 11, weight: '500' } }
                     }
                 }
             }
@@ -693,8 +775,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            boxWidth: 8,
-                            font: { size: 10.5, family: "'Outfit', sans-serif" }
+                            boxWidth: 10,
+                            color: '#1e293b',
+                            font: { size: 12, family: "'Outfit', 'Bornomala', sans-serif", weight: '600' }
                         }
                     },
                     tooltip: {

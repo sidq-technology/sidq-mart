@@ -46,52 +46,52 @@ class DashboardController extends Controller
 
         // Dynamic card values and labels based on filter
         if ($period === 'today') {
-            $card1Title = 'আজকের বিক্রয় (Sales)';
+            $card1Title = 'আজকের বিক্রয়';
             $card1Subtitle = 'আজকের দিনের মোট আয়';
             $card1Value = $periodSales;
 
-            $card2Title = 'আজকের ডেলিভার্ড (Delivered)';
+            $card2Title = 'আজকের ডেলিভার্ড';
             $card2Subtitle = 'আজকের সম্পন্ন ডেলিভারি';
             $card2Value = $periodDeliveredSales;
 
-            $card3Title = 'আজকের অর্ডার (Orders)';
+            $card3Title = 'আজকের অর্ডার';
             $card3Orders = $periodOrders;
             $card3Pending = $periodPendingOrders;
         } elseif ($period === '7_days') {
-            $card1Title = '৭ দিনের বিক্রয় (7 Days)';
+            $card1Title = '৭ দিনের বিক্রয়';
             $card1Subtitle = 'বিগত ৭ দিনের মোট আয়';
             $card1Value = $periodSales;
 
-            $card2Title = 'আজকের বিক্রয় (Today)';
+            $card2Title = 'আজকের বিক্রয়';
             $card2Subtitle = 'আজকের দিনের মোট আয়';
             $card2Value = $todaySales;
 
-            $card3Title = '৭ দিনের অর্ডার (Orders)';
+            $card3Title = '৭ দিনের অর্ডার';
             $card3Orders = $periodOrders;
             $card3Pending = $periodPendingOrders;
         } elseif ($period === '30_days') {
-            $card1Title = '৩০ দিনের বিক্রয় (30 Days)';
+            $card1Title = '৩০ দিনের বিক্রয়';
             $card1Subtitle = 'বিগত ৩০ দিনের মোট আয়';
             $card1Value = $periodSales;
 
-            $card2Title = 'আজকের বিক্রয় (Today)';
+            $card2Title = 'আজকের বিক্রয়';
             $card2Subtitle = 'আজকের দিনের মোট আয়';
             $card2Value = $todaySales;
 
-            $card3Title = '৩০ দিনের অর্ডার (Orders)';
+            $card3Title = '৩০ দিনের অর্ডার';
             $card3Orders = $periodOrders;
             $card3Pending = $periodPendingOrders;
         } else {
             // 'all'
-            $card1Title = 'মোট বিক্রয় (Total Sales)';
+            $card1Title = 'মোট বিক্রয়';
             $card1Subtitle = 'সর্বমোট আয়';
             $card1Value = $totalSales;
 
-            $card2Title = 'আজকের বিক্রয় (Today)';
+            $card2Title = 'আজকের বিক্রয়';
             $card2Subtitle = 'আজকের দিনের মোট আয়';
             $card2Value = $todaySales;
 
-            $card3Title = 'মোট অর্ডার (Orders)';
+            $card3Title = 'মোট অর্ডার';
             $card3Orders = Order::count();
             $card3Pending = Order::where('order_status', 'pending')->count();
         }

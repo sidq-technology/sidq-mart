@@ -17,6 +17,28 @@
     <title>@yield('title', 'Admin Panel') | {{ \App\Models\Setting::get('site_name', 'SIDQ MART') }} — Powered by SIDQ Technology</title>
     <link rel="icon" href="{{ \App\Models\Setting::get('site_favicon', asset('favicon.png')) }}">
 
+    <!-- Preload Bornomala Bengali Font (Instant Load, No FOUT/Swap) -->
+    <link rel="preload" href="{{ asset('fonts/bornomala/bornomala-regular.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('fonts/bornomala/bornomala-bold.woff2') }}" as="font" type="font/woff2" crossorigin>
+
+    <!-- Bornomala Bengali Font Local Stylesheet -->
+    <style>
+        @font-face {
+            font-family: 'Bornomala';
+            src: url('{{ asset('fonts/bornomala/bornomala-regular.woff2') }}') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+            font-display: block;
+        }
+        @font-face {
+            font-family: 'Bornomala';
+            src: url('{{ asset('fonts/bornomala/bornomala-bold.woff2') }}') format('woff2');
+            font-weight: 700;
+            font-style: normal;
+            font-display: block;
+        }
+    </style>
+
     <!-- Google Fonts: Outfit + Hind Siliguri + Rubik -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,8 +67,9 @@
             --admin-mint-subtle: #f0faf4;
             --admin-mint-border: #e2f0e8;
             --admin-card-bg: #ffffff;
-            --admin-text-main: #0f172a;
-            --admin-text-muted: #64748b;
+            --admin-text-main: #090d16;
+            --admin-text-muted: #475569;
+            --admin-card-radius: 4px;
         }
 
         html, body {
@@ -55,12 +78,22 @@
         }
 
         body {
-            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            font-family: 'Outfit', 'Bornomala', 'Hind Siliguri', sans-serif;
+            font-size: 16px;
             background-color: var(--admin-mint-bg);
             background-image: radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
                               radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.03) 0px, transparent 50%);
             color: var(--admin-text-main);
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* High-Contrast Typography */
+        .text-muted {
+            color: #475569 !important;
+        }
+        .small, small {
+            font-size: 0.925rem;
         }
 
         /* Sidebar Styling - Distinct Light White Theme with Solid Black Text */
@@ -121,7 +154,7 @@
             padding: 11px 16px;
             color: #0f172a;
             text-decoration: none;
-            font-size: 14.5px;
+            font-size: 16px;
             font-weight: 600;
             gap: 13px;
             border-radius: 10px;
@@ -196,41 +229,54 @@
             box-sizing: border-box;
         }
 
-        /* Modernized Surface Cards & Metric Cards */
+        /* Modernized Surface Cards & Metric Cards (Lightweight & Crisp Radius) */
+        .card,
         .admin-surface-card {
             background: #ffffff;
-            border-radius: 14px;
-            border: 1px solid var(--admin-mint-border);
-            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.03);
-            transition: box-shadow 0.25s ease, transform 0.25s ease;
+            border-radius: var(--admin-card-radius, 4px) !important;
+            border: 1px solid #eef2f6 !important;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02) !important;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card-header {
+            border-top-left-radius: calc(var(--admin-card-radius, 4px) - 1px) !important;
+            border-top-right-radius: calc(var(--admin-card-radius, 4px) - 1px) !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+        }
+
+        .card-footer {
+            border-bottom-left-radius: calc(var(--admin-card-radius, 4px) - 1px) !important;
+            border-bottom-right-radius: calc(var(--admin-card-radius, 4px) - 1px) !important;
+            border-top: 1px solid #f1f5f9 !important;
         }
 
         .metric-card {
             background: #ffffff;
-            border-radius: 14px;
-            padding: 22px 24px;
-            border: 1px solid var(--admin-mint-border);
-            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.04);
+            border-radius: var(--admin-card-radius, 4px) !important;
+            padding: 16px 18px;
+            border: 1px solid #eef2f6 !important;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
         .metric-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.08);
-            border-color: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+            border-color: #cbd5e1 !important;
         }
 
         .metric-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
+            width: 42px;
+            height: 42px;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 18px;
             flex-shrink: 0;
         }
 
@@ -277,7 +323,7 @@
             background-color: var(--admin-mint-bg) !important;
             color: #475569;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 15px;
             text-transform: uppercase;
             letter-spacing: 0.4px;
             border-bottom: 1px solid var(--admin-mint-border) !important;
