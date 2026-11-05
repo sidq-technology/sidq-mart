@@ -75,7 +75,7 @@
                 <tbody>
                     @forelse($orders as $order)
                     <!-- Entire row is clickable to trigger the popup modal -->
-                    <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#orderModal{{ $order->id }}" class="order-table-row">
+                    <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#orderModal{{ $order->id }}" class="order-table-row" id="order-row-{{ $order->id }}">
                         <td class="ps-3">
                             <span class="fw-bold text-danger">
                                 {{ $order->order_number }}
@@ -98,7 +98,7 @@
                             @endif
                         </td>
                         <td>
-                            <span class="badge {{ $order->status_badge_class }}">{{ $order->order_status }}</span>
+                            <span class="badge {{ $order->status_badge_class }} order-table-status-badge">{{ ucfirst($order->order_status) }}</span>
                         </td>
                         <td class="small text-muted">{{ $order->created_at->format('d M Y, h:i A') }}</td>
                         <td class="text-end pe-3" onclick="event.stopPropagation();">
@@ -158,7 +158,7 @@
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <span class="badge bg-danger text-white rounded-pill px-2 py-1">Order #{{ $order->order_number }}</span>
                     <h6 class="modal-title fw-bold text-dark mb-0">অর্ডার বিবরণ ও ব্যবস্থাপনা</h6>
-                    <span class="badge {{ $order->status_badge_class }} ms-1">{{ ucfirst($order->order_status) }}</span>
+                    <span class="badge {{ $order->status_badge_class }} ms-1 order-modal-status-badge">{{ ucfirst($order->order_status) }}</span>
                     <span class="badge bg-light text-dark border">{{ strtoupper($order->payment_method) }}</span>
                     <span class="text-muted small ms-2">{{ $order->created_at->format('d M Y, h:i A') }}</span>
                 </div>
@@ -302,7 +302,7 @@
                             <h6 class="fw-bold text-dark small mb-3 border-bottom pb-2">
                                 <i class="fas fa-clipboard-check text-secondary me-1"></i> অর্ডার স্ট্যাটাস ও অভ্যন্তরীণ নোট
                             </h6>
-                            <form action="{{ route('admin.orders.status', $order->id) }}" method="POST">
+                            <form action="{{ route('admin.orders.status', $order->id) }}" method="POST" class="ajax-order-status-form" data-order-id="{{ $order->id }}">
                                 @csrf
                                 <div class="row g-2">
                                     <div class="col-12 col-sm-4">
@@ -320,8 +320,9 @@
                                         <input type="text" name="admin_notes" class="form-control form-control-sm" placeholder="প্রয়োজনে অভ্যন্তরীণ নোট লিখুন..." value="{{ $order->admin_notes }}">
                                     </div>
                                     <div class="col-12 col-sm-2 d-flex align-items-end">
-                                        <button type="submit" class="btn btn-sm btn-dark w-100 fw-bold">আপডেট</button>
+                                        <button type="submit" class="btn btn-sm btn-dark w-100 fw-bold btn-update-status">আপডেট</button>
                                     </div>
+                                    <div class="col-12 form-status-feedback mt-1 d-none"></div>
                                 </div>
                             </form>
                         </div>
@@ -342,6 +343,57 @@
                         <i class="fas fa-file-excel"></i>
                         <span>Send to Sheet</span>
                     </button>
+
+                    <!-- Send to Courier Dropdown / Tracking Badge -->
+                    @php
+                        $couriers = $enabledCouriers ?? app(\App\Services\Courier\CourierManager::class)->getEnabledCouriers();
+                    @endphp
+
+                    <div class="courier-action-slot d-inline-block">
+                        @if(!empty($order->courier_name) && !empty($order->courier_tracking_code))
+                            <div class="d-inline-flex align-items-center gap-1 p-1 px-2 rounded-2 bg-success-subtle border border-success-subtle text-success small fw-bold courier-badge-container">
+                                <i class="fas fa-truck-fast"></i>
+                                <span>{{ ucfirst($order->courier_name) }}:</span>
+                                @if($order->courier_tracking_url)
+                                    <a href="{{ $order->courier_tracking_url }}" target="_blank" class="text-success text-decoration-underline" title="কুরিয়ার ট্র্যাকিং দেখুন">{{ $order->courier_tracking_code }}</a>
+                                @else
+                                    <span>{{ $order->courier_tracking_code }}</span>
+                                @endif
+                            </div>
+                        @elseif(!empty($couriers))
+                            <div class="dropdown d-inline-block courier-dropdown-wrapper">
+                                <button class="btn btn-sm btn-primary dropdown-toggle fw-bold d-inline-flex align-items-center gap-1 shadow-xs btn-courier-dropdown" 
+                                        type="button" 
+                                        data-bs-toggle="dropdown" 
+                                        aria-expanded="false"
+                                        style="background-color: #2563eb; border-color: #2563eb;">
+                                    <i class="fas fa-truck-fast"></i>
+                                    <span>Send to Courier</span>
+                                </button>
+                                <ul class="dropdown-menu shadow border py-1" style="font-size: 13px;">
+                                    <li class="dropdown-header small text-muted text-uppercase fw-bold px-3 py-1">কুরিয়ার নির্বাচন করুন</li>
+                                    @foreach($couriers as $c)
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 btn-submit-to-courier" 
+                                                data-url="{{ route('admin.orders.send-to-courier', $order->id) }}" 
+                                                data-courier="{{ $c['key'] }}"
+                                                data-label="{{ $c['label'] }}">
+                                            <span class="badge {{ $c['badge_class'] }} rounded-circle p-1 d-inline-flex align-items-center justify-content-center" style="width: 22px; height: 22px;">
+                                                <i class="{{ $c['icon'] }}" style="font-size: 10px;"></i>
+                                            </span>
+                                            <span class="fw-semibold text-dark">{{ $c['label'] }}</span>
+                                        </button>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @else
+                            <a href="{{ route('admin.integrations.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" title="কুরিয়ার কনফিগার করতে ক্লিক করুন">
+                                <i class="fas fa-truck-fast text-muted"></i>
+                                <span class="small text-muted">Configure Courier</span>
+                            </a>
+                        @endif
+                    </div>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" class="btn btn-sm btn-dark fw-bold d-inline-flex align-items-center gap-1 shadow-xs">
@@ -415,6 +467,180 @@ document.addEventListener('DOMContentLoaded', function () {
                     feedbackBox.innerHTML = '<i class="fas fa-times-circle fs-6"></i> <div>রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</div>';
                 } else {
                     alert('রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message);
+                }
+            });
+        });
+    });
+
+    // AJAX Order Status & Admin Notes Update (Keeps modal open)
+    document.querySelectorAll('.ajax-order-status-form').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const orderId = this.getAttribute('data-order-id');
+            const submitBtn = this.querySelector('.btn-update-status');
+            const feedbackBox = this.querySelector('.form-status-feedback');
+            const modalEl = this.closest('.modal');
+            const modalBadge = modalEl ? modalEl.querySelector('.order-modal-status-badge') : null;
+            const tableRow = document.getElementById('order-row-' + orderId);
+            const tableBadge = tableRow ? tableRow.querySelector('.order-table-status-badge') : null;
+            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : 'আপডেট';
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            }
+
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            })
+            .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, body: data })))
+            .then(({ ok, body }) => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
+
+                if (ok && body.success) {
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-check me-1"></i> সেভ হয়েছে';
+                        submitBtn.classList.remove('btn-dark');
+                        submitBtn.classList.add('btn-success');
+                        setTimeout(() => {
+                            submitBtn.innerHTML = originalBtnHtml;
+                            submitBtn.classList.remove('btn-success');
+                            submitBtn.classList.add('btn-dark');
+                        }, 2500);
+                    }
+
+                    // Update Status Badges in Modal and Table
+                    if (body.status_label && body.status_badge_class) {
+                        if (modalBadge) {
+                            modalBadge.className = 'badge ' + body.status_badge_class + ' ms-1 order-modal-status-badge';
+                            modalBadge.textContent = body.status_label;
+                        }
+                        if (tableBadge) {
+                            tableBadge.className = 'badge ' + body.status_badge_class + ' order-table-status-badge';
+                            tableBadge.textContent = body.status_label;
+                        }
+                    }
+
+                    if (feedbackBox) {
+                        feedbackBox.className = 'col-12 form-status-feedback mt-2 alert alert-success py-1 px-2 small d-flex align-items-center gap-1 mb-0';
+                        feedbackBox.innerHTML = '<i class="fas fa-check-circle text-success"></i> <span>' + body.message + '</span>';
+                        feedbackBox.classList.remove('d-none');
+                        setTimeout(() => {
+                            feedbackBox.classList.add('d-none');
+                        }, 3500);
+                    }
+                } else {
+                    if (submitBtn) submitBtn.innerHTML = originalBtnHtml;
+                    if (feedbackBox) {
+                        feedbackBox.className = 'col-12 form-status-feedback mt-2 alert alert-danger py-1 px-2 small d-flex align-items-center gap-1 mb-0';
+                        feedbackBox.innerHTML = '<i class="fas fa-exclamation-circle text-danger"></i> <span>' + (body.message || 'আপডেট করতে সমস্যা হয়েছে') + '</span>';
+                        feedbackBox.classList.remove('d-none');
+                    }
+                }
+            })
+            .catch(err => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+                if (feedbackBox) {
+                    feedbackBox.className = 'col-12 form-status-feedback mt-2 alert alert-danger py-1 px-2 small d-flex align-items-center gap-1 mb-0';
+                    feedbackBox.innerHTML = '<i class="fas fa-times-circle text-danger"></i> <span>রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</span>';
+                    feedbackBox.classList.remove('d-none');
+                }
+            });
+        });
+    });
+
+    // Handle Courier Booking via AJAX
+    document.querySelectorAll('.btn-submit-to-courier').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = this.getAttribute('data-url');
+            const courier = this.getAttribute('data-courier');
+            const courierLabel = this.getAttribute('data-label');
+            const modalFooter = this.closest('.modal-footer');
+            const slot = modalFooter ? modalFooter.querySelector('.courier-action-slot') : null;
+            const dropdownBtn = modalFooter ? modalFooter.querySelector('.btn-courier-dropdown') : null;
+            const feedbackBox = modalFooter ? modalFooter.querySelector('.order-sheet-feedback') : null;
+            const modalEl = this.closest('.modal');
+            const modalBadge = modalEl ? modalEl.querySelector('.order-modal-status-badge') : null;
+
+            if (dropdownBtn) {
+                dropdownBtn.disabled = true;
+                dropdownBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> বুকিং হচ্ছে...';
+            }
+
+            if (feedbackBox) {
+                feedbackBox.className = 'w-100 order-sheet-feedback mt-2 alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-0';
+                feedbackBox.innerHTML = '<span class="spinner-border spinner-border-sm"></span> ' + courierLabel + '-এ পার্সেল বুকিং করা হচ্ছে...';
+                feedbackBox.classList.remove('d-none');
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ courier: courier })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, body: data })))
+            .then(({ ok, body }) => {
+                if (ok && body.success) {
+                    if (slot) {
+                        const trkUrl = body.tracking_url;
+                        const trkLink = trkUrl 
+                            ? `<a href="${trkUrl}" target="_blank" class="text-success text-decoration-underline">${body.tracking_code}</a>` 
+                            : `<span>${body.tracking_code}</span>`;
+
+                        slot.innerHTML = `
+                            <div class="d-inline-flex align-items-center gap-1 p-1 px-2 rounded-2 bg-success-subtle border border-success-subtle text-success small fw-bold">
+                                <i class="fas fa-truck-fast"></i>
+                                <span>${body.courier_name.toUpperCase()}:</span>
+                                ${trkLink}
+                            </div>
+                        `;
+                    }
+
+                    if (modalBadge && body.status_badge_class) {
+                        modalBadge.className = 'badge ' + body.status_badge_class + ' ms-1 order-modal-status-badge';
+                        modalBadge.textContent = 'Shipped';
+                    }
+
+                    if (feedbackBox) {
+                        feedbackBox.className = 'w-100 order-sheet-feedback mt-2 alert alert-success py-2 px-3 small d-flex align-items-center gap-2 mb-0';
+                        feedbackBox.innerHTML = '<i class="fas fa-check-circle fs-6"></i> <div>' + body.message + '</div>';
+                    }
+                } else {
+                    if (dropdownBtn) {
+                        dropdownBtn.disabled = false;
+                        dropdownBtn.innerHTML = '<i class="fas fa-truck-fast"></i> <span>Send to Courier</span>';
+                    }
+                    if (feedbackBox) {
+                        feedbackBox.className = 'w-100 order-sheet-feedback mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-0';
+                        feedbackBox.innerHTML = '<i class="fas fa-exclamation-triangle fs-6"></i> <div>' + (body.message || 'বুকিং ব্যর্থ হয়েছে') + '</div>';
+                    }
+                }
+            })
+            .catch(err => {
+                if (dropdownBtn) {
+                    dropdownBtn.disabled = false;
+                    dropdownBtn.innerHTML = '<i class="fas fa-truck-fast"></i> <span>Send to Courier</span>';
+                }
+                if (feedbackBox) {
+                    feedbackBox.className = 'w-100 order-sheet-feedback mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-0';
+                    feedbackBox.innerHTML = '<i class="fas fa-times-circle fs-6"></i> <div>রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</div>';
                 }
             });
         });

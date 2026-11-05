@@ -46,6 +46,26 @@ class IntegrationController extends Controller
             'google_sheet_id' => Setting::get('google_sheet_id', '1tQzlrMx-MBDGqrgdeX2PZq-US3e9SRrJwLCoz9Qda_g'),
             'google_sheet_tab_name' => Setting::get('google_sheet_tab_name', 'Orders'),
             'google_sheet_service_account_json' => Setting::get('google_sheet_service_account_json', '') ?: (file_exists(storage_path('app/google/service-account.json')) ? file_get_contents(storage_path('app/google/service-account.json')) : ''),
+
+            // 7. Couriers (Steadfast, Pathao, Paperfly, RedX)
+            'courier_steadfast_enabled' => Setting::get('courier_steadfast_enabled', '0'),
+            'courier_steadfast_api_key' => Setting::get('courier_steadfast_api_key', ''),
+            'courier_steadfast_secret_key' => Setting::get('courier_steadfast_secret_key', ''),
+
+            'courier_pathao_enabled' => Setting::get('courier_pathao_enabled', '0'),
+            'courier_pathao_client_id' => Setting::get('courier_pathao_client_id', ''),
+            'courier_pathao_client_secret' => Setting::get('courier_pathao_client_secret', ''),
+            'courier_pathao_username' => Setting::get('courier_pathao_username', ''),
+            'courier_pathao_password' => Setting::get('courier_pathao_password', ''),
+            'courier_pathao_store_id' => Setting::get('courier_pathao_store_id', ''),
+
+            'courier_paperfly_enabled' => Setting::get('courier_paperfly_enabled', '0'),
+            'courier_paperfly_username' => Setting::get('courier_paperfly_username', ''),
+            'courier_paperfly_password' => Setting::get('courier_paperfly_password', ''),
+            'courier_paperfly_key' => Setting::get('courier_paperfly_key', ''),
+
+            'courier_redx_enabled' => Setting::get('courier_redx_enabled', '0'),
+            'courier_redx_access_token' => Setting::get('courier_redx_access_token', ''),
         ];
 
         return view('admin.integrations.index', compact('settings'));
@@ -77,6 +97,23 @@ class IntegrationController extends Controller
             'google_sheet_id',
             'google_sheet_tab_name',
             'google_sheet_service_account_json',
+
+            // Couriers
+            'courier_steadfast_enabled',
+            'courier_steadfast_api_key',
+            'courier_steadfast_secret_key',
+            'courier_pathao_enabled',
+            'courier_pathao_client_id',
+            'courier_pathao_client_secret',
+            'courier_pathao_username',
+            'courier_pathao_password',
+            'courier_pathao_store_id',
+            'courier_paperfly_enabled',
+            'courier_paperfly_username',
+            'courier_paperfly_password',
+            'courier_paperfly_key',
+            'courier_redx_enabled',
+            'courier_redx_access_token',
         ];
 
         // Process checkboxes that might not be in request if unchecked
@@ -87,6 +124,10 @@ class IntegrationController extends Controller
             'tiktok_pixel_enabled',
             'whatsapp_chat_enabled',
             'google_sheet_enabled',
+            'courier_steadfast_enabled',
+            'courier_pathao_enabled',
+            'courier_paperfly_enabled',
+            'courier_redx_enabled',
         ];
 
         foreach ($toggleKeys as $key) {
@@ -114,6 +155,29 @@ class IntegrationController extends Controller
         $customJson = $request->input('google_sheet_service_account_json');
 
         $result = $sheetService->testConnection($sheetId, $tab, $customJson);
+
+        return response()->json($result);
+    }
+
+    /**
+     * Test Courier Connection via AJAX
+     */
+    public function testCourier(Request $request, \App\Services\Courier\CourierManager $courierManager)
+    {
+        $courier = $request->input('courier');
+        if (empty($courier)) {
+            return response()->json(['success' => false, 'message' => 'কুরিয়ার সিলেক্ট করুন'], 422);
+        }
+
+        // Save credentials temporarily so testing uses input values
+        foreach ($request->all() as $key => $val) {
+            if (str_starts_with($key, 'courier_') && is_string($val)) {
+                Setting::set($key, trim($val));
+            }
+        }
+        Cache::forget('app_settings_all');
+
+        $result = $courierManager->testDriver($courier);
 
         return response()->json($result);
     }

@@ -27,6 +27,11 @@ class Order extends Model
         'customer_note',
         'ip_address',
         'admin_notes',
+        'courier_name',
+        'courier_tracking_code',
+        'courier_consignment_id',
+        'courier_status',
+        'courier_submitted_at',
     ];
 
     protected $casts = [
@@ -34,7 +39,25 @@ class Order extends Model
         'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'grand_total' => 'decimal:2',
+        'courier_submitted_at' => 'datetime',
     ];
+
+    public function getCourierTrackingUrlAttribute(): ?string
+    {
+        if (empty($this->courier_tracking_code) && empty($this->courier_consignment_id)) {
+            return null;
+        }
+
+        $code = $this->courier_tracking_code ?: $this->courier_consignment_id;
+
+        return match (strtolower($this->courier_name ?? '')) {
+            'steadfast' => "https://steadfast.com.bd/t/{$code}",
+            'pathao' => "https://pathao.com/courier/tracking/?consignment_id={$code}",
+            'paperfly' => "https://paperfly.com.bd/tracking?id={$code}",
+            'redx' => "https://redx.com.bd/track-order?trackingId={$code}",
+            default => null,
+        };
+    }
 
     public function user()
     {

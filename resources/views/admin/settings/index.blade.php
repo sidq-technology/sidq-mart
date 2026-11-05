@@ -41,10 +41,10 @@
              1. STORE IDENTITY & BRANDING
         =========================================== -->
         <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header d-flex align-items-center justify-content-between"
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
                  data-bs-toggle="collapse" 
                  data-bs-target="#secIdentity" 
-                 aria-expanded="true"
+                 aria-expanded="false"
                  role="button">
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(239, 68, 68, 0.12); color: #dc2626; font-size: 18px;">
@@ -61,7 +61,7 @@
                 </div>
             </div>
 
-            <div id="secIdentity" class="collapse show">
+            <div id="secIdentity" class="collapse">
                 <div class="card-body p-3 p-sm-4 border-top">
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
@@ -128,7 +128,7 @@
              2. DELIVERY & SHIPPING CONFIGURATION
         =========================================== -->
         <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header d-flex align-items-center justify-content-between"
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
                  data-bs-toggle="collapse" 
                  data-bs-target="#secDelivery" 
                  aria-expanded="false"
@@ -204,7 +204,7 @@
              3. CONTACT, HELPLINE & SOCIAL
         =========================================== -->
         <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header d-flex align-items-center justify-content-between"
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
                  data-bs-toggle="collapse" 
                  data-bs-target="#secContact" 
                  aria-expanded="false"
@@ -299,7 +299,7 @@
              4. CHECKOUT PAYMENT GATEWAYS
         =========================================== -->
         <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header d-flex align-items-center justify-content-between"
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
                  data-bs-toggle="collapse" 
                  data-bs-target="#secPayment" 
                  aria-expanded="false"
@@ -410,7 +410,7 @@
              5. THEME & BRAND COLOR STYLING
         =========================================== -->
         <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header d-flex align-items-center justify-content-between"
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
                  data-bs-toggle="collapse" 
                  data-bs-target="#secTheme" 
                  aria-expanded="false"
@@ -522,7 +522,7 @@
              6. MARKETING & PIXELS
         =========================================== -->
         <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header d-flex align-items-center justify-content-between"
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
                  data-bs-toggle="collapse" 
                  data-bs-target="#secMarketing" 
                  aria-expanded="false"
@@ -580,7 +580,7 @@
         =========================================== -->
         <input type="hidden" name="upsell_settings_submitted" value="1">
         <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header d-flex align-items-center justify-content-between"
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
                  data-bs-toggle="collapse" 
                  data-bs-target="#secUpsell" 
                  aria-expanded="false"
@@ -683,7 +683,7 @@
              8. SMS & NOTIFICATION GATEWAY (MRAM API)
         =========================================== -->
         <div class="card border bg-white rounded-3 shadow-xs overflow-hidden" id="secSmsCard">
-            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header d-flex align-items-center justify-content-between"
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
                  data-bs-toggle="collapse" 
                  data-bs-target="#secSms" 
                  aria-expanded="false"

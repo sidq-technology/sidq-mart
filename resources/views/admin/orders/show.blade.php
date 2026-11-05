@@ -20,6 +20,57 @@
             <i class="fas fa-file-excel"></i>
             <span>Send to Sheet</span>
         </button>
+
+        @php
+            $couriers = $enabledCouriers ?? app(\App\Services\Courier\CourierManager::class)->getEnabledCouriers();
+        @endphp
+
+        <div class="courier-action-slot d-inline-block">
+            @if(!empty($order->courier_name) && !empty($order->courier_tracking_code))
+                <div class="d-inline-flex align-items-center gap-1 p-2 rounded-2 bg-success-subtle border border-success-subtle text-success small fw-bold">
+                    <i class="fas fa-truck-fast"></i>
+                    <span>{{ ucfirst($order->courier_name) }}:</span>
+                    @if($order->courier_tracking_url)
+                        <a href="{{ $order->courier_tracking_url }}" target="_blank" class="text-success text-decoration-underline">{{ $order->courier_tracking_code }}</a>
+                    @else
+                        <span>{{ $order->courier_tracking_code }}</span>
+                    @endif
+                </div>
+            @elseif(!empty($couriers))
+                <div class="dropdown d-inline-block courier-dropdown-wrapper">
+                    <button class="btn btn-primary dropdown-toggle fw-bold d-inline-flex align-items-center gap-1 shadow-sm btn-courier-dropdown" 
+                            type="button" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false"
+                            style="background-color: #2563eb; border-color: #2563eb;">
+                        <i class="fas fa-truck-fast"></i>
+                        <span>Send to Courier</span>
+                    </button>
+                    <ul class="dropdown-menu shadow border py-1" style="font-size: 13px;">
+                        <li class="dropdown-header small text-muted text-uppercase fw-bold px-3 py-1">কুরিয়ার নির্বাচন করুন</li>
+                        @foreach($couriers as $c)
+                        <li>
+                            <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 btn-submit-to-courier" 
+                                    data-url="{{ route('admin.orders.send-to-courier', $order->id) }}" 
+                                    data-courier="{{ $c['key'] }}"
+                                    data-label="{{ $c['label'] }}">
+                                <span class="badge {{ $c['badge_class'] }} rounded-circle p-1 d-inline-flex align-items-center justify-content-center" style="width: 22px; height: 22px;">
+                                    <i class="{{ $c['icon'] }}" style="font-size: 10px;"></i>
+                                </span>
+                                <span class="fw-semibold text-dark">{{ $c['label'] }}</span>
+                            </button>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @else
+                <a href="{{ route('admin.integrations.index') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1" title="কুরিয়ার কনফিগার করুন">
+                    <i class="fas fa-truck-fast text-muted"></i>
+                    <span class="small text-muted">Configure Courier</span>
+                </a>
+            @endif
+        </div>
+
         <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" class="btn btn-dark">
             <i class="fas fa-print me-1"></i> ইনভয়েস প্রিন্ট করুন
         </a>
@@ -116,7 +167,7 @@
                 <h5 class="fw-bold mb-0 text-dark">স্ট্যাটাস পরিবর্তন (Update Status)</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.orders.status', $order->id) }}" method="POST">
+                <form action="{{ route('admin.orders.status', $order->id) }}" method="POST" id="showOrderStatusForm">
                     @csrf
                     <div class="mb-3">
                         <label for="order_status" class="form-label small fw-bold">অর্ডার স্ট্যাটাস</label>
@@ -134,9 +185,10 @@
                         <textarea name="admin_notes" id="admin_notes" rows="2" class="form-control" placeholder="কুরিয়ার ট্র্যাকিং কোড বা ডেলিভারি তথ্য...">{{ $order->admin_notes }}</textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-danger w-100 py-2">
+                    <button type="submit" class="btn btn-danger w-100 py-2" id="btnUpdateShowStatus">
                         <i class="fas fa-save me-1"></i> স্ট্যাটাস আপডেট করুন
                     </button>
+                    <div id="showStatusFeedback" class="mt-2 alert d-none py-1 px-2 small"></div>
                 </form>
             </div>
         </div>
@@ -236,6 +288,143 @@ document.addEventListener('DOMContentLoaded', function () {
                 feedbackBox.className = 'alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-4';
                 feedbackBox.innerHTML = '<i class="fas fa-times-circle fs-6"></i> <div>রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</div>';
             }
+        });
+    });
+
+    // AJAX Status update in show page
+    const statusForm = document.getElementById('showOrderStatusForm');
+    const btnUpdate = document.getElementById('btnUpdateShowStatus');
+    const statusFeedback = document.getElementById('showStatusFeedback');
+
+    if (statusForm && btnUpdate) {
+        statusForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            btnUpdate.disabled = true;
+            const originalHtml = btnUpdate.innerHTML;
+            btnUpdate.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> সংরক্ষণ হচ্ছে...';
+
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: new FormData(this)
+            })
+            .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, body: data })))
+            .then(({ ok, body }) => {
+                btnUpdate.disabled = false;
+                if (ok && body.success) {
+                    btnUpdate.innerHTML = '<i class="fas fa-check me-1"></i> আপডেট সম্পন্ন!';
+                    btnUpdate.classList.remove('btn-danger');
+                    btnUpdate.classList.add('btn-success');
+                    setTimeout(() => {
+                        btnUpdate.innerHTML = originalHtml;
+                        btnUpdate.classList.remove('btn-success');
+                        btnUpdate.classList.add('btn-danger');
+                    }, 2500);
+
+                    if (statusFeedback) {
+                        statusFeedback.className = 'mt-2 alert alert-success py-1 px-2 small d-flex align-items-center gap-1 mb-0';
+                        statusFeedback.innerHTML = '<i class="fas fa-check-circle text-success"></i> <span>' + body.message + '</span>';
+                        statusFeedback.classList.remove('d-none');
+                        setTimeout(() => statusFeedback.classList.add('d-none'), 3500);
+                    }
+                } else {
+                    btnUpdate.innerHTML = originalHtml;
+                    if (statusFeedback) {
+                        statusFeedback.className = 'mt-2 alert alert-danger py-1 px-2 small d-flex align-items-center gap-1 mb-0';
+                        statusFeedback.innerHTML = '<i class="fas fa-exclamation-circle text-danger"></i> <span>' + (body.message || 'আপডেট করতে সমস্যা হয়েছে') + '</span>';
+                        statusFeedback.classList.remove('d-none');
+                    }
+                }
+            })
+            .catch(err => {
+                btnUpdate.disabled = false;
+                btnUpdate.innerHTML = originalHtml;
+                if (statusFeedback) {
+                    statusFeedback.className = 'mt-2 alert alert-danger py-1 px-2 small d-flex align-items-center gap-1 mb-0';
+                    statusFeedback.innerHTML = '<i class="fas fa-times-circle text-danger"></i> <span>রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</span>';
+                    statusFeedback.classList.remove('d-none');
+                }
+            });
+        });
+    }
+
+    // Handle Courier Booking in show page
+    document.querySelectorAll('.btn-submit-to-courier').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = this.getAttribute('data-url');
+            const courier = this.getAttribute('data-courier');
+            const courierLabel = this.getAttribute('data-label');
+            const slot = document.querySelector('.courier-action-slot');
+            const dropdownBtn = document.querySelector('.btn-courier-dropdown');
+            const feedbackBox = document.getElementById('showOrderFeedback');
+
+            if (dropdownBtn) {
+                dropdownBtn.disabled = true;
+                dropdownBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> বুকিং হচ্ছে...';
+            }
+
+            if (feedbackBox) {
+                feedbackBox.className = 'alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-4';
+                feedbackBox.innerHTML = '<span class="spinner-border spinner-border-sm"></span> ' + courierLabel + '-এ পার্সেল বুকিং করা হচ্ছে...';
+                feedbackBox.classList.remove('d-none');
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ courier: courier })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, body: data })))
+            .then(({ ok, body }) => {
+                if (ok && body.success) {
+                    if (slot) {
+                        const trkUrl = body.tracking_url;
+                        const trkLink = trkUrl 
+                            ? `<a href="${trkUrl}" target="_blank" class="text-success text-decoration-underline">${body.tracking_code}</a>` 
+                            : `<span>${body.tracking_code}</span>`;
+
+                        slot.innerHTML = `
+                            <div class="d-inline-flex align-items-center gap-1 p-2 rounded-2 bg-success-subtle border border-success-subtle text-success small fw-bold">
+                                <i class="fas fa-truck-fast"></i>
+                                <span>${body.courier_name.toUpperCase()}:</span>
+                                ${trkLink}
+                            </div>
+                        `;
+                    }
+
+                    if (feedbackBox) {
+                        feedbackBox.className = 'alert alert-success py-2 px-3 small d-flex align-items-center gap-2 mb-4';
+                        feedbackBox.innerHTML = '<i class="fas fa-check-circle fs-6"></i> <div>' + body.message + '</div>';
+                    }
+                } else {
+                    if (dropdownBtn) {
+                        dropdownBtn.disabled = false;
+                        dropdownBtn.innerHTML = '<i class="fas fa-truck-fast"></i> <span>Send to Courier</span>';
+                    }
+                    if (feedbackBox) {
+                        feedbackBox.className = 'alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-4';
+                        feedbackBox.innerHTML = '<i class="fas fa-exclamation-triangle fs-6"></i> <div>' + (body.message || 'বুকিং ব্যর্থ হয়েছে') + '</div>';
+                    }
+                }
+            })
+            .catch(err => {
+                if (dropdownBtn) {
+                    dropdownBtn.disabled = false;
+                    dropdownBtn.innerHTML = '<i class="fas fa-truck-fast"></i> <span>Send to Courier</span>';
+                }
+                if (feedbackBox) {
+                    feedbackBox.className = 'alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-4';
+                    feedbackBox.innerHTML = '<i class="fas fa-times-circle fs-6"></i> <div>রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</div>';
+                }
+            });
         });
     });
 });

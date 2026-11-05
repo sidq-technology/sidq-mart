@@ -114,6 +114,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/orders/{order}/send-to-sheet', [OrderController::class, 'sendToSheet'])
             ->middleware('permission:orders.view')
             ->name('orders.send-to-sheet');
+        Route::post('/orders/{order}/send-to-courier', [OrderController::class, 'sendToCourier'])
+            ->middleware('permission:orders.status')
+            ->name('orders.send-to-courier');
         Route::delete('/orders/{order}', [OrderController::class, 'destroy'])
             ->middleware('permission:orders.delete')
             ->name('orders.destroy');
@@ -210,6 +213,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/integrations/test-google-sheet', [IntegrationController::class, 'testGoogleSheet'])
             ->middleware('permission:integrations.manage')
             ->name('integrations.test-google-sheet');
+        Route::post('/integrations/test-courier', [IntegrationController::class, 'testCourier'])
+            ->middleware('permission:integrations.manage')
+            ->name('integrations.test-courier');
 
         // Site Settings & Branding
         Route::get('/settings', [SettingController::class, 'index'])

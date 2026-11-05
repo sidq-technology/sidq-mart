@@ -187,6 +187,7 @@ class DashboardController extends Controller
         // Recent orders (always "As Now" real-time) with eager loading
         $recentOrders = Order::with('items.product')->latest()->take(8)->get();
         $lowStockProducts = Product::where('stock_quantity', '<=', 5)->take(5)->get();
+        $enabledCouriers = app(\App\Services\Courier\CourierManager::class)->getEnabledCouriers();
 
         return view('admin.dashboard', compact(
             'period',
@@ -195,7 +196,8 @@ class DashboardController extends Controller
             'lowStockProducts',
             'daysTrend',
             'paymentMethodsBreakdown',
-            'zoneBreakdown'
+            'zoneBreakdown',
+            'enabledCouriers'
         ));
     }
 }

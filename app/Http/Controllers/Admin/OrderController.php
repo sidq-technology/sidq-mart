@@ -38,14 +38,17 @@ class OrderController extends Controller
             'cancelled' => Order::where('order_status', 'cancelled')->count(),
         ];
 
-        return view('admin.orders.index', compact('orders', 'counts', 'status', 'search'));
+        $enabledCouriers = app(\App\Services\Courier\CourierManager::class)->getEnabledCouriers();
+
+        return view('admin.orders.index', compact('orders', 'counts', 'status', 'search', 'enabledCouriers'));
     }
 
     public function show(Order $order)
     {
         $order->load(['items.product', 'user']);
+        $enabledCouriers = app(\App\Services\Courier\CourierManager::class)->getEnabledCouriers();
 
-        return view('admin.orders.show', compact('order'));
+        return view('admin.orders.show', compact('order', 'enabledCouriers'));
     }
 
     public function updateStatus(Request $request, Order $order)
@@ -69,6 +72,17 @@ class OrderController extends Controller
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::error("Order {$newStatus} SMS Trigger Error: " . $e->getMessage());
             }
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'অর্ডারের স্ট্যাটাস ও নোট সফলভাবে সংরক্ষিত হয়েছে।',
+                'order_status' => $newStatus,
+                'status_label' => ucfirst($newStatus),
+                'status_badge_class' => $order->status_badge_class,
+                'admin_notes' => $order->admin_notes,
+            ]);
         }
 
         return redirect()->back()->with('success', 'অর্ডারের স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে।');
@@ -100,6 +114,44 @@ class OrderController extends Controller
             'success' => false,
             'message' => $result['message'],
         ], 422);
+    }
+
+    public function sendToCourier(Request $request, Order $order, \App\Services\Courier\CourierManager $courierManager)
+    {
+        $courierName = $request->input('courier');
+        if (empty($courierName)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'অনুগ্রহ করে একটি কুরিয়ার সার্ভিস নির্বাচন করুন।'
+            ], 422);
+        }
+
+        try {
+            $result = $courierManager->sendOrder($order, $courierName);
+
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $result['message'],
+                    'courier_name' => $result['courier'],
+                    'tracking_code' => $result['tracking_code'],
+                    'consignment_id' => $result['consignment_id'],
+                    'tracking_url' => $result['tracking_url'] ?? null,
+                    'order_status' => $result['order_status'],
+                    'status_badge_class' => $result['status_badge_class'],
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $result['message']
+            ], 422);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'কুরিয়ার বুকিং ত্রুটি: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy(Order $order)

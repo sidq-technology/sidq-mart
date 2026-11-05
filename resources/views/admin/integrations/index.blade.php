@@ -49,10 +49,10 @@
                          1. META (FACEBOOK) PIXEL & CAPI
                     =========================================== -->
                     <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header d-flex align-items-center justify-content-between"
+                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header collapsed d-flex align-items-center justify-content-between"
                              data-bs-toggle="collapse" 
                              data-bs-target="#intMeta" 
-                             aria-expanded="true"
+                             aria-expanded="false"
                              role="button">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(24, 119, 242, 0.12); color: #1877f2; font-size: 20px;">
@@ -79,7 +79,7 @@
                             </div>
                         </div>
 
-                        <div id="intMeta" class="collapse show">
+                        <div id="intMeta" class="collapse">
                             <div class="card-body p-3 p-sm-4 border-top">
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold text-dark mb-1">Meta Pixel ID (Dataset ID) <span class="text-danger">*</span></label>
@@ -110,7 +110,7 @@
                          2. GOOGLE MARKETING PLATFORM (GTM & GA4)
                     =========================================== -->
                     <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header d-flex align-items-center justify-content-between"
+                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header collapsed d-flex align-items-center justify-content-between"
                              data-bs-toggle="collapse" 
                              data-bs-target="#intGoogle" 
                              aria-expanded="false"
@@ -170,7 +170,7 @@
                          3. TIKTOK PIXEL & CONVERSIONS
                     =========================================== -->
                     <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header d-flex align-items-center justify-content-between"
+                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header collapsed d-flex align-items-center justify-content-between"
                              data-bs-toggle="collapse" 
                              data-bs-target="#intTiktok" 
                              aria-expanded="false"
@@ -218,7 +218,7 @@
                          4. WHATSAPP FLOATING CHAT WIDGET
                     =========================================== -->
                     <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header d-flex align-items-center justify-content-between"
+                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header collapsed d-flex align-items-center justify-content-between"
                              data-bs-toggle="collapse" 
                              data-bs-target="#intWhatsapp" 
                              aria-expanded="false"
@@ -278,7 +278,7 @@
                          5. CUSTOM CODE & SCRIPT INJECTION
                     =========================================== -->
                     <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header d-flex align-items-center justify-content-between"
+                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header collapsed d-flex align-items-center justify-content-between"
                              data-bs-toggle="collapse" 
                              data-bs-target="#intCustomScripts" 
                              aria-expanded="false"
@@ -326,10 +326,10 @@
                          6. GOOGLE SHEETS ORDER AUTOMATION
                     =========================================== -->
                     <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
-                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header d-flex align-items-center justify-content-between"
+                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header collapsed d-flex align-items-center justify-content-between"
                              data-bs-toggle="collapse" 
                              data-bs-target="#intGoogleSheet" 
-                             aria-expanded="true"
+                             aria-expanded="false"
                              role="button">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(16, 185, 129, 0.12); color: #0f9d58; font-size: 22px;">
@@ -356,7 +356,7 @@
                             </div>
                         </div>
 
-                        <div id="intGoogleSheet" class="collapse show">
+                        <div id="intGoogleSheet" class="collapse">
                             <div class="card-body p-3 p-sm-4 border-top">
                                 <div class="row g-3">
                                     <div class="col-12 col-md-8">
@@ -396,6 +396,196 @@
                                         <div id="testSheetAlert" class="mt-2 d-none"></div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==========================================
+                         7. BANGLADESHI COURIER SERVICES HUB
+                    =========================================== -->
+                    <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
+                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header collapsed d-flex align-items-center justify-content-between"
+                             data-bs-toggle="collapse" 
+                             data-bs-target="#intCouriers" 
+                             aria-expanded="false"
+                             role="button">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(239, 68, 68, 0.12); color: #dc2626; font-size: 22px;">
+                                    <i class="fas fa-truck-fast"></i>
+                                </div>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="fw-bold text-dark mb-0">৭. Bangladeshi Courier Services Hub (কুরিয়ার ইন্টিগ্রেশন)</h6>
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0 small fw-semibold" style="font-size: 10px;">Steadfast, Pathao, Paperfly, RedX</span>
+                                    </div>
+                                    <span class="text-muted small">অর্ডার পপআপ থেকে সরাসরি এক ক্লিকে কুরিয়ারে পার্সেল বুকিং ও ট্র্যাকিং কোড জেনারেট</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3" onclick="event.stopPropagation()">
+                                <i class="fas fa-chevron-down text-muted accordion-arrow"></i>
+                            </div>
+                        </div>
+
+                        <div id="intCouriers" class="collapse">
+                            <div class="card-body p-3 p-sm-4 border-top">
+                                
+                                <!-- Courier Tabs Navigation -->
+                                <ul class="nav nav-pills mb-3 p-1 bg-light rounded-3" id="courierTab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active fw-bold small py-1 px-3" id="steadfast-tab" data-bs-toggle="pill" data-bs-target="#tab-steadfast" type="button" role="tab">
+                                            <i class="fas fa-bolt text-danger me-1"></i> Steadfast
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link fw-bold small py-1 px-3" id="pathao-tab" data-bs-toggle="pill" data-bs-target="#tab-pathao" type="button" role="tab">
+                                            <i class="fas fa-motorcycle text-danger me-1"></i> Pathao
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link fw-bold small py-1 px-3" id="paperfly-tab" data-bs-toggle="pill" data-bs-target="#tab-paperfly" type="button" role="tab">
+                                            <i class="fas fa-paper-plane text-primary me-1"></i> Paperfly
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link fw-bold small py-1 px-3" id="redx-tab" data-bs-toggle="pill" data-bs-target="#tab-redx" type="button" role="tab">
+                                            <i class="fas fa-truck text-danger me-1"></i> RedX
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="courierTabContent">
+                                    
+                                    <!-- 1. STEADFAST -->
+                                    <div class="tab-pane fade show active p-3 border rounded-3 bg-white" id="tab-steadfast" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">Steadfast Courier</h6>
+                                                <small class="text-muted">API Integration for direct parcel placement</small>
+                                            </div>
+                                            <div class="form-check form-switch fs-5 mb-0">
+                                                <input class="form-check-input" type="checkbox" role="switch" name="courier_steadfast_enabled" value="1" {{ ($settings['courier_steadfast_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label small fw-bold text-dark mb-1">Steadfast API Key</label>
+                                                <input type="text" name="courier_steadfast_api_key" id="courier_steadfast_api_key" class="form-control" placeholder="API Key" value="{{ $settings['courier_steadfast_api_key'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label small fw-bold text-dark mb-1">Steadfast Secret Key</label>
+                                                <input type="text" name="courier_steadfast_secret_key" id="courier_steadfast_secret_key" class="form-control" placeholder="Secret Key" value="{{ $settings['courier_steadfast_secret_key'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-sm btn-outline-danger fw-bold btn-test-courier" data-courier="steadfast">
+                                                    <i class="fas fa-vial me-1"></i> Steadfast ক্রেডেনশিয়াল টেস্ট করুন
+                                                </button>
+                                                <div class="courier-test-alert mt-2 d-none"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. PATHAO -->
+                                    <div class="tab-pane fade p-3 border rounded-3 bg-white" id="tab-pathao" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">Pathao Courier</h6>
+                                                <small class="text-muted">Hermes Aladdin API v1</small>
+                                            </div>
+                                            <div class="form-check form-switch fs-5 mb-0">
+                                                <input class="form-check-input" type="checkbox" role="switch" name="courier_pathao_enabled" value="1" {{ ($settings['courier_pathao_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label small fw-bold text-dark mb-1">Client ID</label>
+                                                <input type="text" name="courier_pathao_client_id" id="courier_pathao_client_id" class="form-control" placeholder="Client ID" value="{{ $settings['courier_pathao_client_id'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label small fw-bold text-dark mb-1">Client Secret</label>
+                                                <input type="text" name="courier_pathao_client_secret" id="courier_pathao_client_secret" class="form-control" placeholder="Client Secret" value="{{ $settings['courier_pathao_client_secret'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="form-label small fw-bold text-dark mb-1">Username (Email)</label>
+                                                <input type="text" name="courier_pathao_username" id="courier_pathao_username" class="form-control" placeholder="merchant@email.com" value="{{ $settings['courier_pathao_username'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="form-label small fw-bold text-dark mb-1">Password</label>
+                                                <input type="password" name="courier_pathao_password" id="courier_pathao_password" class="form-control" placeholder="••••••••" value="{{ $settings['courier_pathao_password'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="form-label small fw-bold text-dark mb-1">Store ID</label>
+                                                <input type="text" name="courier_pathao_store_id" id="courier_pathao_store_id" class="form-control" placeholder="e.g. 1234" value="{{ $settings['courier_pathao_store_id'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-sm btn-outline-danger fw-bold btn-test-courier" data-courier="pathao">
+                                                    <i class="fas fa-vial me-1"></i> Pathao কানেকশন টেস্ট করুন
+                                                </button>
+                                                <div class="courier-test-alert mt-2 d-none"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 3. PAPERFLY -->
+                                    <div class="tab-pane fade p-3 border rounded-3 bg-white" id="tab-paperfly" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">Paperfly Courier</h6>
+                                                <small class="text-muted">Order Placement API</small>
+                                            </div>
+                                            <div class="form-check form-switch fs-5 mb-0">
+                                                <input class="form-check-input" type="checkbox" role="switch" name="courier_paperfly_enabled" value="1" {{ ($settings['courier_paperfly_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-12 col-md-4">
+                                                <label class="form-label small fw-bold text-dark mb-1">Username</label>
+                                                <input type="text" name="courier_paperfly_username" id="courier_paperfly_username" class="form-control" placeholder="Username" value="{{ $settings['courier_paperfly_username'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="form-label small fw-bold text-dark mb-1">Password</label>
+                                                <input type="password" name="courier_paperfly_password" id="courier_paperfly_password" class="form-control" placeholder="Password" value="{{ $settings['courier_paperfly_password'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="form-label small fw-bold text-dark mb-1">Paperfly Key</label>
+                                                <input type="text" name="courier_paperfly_key" id="courier_paperfly_key" class="form-control" placeholder="Paperfly Key" value="{{ $settings['courier_paperfly_key'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-sm btn-outline-primary fw-bold btn-test-courier" data-courier="paperfly">
+                                                    <i class="fas fa-vial me-1"></i> Paperfly কানেকশন টেস্ট করুন
+                                                </button>
+                                                <div class="courier-test-alert mt-2 d-none"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4. REDX -->
+                                    <div class="tab-pane fade p-3 border rounded-3 bg-white" id="tab-redx" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">RedX Courier</h6>
+                                                <small class="text-muted">OpenAPI v1.0.0</small>
+                                            </div>
+                                            <div class="form-check form-switch fs-5 mb-0">
+                                                <input class="form-check-input" type="checkbox" role="switch" name="courier_redx_enabled" value="1" {{ ($settings['courier_redx_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label class="form-label small fw-bold text-dark mb-1">RedX Access Token</label>
+                                                <input type="text" name="courier_redx_access_token" id="courier_redx_access_token" class="form-control font-monospace small" placeholder="Bearer Token from RedX Portal" value="{{ $settings['courier_redx_access_token'] ?? '' }}">
+                                            </div>
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-sm btn-outline-danger fw-bold btn-test-courier" data-courier="redx">
+                                                    <i class="fas fa-vial me-1"></i> RedX কানেকশন টেস্ট করুন
+                                                </button>
+                                                <div class="courier-test-alert mt-2 d-none"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -628,6 +818,63 @@
                 });
             });
         }
+
+        // Test Courier Credentials via AJAX
+        document.querySelectorAll('.btn-test-courier').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const courier = this.getAttribute('data-courier');
+                const pane = this.closest('.tab-pane');
+                const alertBox = pane.querySelector('.courier-test-alert');
+                const originalHtml = this.innerHTML;
+
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> টেস্ট করা হচ্ছে...';
+
+                if (alertBox) {
+                    alertBox.className = 'courier-test-alert mt-2 alert alert-info py-2 px-3 small d-flex align-items-center gap-2';
+                    alertBox.innerHTML = '<span class="spinner-border spinner-border-sm"></span> কুরিয়ার সার্ভারের সাথে ক্রেডেনশিয়াল যাচাই করা হচ্ছে...';
+                    alertBox.classList.remove('d-none');
+                }
+
+                // Gather inputs from this pane
+                const payload = { courier: courier };
+                pane.querySelectorAll('input').forEach(input => {
+                    payload[input.name] = input.value;
+                });
+
+                fetch('{{ route('admin.integrations.test-courier') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    this.disabled = false;
+                    this.innerHTML = originalHtml;
+                    if (alertBox) {
+                        if (data.success) {
+                            alertBox.className = 'courier-test-alert mt-2 alert alert-success py-2 px-3 small d-flex align-items-center gap-2';
+                            alertBox.innerHTML = '<i class="fas fa-check-circle fs-6"></i> <div>' + data.message + '</div>';
+                        } else {
+                            alertBox.className = 'courier-test-alert mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2';
+                            alertBox.innerHTML = '<i class="fas fa-exclamation-triangle fs-6"></i> <div>' + data.message + '</div>';
+                        }
+                    }
+                })
+                .catch(err => {
+                    this.disabled = false;
+                    this.innerHTML = originalHtml;
+                    if (alertBox) {
+                        alertBox.className = 'courier-test-alert mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2';
+                        alertBox.innerHTML = '<i class="fas fa-times-circle fs-6"></i> <div>টেস্ট রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</div>';
+                    }
+                });
+            });
+        });
     });
 </script>
 @endpush
