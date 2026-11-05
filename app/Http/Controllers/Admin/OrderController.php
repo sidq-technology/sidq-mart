@@ -84,6 +84,24 @@ class OrderController extends Controller
         return view('admin.orders.invoice', compact('order', 'siteName', 'contactPhone', 'contactAddress'));
     }
 
+    public function sendToSheet(Order $order, \App\Services\GoogleSheetService $sheetService)
+    {
+        $result = $sheetService->syncOrder($order);
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'action' => $result['action'] ?? 'synced',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $result['message'],
+        ], 422);
+    }
+
     public function destroy(Order $order)
     {
         $order->delete();

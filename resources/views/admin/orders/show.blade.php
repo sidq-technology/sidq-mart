@@ -11,12 +11,22 @@
         <h3 class="fw-bold mb-0 text-dark">অর্ডার: {{ $order->order_number }}</h3>
         <span class="text-muted small">তারিখ: {{ $order->created_at->format('d F Y, h:i A') }}</span>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" 
+                class="btn btn-success fw-bold d-inline-flex align-items-center gap-1 shadow-sm btn-send-to-sheet"
+                style="background-color: #0f9d58; border-color: #0f9d58; color: #fff;"
+                data-url="{{ route('admin.orders.send-to-sheet', $order->id) }}"
+                data-order-number="{{ $order->order_number }}">
+            <i class="fas fa-file-excel"></i>
+            <span>Send to Sheet</span>
+        </button>
         <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" class="btn btn-dark">
             <i class="fas fa-print me-1"></i> ইনভয়েস প্রিন্ট করুন
         </a>
     </div>
 </div>
+
+<div id="showOrderFeedback" class="alert d-none mb-4"></div>
 
 <div class="row g-4">
     <!-- Left: Order Items & Pricing Breakdown -->
@@ -170,3 +180,64 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.querySelector('.btn-send-to-sheet');
+    const feedbackBox = document.getElementById('showOrderFeedback');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+        const url = this.getAttribute('data-url');
+        const originalContent = this.innerHTML;
+
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> পাঠাচ্ছে...';
+
+        if (feedbackBox) {
+            feedbackBox.className = 'alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-4';
+            feedbackBox.innerHTML = '<span class="spinner-border spinner-border-sm"></span> গুগল স্প্রেডশীটে অর্ডার ডেটা সিঙ্ক করা হচ্ছে...';
+            feedbackBox.classList.remove('d-none');
+        }
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, body: data })))
+        .then(({ ok, body }) => {
+            this.disabled = false;
+            if (ok && body.success) {
+                this.innerHTML = '<i class="fas fa-check-double me-1"></i> Sent to Sheet';
+                this.style.backgroundColor = '#0b7340';
+                this.style.borderColor = '#0b7340';
+
+                if (feedbackBox) {
+                    feedbackBox.className = 'alert alert-success py-2 px-3 small d-flex align-items-center gap-2 mb-4';
+                    feedbackBox.innerHTML = '<i class="fas fa-check-circle fs-6"></i> <div>' + body.message + '</div>';
+                }
+            } else {
+                this.innerHTML = originalContent;
+                if (feedbackBox) {
+                    feedbackBox.className = 'alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-4';
+                    feedbackBox.innerHTML = '<i class="fas fa-exclamation-triangle fs-6"></i> <div>' + (body.message || 'ত্রুটি ঘটেছে!') + '</div>';
+                }
+            }
+        })
+        .catch(err => {
+            this.disabled = false;
+            this.innerHTML = originalContent;
+            if (feedbackBox) {
+                feedbackBox.className = 'alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-4';
+                feedbackBox.innerHTML = '<i class="fas fa-times-circle fs-6"></i> <div>রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</div>';
+            }
+        });
+    });
+});
+</script>
+@endpush

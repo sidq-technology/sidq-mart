@@ -322,6 +322,84 @@
                         </div>
                     </div>
 
+                    <!-- ==========================================
+                         6. GOOGLE SHEETS ORDER AUTOMATION
+                    =========================================== -->
+                    <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
+                        <div class="card-header bg-white p-3 p-sm-4 integration-collapse-header d-flex align-items-center justify-content-between"
+                             data-bs-toggle="collapse" 
+                             data-bs-target="#intGoogleSheet" 
+                             aria-expanded="true"
+                             role="button">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(16, 185, 129, 0.12); color: #0f9d58; font-size: 22px;">
+                                    <i class="fas fa-file-excel"></i>
+                                </div>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="fw-bold text-dark mb-0">৬. Google Sheets Order Automation (গুগল স্প্রেডশীট)</h6>
+                                        @if(($settings['google_sheet_enabled'] ?? '1') == '1')
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0 small fw-semibold" style="font-size: 10px;">Active</span>
+                                        @else
+                                            <span class="badge bg-light text-muted border px-2 py-0 small fw-medium" style="font-size: 10px;">Disabled</span>
+                                        @endif
+                                    </div>
+                                    <span class="text-muted small">অর্ডার বিবরণী এক ক্লিকে সরাসরি গুগল শীটের 'Orders' ট্যাবে পাঠানোর অটোমেশন</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3" onclick="event.stopPropagation()">
+                                <div class="form-check form-switch fs-5 mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" name="google_sheet_enabled" value="1" id="googleSheetSwitch" {{ ($settings['google_sheet_enabled'] ?? '1') == '1' ? 'checked' : '' }} title="Google Sheets চালু / বন্ধ করুন">
+                                </div>
+                                <i class="fas fa-chevron-down text-muted accordion-arrow"></i>
+                            </div>
+                        </div>
+
+                        <div id="intGoogleSheet" class="collapse show">
+                            <div class="card-body p-3 p-sm-4 border-top">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-8">
+                                        <label class="form-label small fw-bold text-dark mb-1">
+                                            Google Spreadsheet ID <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" name="google_sheet_id" id="sheet_id_input" class="form-control" placeholder="যেমন: 1tQzlrMx-MBDGqrgdeX2PZq-US3e9SRrJwLCoz9Qda_g" value="{{ $settings['google_sheet_id'] ?? '' }}">
+                                        <div class="form-text small">আপনার গুগল শীটের URL থেকে <code>/d/SPREADSHEET_ID/edit</code> অংশের আইডি। সাইট কপি বা নতুন ক্লায়েন্টের জন্য এটি পরিবর্তন করতে পারবেন।</div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label small fw-bold text-dark mb-1">
+                                            Target Sheet Tab Name <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" name="google_sheet_tab_name" id="sheet_tab_input" class="form-control" placeholder="যেমন: Orders" value="{{ $settings['google_sheet_tab_name'] ?? 'Orders' }}">
+                                        <div class="form-text small">শীটের যে ট্যাবে অর্ডার যুক্ত হবে (ডিফল্ট: <code>Orders</code>)।</div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold text-dark mb-1">
+                                            Service Account Credentials JSON <span class="text-danger">*</span>
+                                        </label>
+                                        <textarea name="google_sheet_service_account_json" id="sheet_json_input" class="form-control font-monospace small" rows="5" placeholder='{"type": "service_account", "client_email": "...", "private_key": "..."}'>{{ $settings['google_sheet_service_account_json'] ?? '' }}</textarea>
+                                        <div class="form-text small">গুগল ক্লাউড কনসোল থেকে তৈরি করা Service Account JSON কী। এই ইমেইলটিকে গুগল শীটে <strong>Editor</strong> হিসেবে অ্যাক্সেস দেওয়া থাকতে হবে।</div>
+                                    </div>
+
+                                    <div class="col-12 pt-2">
+                                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2 bg-light rounded-3 border">
+                                            <div class="small text-muted">
+                                                <i class="fas fa-info-circle text-primary me-1"></i> শীট আইডি বা ক্রেডেনশিয়াল সঠিক আছে কিনা যাচাই করুন:
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-success fw-bold d-inline-flex align-items-center gap-1" id="btnTestGoogleSheet">
+                                                <i class="fas fa-vial"></i>
+                                                <span id="testSheetBtnText">কানেকশন টেস্ট করুন</span>
+                                            </button>
+                                        </div>
+                                        <div id="testSheetAlert" class="mt-2 d-none"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -335,10 +413,21 @@
                             <h6 class="fw-bold text-dark mb-0">
                                 <i class="fas fa-signal text-success me-2"></i>ইন্টিগ্রেশন স্ট্যাটাস (Live Status)
                             </h6>
-                            <span class="badge bg-light text-dark border small fw-normal">5 Services</span>
+                            <span class="badge bg-light text-dark border small fw-normal">6 Services</span>
                         </div>
                         <div class="card-body p-3 p-sm-4">
                             <ul class="list-group list-group-flush" style="font-size: 13px;">
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fas fa-file-excel text-success fs-6"></i>
+                                        <span class="fw-medium text-dark">Google Sheets</span>
+                                    </div>
+                                    @if(($settings['google_sheet_enabled'] ?? '1') == '1')
+                                        <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1">Active</span>
+                                    @else
+                                        <span class="badge rounded-pill bg-light text-muted border fw-normal px-2 py-1">Disabled</span>
+                                    @endif
+                                </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
                                     <div class="d-flex align-items-center gap-2">
                                         <i class="fab fa-facebook text-primary fs-6"></i>
@@ -486,6 +575,59 @@
                 toggleAllText.textContent = 'সবগুলো খুলুন (Expand All)';
             }
         });
+
+        // Test Google Sheet Connection via AJAX
+        const btnTestSheet = document.getElementById('btnTestGoogleSheet');
+        if (btnTestSheet) {
+            btnTestSheet.addEventListener('click', function () {
+                const sheetId = document.getElementById('sheet_id_input')?.value.trim();
+                const sheetTab = document.getElementById('sheet_tab_input')?.value.trim();
+                const sheetJson = document.getElementById('sheet_json_input')?.value.trim();
+                const alertBox = document.getElementById('testSheetAlert');
+                const btnText = document.getElementById('testSheetBtnText');
+
+                if (!sheetId) {
+                    alert('দয়া করে Google Spreadsheet ID প্রদান করুন!');
+                    return;
+                }
+
+                btnTestSheet.disabled = true;
+                btnText.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> টেস্ট করা হচ্ছে...';
+                alertBox.className = 'mt-2 alert alert-info py-2 px-3 small d-flex align-items-center gap-2';
+                alertBox.innerHTML = '<span class="spinner-border spinner-border-sm"></span> গুগল সার্ভারের সাথে কানেকশন যাচাই করা হচ্ছে...';
+
+                fetch('{{ route('admin.integrations.test-google-sheet') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        google_sheet_id: sheetId,
+                        google_sheet_tab_name: sheetTab,
+                        google_sheet_service_account_json: sheetJson
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    btnTestSheet.disabled = false;
+                    btnText.innerHTML = 'কানেকশন টেস্ট করুন';
+                    if (data.success) {
+                        alertBox.className = 'mt-2 alert alert-success py-2 px-3 small d-flex align-items-center gap-2';
+                        alertBox.innerHTML = '<i class="fas fa-check-circle fs-6"></i> <div>' + data.message + '</div>';
+                    } else {
+                        alertBox.className = 'mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2';
+                        alertBox.innerHTML = '<i class="fas fa-exclamation-triangle fs-6"></i> <div>' + data.message + '</div>';
+                    }
+                })
+                .catch(err => {
+                    btnTestSheet.disabled = false;
+                    btnText.innerHTML = 'কানেকশন টেস্ট করুন';
+                    alertBox.className = 'mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2';
+                    alertBox.innerHTML = '<i class="fas fa-times-circle fs-6"></i> <div>টেস্ট রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</div>';
+                });
+            });
+        }
     });
 </script>
 @endpush

@@ -40,6 +40,12 @@ class IntegrationController extends Controller
             // Custom Injected Scripts
             'custom_header_scripts' => Setting::get('custom_header_scripts', ''),
             'custom_footer_scripts' => Setting::get('custom_footer_scripts', ''),
+
+            // Google Sheets Automation
+            'google_sheet_enabled' => Setting::get('google_sheet_enabled', '1'),
+            'google_sheet_id' => Setting::get('google_sheet_id', '1tQzlrMx-MBDGqrgdeX2PZq-US3e9SRrJwLCoz9Qda_g'),
+            'google_sheet_tab_name' => Setting::get('google_sheet_tab_name', 'Orders'),
+            'google_sheet_service_account_json' => Setting::get('google_sheet_service_account_json', '') ?: (file_exists(storage_path('app/google/service-account.json')) ? file_get_contents(storage_path('app/google/service-account.json')) : ''),
         ];
 
         return view('admin.integrations.index', compact('settings'));
@@ -67,6 +73,10 @@ class IntegrationController extends Controller
             'whatsapp_widget_position',
             'custom_header_scripts',
             'custom_footer_scripts',
+            'google_sheet_enabled',
+            'google_sheet_id',
+            'google_sheet_tab_name',
+            'google_sheet_service_account_json',
         ];
 
         // Process checkboxes that might not be in request if unchecked
@@ -76,6 +86,7 @@ class IntegrationController extends Controller
             'ga4_enabled',
             'tiktok_pixel_enabled',
             'whatsapp_chat_enabled',
+            'google_sheet_enabled',
         ];
 
         foreach ($toggleKeys as $key) {
@@ -91,5 +102,19 @@ class IntegrationController extends Controller
         Cache::forget('app_settings_all');
 
         return redirect()->route('admin.integrations.index')->with('success', 'Marketing integrations and tracking scripts updated successfully!');
+    }
+
+    /**
+     * Test Google Sheet Connection via AJAX
+     */
+    public function testGoogleSheet(Request $request, \App\Services\GoogleSheetService $sheetService)
+    {
+        $sheetId = $request->input('google_sheet_id');
+        $tab = $request->input('google_sheet_tab_name');
+        $customJson = $request->input('google_sheet_service_account_json');
+
+        $result = $sheetService->testConnection($sheetId, $tab, $customJson);
+
+        return response()->json($result);
     }
 }

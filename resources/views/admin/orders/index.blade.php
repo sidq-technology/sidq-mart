@@ -331,19 +331,96 @@
             </div>
 
             <!-- Modal Footer -->
-            <div class="modal-footer bg-light p-3 border-top d-flex justify-content-between align-items-center">
-                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">বন্ধ করুন</button>
+            <div class="modal-footer bg-light p-3 border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">বন্ধ করুন</button>
+                    <button type="button" 
+                            class="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 shadow-xs btn-send-to-sheet"
+                            style="background-color: #0f9d58; border-color: #0f9d58; color: #fff;"
+                            data-url="{{ route('admin.orders.send-to-sheet', $order->id) }}"
+                            data-order-number="{{ $order->order_number }}">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Send to Sheet</span>
+                    </button>
+                </div>
                 <div class="d-flex gap-2">
                     <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" class="btn btn-sm btn-dark fw-bold d-inline-flex align-items-center gap-1 shadow-xs">
                         <i class="fas fa-print me-1"></i>
                         <span>ইনভয়েস প্রিন্ট করুন</span>
                     </a>
                 </div>
+                <div class="w-100 order-sheet-feedback mt-2 d-none"></div>
             </div>
 
         </div>
     </div>
 </div>
 @endforeach
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-send-to-sheet').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const url = this.getAttribute('data-url');
+            const orderNum = this.getAttribute('data-order-number');
+            const modalFooter = this.closest('.modal-footer');
+            const feedbackBox = modalFooter ? modalFooter.querySelector('.order-sheet-feedback') : null;
+            const originalContent = this.innerHTML;
+
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> পাঠাচ্ছে...';
+
+            if (feedbackBox) {
+                feedbackBox.className = 'w-100 order-sheet-feedback mt-2 alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-0';
+                feedbackBox.innerHTML = '<span class="spinner-border spinner-border-sm"></span> গুগল স্প্রেডশীটে অর্ডার ডেটা সিঙ্ক করা হচ্ছে...';
+                feedbackBox.classList.remove('d-none');
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, body: data })))
+            .then(({ ok, body }) => {
+                this.disabled = false;
+                if (ok && body.success) {
+                    this.innerHTML = '<i class="fas fa-check-double me-1"></i> Sent to Sheet';
+                    this.style.backgroundColor = '#0b7340';
+                    this.style.borderColor = '#0b7340';
+
+                    if (feedbackBox) {
+                        feedbackBox.className = 'w-100 order-sheet-feedback mt-2 alert alert-success py-2 px-3 small d-flex align-items-center gap-2 mb-0';
+                        feedbackBox.innerHTML = '<i class="fas fa-check-circle fs-6"></i> <div>' + body.message + '</div>';
+                    }
+                } else {
+                    this.innerHTML = originalContent;
+                    if (feedbackBox) {
+                        feedbackBox.className = 'w-100 order-sheet-feedback mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-0';
+                        feedbackBox.innerHTML = '<i class="fas fa-exclamation-triangle fs-6"></i> <div>' + (body.message || 'ত্রুটি ঘটেছে!') + '</div>';
+                    } else {
+                        alert(body.message || 'ত্রুটি ঘটেছে!');
+                    }
+                }
+            })
+            .catch(err => {
+                this.disabled = false;
+                this.innerHTML = originalContent;
+                if (feedbackBox) {
+                    feedbackBox.className = 'w-100 order-sheet-feedback mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-0';
+                    feedbackBox.innerHTML = '<i class="fas fa-times-circle fs-6"></i> <div>রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</div>';
+                } else {
+                    alert('রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message);
+                }
+            });
+        });
+    });
+});
+</script>
+@endpush
 
 @endsection
