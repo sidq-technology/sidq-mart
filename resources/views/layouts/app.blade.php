@@ -79,7 +79,7 @@
     @endif
 
     @if((\App\Models\Setting::get('meta_pixel_enabled', '1') == '1') && $pixelId = \App\Models\Setting::get('meta_pixel_id'))
-    <!-- Meta Pixel Code -->
+    <!-- Meta Pixel & Native Conversions API (CAPI) Hybrid Tracking -->
     <script>
         !function(f,b,e,v,n,t,s)
         {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -90,11 +90,62 @@
         s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', '{{ $pixelId }}');
-        fbq('track', 'PageView');
+
+        // Global SIDQ Hybrid Tracking Engine (Browser Pixel + Server CAPI Deduplication)
+        window.sidqTrackEvent = function(eventName, customData = {}, userData = {}, eventId = null) {
+            if (!eventId) {
+                eventId = 'evt_' + eventName.toLowerCase() + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+            }
+
+            // 1. Browser Meta Pixel with Deduplication eventID
+            if (typeof fbq === 'function') {
+                fbq('track', eventName, customData, { eventID: eventId });
+            }
+
+            // 2. Server-Side Meta CAPI via Non-Blocking Beacon / Fetch
+            try {
+                const payload = JSON.stringify({
+                    event_name: eventName,
+                    event_id: eventId,
+                    custom_data: customData,
+                    user_data: userData,
+                    event_source_url: window.location.href,
+                    _token: '{{ csrf_token() }}'
+                });
+
+                if (navigator.sendBeacon) {
+                    const blob = new Blob([payload], { type: 'application/json' });
+                    navigator.sendBeacon('{{ route('tracking.meta-capi') }}', blob);
+                } else {
+                    fetch('{{ route('tracking.meta-capi') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: payload,
+                        keepalive: true
+                    }).catch(function() {});
+                }
+            } catch (e) {
+                // Ignore analytics errors
+            }
+
+            return eventId;
+        };
+
+        // Track PageView with Matching Deduplication ID
+        const pvEventId = 'pv_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        window.sidqTrackEvent('PageView', {}, {}, pvEventId);
     </script>
     <noscript>
         <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $pixelId }}&ev=PageView&noscript=1"/>
     </noscript>
+    @else
+    <script>
+        // Fallback stub if Meta Pixel is disabled
+        window.sidqTrackEvent = function() { return null; };
+    </script>
     @endif
 
     @if(\App\Models\Setting::get('tiktok_pixel_enabled') == '1' && $ttId = \App\Models\Setting::get('tiktok_pixel_id'))
@@ -238,10 +289,10 @@
                     const offcanvas = new bootstrap.Offcanvas(document.getElementById('cartDrawer'));
                     offcanvas.show();
 
-                    // Track AddToCart for Meta Pixel, TikTok & GTM
+                    // Track AddToCart for Meta Pixel & CAPI (Hybrid Tracking)
                     try {
-                        if (typeof fbq === 'function') {
-                            fbq('track', 'AddToCart', {
+                        if (typeof window.sidqTrackEvent === 'function') {
+                            window.sidqTrackEvent('AddToCart', {
                                 content_ids: [String(productId)],
                                 content_type: 'product',
                                 currency: 'BDT'

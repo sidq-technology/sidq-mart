@@ -731,9 +731,9 @@
             const productId = '{{ $product->id }}';
             const categoryName = @json($product->category->name ?? 'General');
 
-            // Meta Pixel: ViewContent
-            if (typeof fbq === 'function') {
-                fbq('track', 'ViewContent', {
+            // Meta Pixel & CAPI Hybrid Tracking: ViewContent
+            if (typeof window.sidqTrackEvent === 'function') {
+                window.sidqTrackEvent('ViewContent', {
                     content_name: productName,
                     content_category: categoryName,
                     content_ids: [productId],
@@ -802,8 +802,8 @@
                     const prodName = @json($product->name);
                     const prodId = '{{ $product->id }}';
 
-                    if (typeof fbq === 'function') {
-                        fbq('track', 'AddToCart', {
+                    if (typeof window.sidqTrackEvent === 'function') {
+                        window.sidqTrackEvent('AddToCart', {
                             content_name: prodName,
                             content_ids: [prodId],
                             content_type: 'product',
@@ -849,8 +849,8 @@
         // Track AddToCart safely
         try {
             const price = (typeof currentProductPrice !== 'undefined' ? currentProductPrice : {{ (float) $product->final_price }});
-            if (typeof fbq === 'function') {
-                fbq('track', 'AddToCart', {
+            if (typeof window.sidqTrackEvent === 'function') {
+                window.sidqTrackEvent('AddToCart', {
                     content_name: @json($product->name),
                     content_ids: ['{{ $product->id }}'],
                     content_type: 'product',

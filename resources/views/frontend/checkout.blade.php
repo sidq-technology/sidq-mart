@@ -287,9 +287,9 @@
         const cartItemCount = {{ count($items) }};
         const cartItemIds = [ {!! implode(',', array_map(fn($item) => "'" . ($item['product_id'] ?? '') . "'", $items)) !!} ];
 
-        // Meta Pixel: InitiateCheckout
-        if (typeof fbq === 'function') {
-            fbq('track', 'InitiateCheckout', {
+        // Meta Pixel & CAPI Hybrid Tracking: InitiateCheckout
+        if (typeof window.sidqTrackEvent === 'function') {
+            window.sidqTrackEvent('InitiateCheckout', {
                 num_items: cartItemCount,
                 content_ids: cartItemIds,
                 content_type: 'product',

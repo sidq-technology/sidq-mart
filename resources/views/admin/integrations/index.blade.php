@@ -83,7 +83,7 @@
                             <div class="card-body p-3 p-sm-4 border-top">
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold text-dark mb-1">Meta Pixel ID (Dataset ID) <span class="text-danger">*</span></label>
-                                    <input type="text" name="meta_pixel_id" class="form-control" placeholder="যেমন: 123456789012345" value="{{ $settings['meta_pixel_id'] }}">
+                                    <input type="text" name="meta_pixel_id" id="meta_pixel_id_input" class="form-control" placeholder="যেমন: 123456789012345" value="{{ $settings['meta_pixel_id'] }}">
                                     <div class="form-text small">Meta Events Manager থেকে পাওয়া ১৫ বা ১৬ ডিজিটের পিক্সেল আইডি।</div>
                                 </div>
 
@@ -91,7 +91,7 @@
                                     <label class="form-label small fw-bold text-dark mb-1">
                                         Conversions API (CAPI) Access Token <span class="text-muted fw-normal">(Optional for Server-side Tracking)</span>
                                     </label>
-                                    <textarea name="meta_capi_token" class="form-control font-monospace small" rows="2" placeholder="EAABsbCS... (long server-side access token)">{{ $settings['meta_capi_token'] }}</textarea>
+                                    <textarea name="meta_capi_token" id="meta_capi_token_input" class="form-control font-monospace small" rows="2" placeholder="EAABsbCS... (long server-side access token)">{{ $settings['meta_capi_token'] }}</textarea>
                                     <div class="form-text small">iOS 14.5+ অ্যাড-ব্লকার বাইপাস করে ১০০% নির্ভুল সার্ভার-সাইড পারচেজ ট্র্যাকিং নিশ্চিত করে।</div>
                                 </div>
 
@@ -99,8 +99,21 @@
                                     <label class="form-label small fw-bold text-dark mb-1">
                                         Test Event Code <span class="text-muted fw-normal">(টেস্টিংয়ের জন্য ঐচ্ছিক)</span>
                                     </label>
-                                    <input type="text" name="meta_test_event_code" class="form-control" placeholder="যেমন: TEST12345" value="{{ $settings['meta_test_event_code'] }}">
+                                    <input type="text" name="meta_test_event_code" id="meta_test_code_input" class="form-control" placeholder="যেমন: TEST12345" value="{{ $settings['meta_test_event_code'] }}">
                                     <div class="form-text small">Events Manager &gt; Test Events ট্যাবে ইভেন্ট টেস্ট করতে এই কোড ব্যবহার করুন।</div>
+                                </div>
+
+                                <div class="mt-3 pt-3 border-top">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2 bg-light rounded-3 border">
+                                        <div class="small text-muted">
+                                            <i class="fas fa-info-circle text-primary me-1"></i> Pixel ID ও CAPI Token সঠিক আছে কিনা লাইভ যাচাই করুন:
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary fw-bold d-inline-flex align-items-center gap-1" id="btnTestMetaCapi">
+                                            <i class="fab fa-facebook"></i>
+                                            <span id="testMetaBtnText">Meta CAPI কানেকশন টেস্ট করুন</span>
+                                        </button>
+                                    </div>
+                                    <div id="testMetaAlert" class="mt-2 d-none"></div>
                                 </div>
                             </div>
                         </div>
@@ -813,6 +826,65 @@
                 .catch(err => {
                     btnTestSheet.disabled = false;
                     btnText.innerHTML = 'কানেকশন টেস্ট করুন';
+                    alertBox.className = 'mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2';
+                    alertBox.innerHTML = '<i class="fas fa-times-circle fs-6"></i> <div>টেস্ট রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</div>';
+                });
+            });
+        }
+
+        // Test Meta CAPI Connection via AJAX
+        const btnTestMeta = document.getElementById('btnTestMetaCapi');
+        if (btnTestMeta) {
+            btnTestMeta.addEventListener('click', function () {
+                const pixelId = document.getElementById('meta_pixel_id_input')?.value.trim();
+                const token = document.getElementById('meta_capi_token_input')?.value.trim();
+                const testCode = document.getElementById('meta_test_code_input')?.value.trim();
+                const alertBox = document.getElementById('testMetaAlert');
+                const btnText = document.getElementById('testMetaBtnText');
+
+                if (!pixelId) {
+                    alert('দয়া করে Meta Pixel ID প্রদান করুন!');
+                    return;
+                }
+                if (!token) {
+                    alert('দয়া করে Conversions API (CAPI) Access Token প্রদান করুন!');
+                    return;
+                }
+
+                btnTestMeta.disabled = true;
+                btnText.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> টেস্ট করা হচ্ছে...';
+                alertBox.className = 'mt-2 alert alert-info py-2 px-3 small d-flex align-items-center gap-2';
+                alertBox.innerHTML = '<span class="spinner-border spinner-border-sm"></span> মেটা গ্রাফ এপিআই-র সাথে কানেকশন ও টেস্ট ইভেন্ট যাচাই করা হচ্ছে...';
+                alertBox.classList.remove('d-none');
+
+                fetch('{{ route('admin.integrations.test-meta-capi') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        meta_pixel_id: pixelId,
+                        meta_capi_token: token,
+                        meta_test_event_code: testCode
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    btnTestMeta.disabled = false;
+                    btnText.innerHTML = 'Meta CAPI কানেকশন টেস্ট করুন';
+                    if (data.success) {
+                        alertBox.className = 'mt-2 alert alert-success py-2 px-3 small d-flex align-items-center gap-2';
+                        alertBox.innerHTML = '<i class="fas fa-check-circle fs-6"></i> <div>' + data.message + '</div>';
+                    } else {
+                        alertBox.className = 'mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2';
+                        alertBox.innerHTML = '<i class="fas fa-exclamation-triangle fs-6"></i> <div>' + data.message + '</div>';
+                    }
+                })
+                .catch(err => {
+                    btnTestMeta.disabled = false;
+                    btnText.innerHTML = 'Meta CAPI কানেকশন টেস্ট করুন';
                     alertBox.className = 'mt-2 alert alert-danger py-2 px-3 small d-flex align-items-center gap-2';
                     alertBox.innerHTML = '<i class="fas fa-times-circle fs-6"></i> <div>টেস্ট রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message + '</div>';
                 });

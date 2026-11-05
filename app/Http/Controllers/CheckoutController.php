@@ -228,6 +228,18 @@ class CheckoutController extends Controller
 
         $order = $orderService->createOrder($validated, $cart);
 
+        // Generate deterministic event ID for Meta Pixel & CAPI deduplication
+        $purchaseEventId = 'order_' . $order->order_number;
+        Session::flash('meta_purchase_event_id', $purchaseEventId);
+
+        // Dispatch Server-side CAPI Purchase Event asynchronously
+        $capiService = app(\App\Services\MetaCapiService::class);
+        if ($capiService->isEnabled()) {
+            dispatch(function () use ($capiService, $order, $purchaseEventId) {
+                $capiService->sendPurchaseEvent($order, $purchaseEventId);
+            })->afterResponse();
+        }
+
         // Remove any matching draft failed order as order has been placed successfully
         try {
             $sessionId = Session::getId();
@@ -529,9 +541,35 @@ class CheckoutController extends Controller
             'grand_total' => $newGrandTotal,
         ]);
 
+        // Dispatch Server-side CAPI Purchase event for upsell item
+        $upsellEventId = 'upsell_' . $order->order_number . '_' . $product->id . '_' . time();
+        $capiService = app(\App\Services\MetaCapiService::class);
+        if ($capiService->isEnabled()) {
+            dispatch(function () use ($capiService, $order, $product, $totalPrice, $upsellEventId) {
+                $capiService->sendEvent('Purchase', $upsellEventId, [
+                    'phone' => $order->customer_phone,
+                    'name' => $order->customer_name,
+                    'client_ip_address' => $order->ip_address ?: request()->ip(),
+                    'client_user_agent' => request()->userAgent(),
+                ], [
+                    'currency' => 'BDT',
+                    'value' => (float) $totalPrice,
+                    'content_type' => 'product',
+                    'contents' => [[
+                        'id' => (string) $product->id,
+                        'quantity' => 1,
+                        'item_price' => (float) $product->final_price,
+                    ]],
+                    'num_items' => 1,
+                    'order_id' => $order->order_number,
+                ], route('order.success', $order->order_number));
+            })->afterResponse();
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'পণ্যটি সফলভাবে আপনার বর্তমান অর্ডারে যুক্ত করা হয়েছে!',
+            'meta_event_id' => $upsellEventId,
             'item' => [
                 'id' => $orderItem->id,
                 'name' => $orderItem->product_name,

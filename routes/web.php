@@ -22,6 +22,7 @@ use App\Http\Controllers\Customer\CustomerDashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\TrackingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,6 +55,9 @@ Route::post('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name
 
 // Order Tracking
 Route::get('/order-tracking', [OrderTrackingController::class, 'index'])->name('order.tracking');
+
+// Async Analytics & Meta CAPI Beacon Endpoint
+Route::post('/tracking/meta-capi', [TrackingController::class, 'trackCapi'])->name('tracking.meta-capi');
 
 // Legal & Policy Pages
 Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('pages.privacy');
@@ -216,6 +220,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/integrations/test-google-sheet', [IntegrationController::class, 'testGoogleSheet'])
             ->middleware('permission:integrations.manage')
             ->name('integrations.test-google-sheet');
+        Route::post('/integrations/test-meta-capi', [IntegrationController::class, 'testMetaCapi'])
+            ->middleware('permission:integrations.manage')
+            ->name('integrations.test-meta-capi');
         Route::post('/integrations/test-courier', [IntegrationController::class, 'testCourier'])
             ->middleware('permission:integrations.manage')
             ->name('integrations.test-courier');

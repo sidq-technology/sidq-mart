@@ -300,7 +300,8 @@
             const orderItemIds = [ {!! implode(',', $order->items->pluck('product_id')->filter()->map(fn($id) => "'$id'")->toArray()) !!} ];
             const totalQty = {{ (int) $order->items->sum('quantity') }};
 
-            // Meta (Facebook) Pixel: Purchase
+            // Meta (Facebook) Pixel & CAPI Deduplication: Purchase
+            const purchaseEventId = 'order_' + orderNumber;
             if (typeof fbq === 'function') {
                 fbq('track', 'Purchase', {
                     content_type: 'product',
@@ -308,7 +309,7 @@
                     value: orderGrandTotal,
                     currency: 'BDT',
                     num_items: totalQty
-                });
+                }, { eventID: purchaseEventId });
             }
 
             // TikTok Pixel: CompletePayment
@@ -447,6 +448,21 @@
                                 </div>
                             `;
                             toastBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+
+                        // Meta Pixel Upsell Purchase tracking with Server CAPI deduplication
+                        try {
+                            if (typeof fbq === 'function' && data.meta_event_id) {
+                                fbq('track', 'Purchase', {
+                                    content_type: 'product',
+                                    content_ids: [String(prodId)],
+                                    value: parseFloat(String(data.item.unit_price).replace(/,/g, '')),
+                                    currency: 'BDT',
+                                    num_items: 1
+                                }, { eventID: data.meta_event_id });
+                            }
+                        } catch (err) {
+                            // Safe ignore
                         }
                     } else {
                         this.disabled = false;

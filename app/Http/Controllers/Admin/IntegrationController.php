@@ -160,6 +160,20 @@ class IntegrationController extends Controller
     }
 
     /**
+     * Test Meta Conversions API (CAPI) Connection via AJAX
+     */
+    public function testMetaCapi(Request $request, \App\Services\MetaCapiService $capiService)
+    {
+        $pixelId = $request->input('meta_pixel_id');
+        $token = $request->input('meta_capi_token');
+        $testCode = $request->input('meta_test_event_code');
+
+        $result = $capiService->testConnection($pixelId, $token, $testCode);
+
+        return response()->json($result);
+    }
+
+    /**
      * Test Courier Connection via AJAX
      */
     public function testCourier(Request $request, \App\Services\Courier\CourierManager $courierManager)
