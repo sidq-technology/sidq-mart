@@ -845,36 +845,13 @@
         const qtyInput = document.getElementById('pdpQtyInput');
         const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
         const variantId = document.getElementById('selectedVariantId')?.value || null;
+        const price = (typeof currentProductPrice !== 'undefined' ? currentProductPrice : {{ (float) $product->final_price }});
 
-        // Track AddToCart safely
-        try {
-            const price = (typeof currentProductPrice !== 'undefined' ? currentProductPrice : {{ (float) $product->final_price }});
-            if (typeof window.sidqTrackEvent === 'function') {
-                window.sidqTrackEvent('AddToCart', {
-                    content_name: @json($product->name),
-                    content_ids: ['{{ $product->id }}'],
-                    content_type: 'product',
-                    value: price * qty,
-                    currency: 'BDT'
-                });
-            }
-            if (typeof ttq === 'object') {
-                ttq.track('AddToCart', {
-                    contents: [{
-                        content_id: '{{ $product->id }}',
-                        content_name: @json($product->name),
-                        quantity: qty,
-                        price: price
-                    }],
-                    value: price * qty,
-                    currency: 'BDT'
-                });
-            }
-        } catch (err) {
-            console.warn('Tracking AddToCart notice:', err);
-        }
-
-        addToCart({{ $product->id }}, qty, variantId);
+        addToCart({{ $product->id }}, qty, variantId, {
+            name: @json($product->name),
+            price: price,
+            value: price * qty
+        });
     }
 </script>
 @endpush

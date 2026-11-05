@@ -291,7 +291,7 @@
         }
 
         // Add to Cart via AJAX
-        function addToCart(productId, quantity = 1, variantId = null) {
+        function addToCart(productId, quantity = 1, variantId = null, trackingData = {}) {
             fetch("{{ route('cart.add') }}", {
                 method: "POST",
                 headers: {
@@ -310,21 +310,27 @@
                     const offcanvas = new bootstrap.Offcanvas(document.getElementById('cartDrawer'));
                     offcanvas.show();
 
-                    // Track AddToCart for Meta Pixel & CAPI (Hybrid Tracking)
+                    // Track AddToCart for Meta Pixel & CAPI (Hybrid Tracking) - Single unified trigger
                     try {
                         if (typeof window.sidqTrackEvent === 'function') {
-                            window.sidqTrackEvent('AddToCart', {
+                            const payload = {
                                 content_ids: [String(productId)],
                                 content_type: 'product',
                                 currency: 'BDT'
-                            });
+                            };
+                            if (trackingData.name) payload.content_name = trackingData.name;
+                            if (trackingData.value) payload.value = trackingData.value;
+                            window.sidqTrackEvent('AddToCart', payload);
                         }
                         if (typeof ttq === 'object') {
                             ttq.track('AddToCart', {
                                 contents: [{
                                     content_id: String(productId),
-                                    quantity: quantity
+                                    content_name: trackingData.name || undefined,
+                                    quantity: quantity,
+                                    price: trackingData.price || undefined
                                 }],
+                                value: trackingData.value || undefined,
                                 currency: 'BDT'
                             });
                         }
