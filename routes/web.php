@@ -102,6 +102,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/orders', [OrderController::class, 'index'])
             ->middleware('permission:orders.view')
             ->name('orders.index');
+        Route::get('/orders/ip-lookup', [OrderController::class, 'lookupIp'])
+            ->middleware('permission:orders.view')
+            ->name('orders.ip-lookup');
         Route::get('/orders/{order}', [OrderController::class, 'show'])
             ->middleware('permission:orders.view')
             ->name('orders.show');

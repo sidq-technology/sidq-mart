@@ -727,8 +727,232 @@
             if (backdrop) {
                 backdrop.addEventListener('click', closeSidebar);
             }
+
+            // Universal IP Geolocation Lookup Modal Handler
+            const ipModalEl = document.getElementById('ipLocationModal');
+            if (ipModalEl) {
+                const ipBsModal = new bootstrap.Modal(ipModalEl);
+                const loader = document.getElementById('ipModalLoader');
+                const content = document.getElementById('ipModalContent');
+                const errBox = document.getElementById('ipModalError');
+                const ipDisplay = document.getElementById('ipModalIp');
+                const locDisplay = document.getElementById('ipModalLocation');
+                const countryDisplay = document.getElementById('ipModalCountry');
+                const ispDisplay = document.getElementById('ipModalIsp');
+                const mediumDisplay = document.getElementById('ipModalMedium');
+                const badgeDisplay = document.getElementById('ipModalSecurityBadge');
+                const localTip = document.getElementById('ipModalLocalTip');
+                const mapLink = document.getElementById('ipModalMapLink');
+                const demoBtn = document.getElementById('ipModalDemoBtn');
+
+                let currentQueryIp = '';
+
+                // Handle nested modal backdrops
+                ipModalEl.addEventListener('show.bs.modal', function () {
+                    setTimeout(() => {
+                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                        if (backdrops.length > 1) {
+                            backdrops[backdrops.length - 1].style.zIndex = '1060';
+                        }
+                    }, 15);
+                });
+
+                ipModalEl.addEventListener('hidden.bs.modal', function () {
+                    if (document.querySelector('.modal.show')) {
+                        document.body.classList.add('modal-open');
+                    }
+                });
+
+                function loadIpInfo(ip, isDemo = false) {
+                    currentQueryIp = ip;
+                    loader.classList.remove('d-none');
+                    content.classList.add('d-none');
+                    errBox.classList.add('d-none');
+                    localTip.classList.add('d-none');
+                    mapLink.classList.add('d-none');
+
+                    const url = '{{ route('admin.orders.ip-lookup') }}?ip=' + encodeURIComponent(ip) + (isDemo ? '&demo=1' : '');
+
+                    fetch(url, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        loader.classList.add('d-none');
+                        if (data.success) {
+                            content.classList.remove('d-none');
+                            ipDisplay.textContent = data.ip;
+                            locDisplay.textContent = data.location || '—';
+                            countryDisplay.textContent = data.country + (data.country_code ? ' (' + data.country_code + ')' : '');
+                            ispDisplay.textContent = data.isp || '—';
+
+                            if (data.is_local) {
+                                badgeDisplay.className = 'badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2';
+                                badgeDisplay.textContent = 'লোকাল নেটওয়ার্ক';
+                                mediumDisplay.textContent = 'লোকাল লুপব্যাক';
+                                localTip.classList.remove('d-none');
+                            } else {
+                                if (data.is_proxy) {
+                                    badgeDisplay.className = 'badge bg-danger text-white py-1 px-2';
+                                    badgeDisplay.innerHTML = '<i class="fas fa-shield-halved me-1"></i> Proxy / VPN';
+                                } else {
+                                    badgeDisplay.className = 'badge bg-success-subtle text-success border border-success-subtle py-1 px-2';
+                                    badgeDisplay.innerHTML = '<i class="fas fa-check-circle me-1"></i> রিয়েল কানেকশন';
+                                }
+
+                                mediumDisplay.textContent = data.is_mobile ? '📱 মোবাইল ডাটা (Cellular)' : '🌐 ব্রডব্যান্ড / ওয়াইফাই (Broadband)';
+                            }
+
+                            if (data.map_url) {
+                                mapLink.href = data.map_url;
+                                mapLink.classList.remove('d-none');
+                            }
+                        } else {
+                            errBox.textContent = data.message || 'আইপি তথ্য পাওয়া যায়নি।';
+                            errBox.classList.remove('d-none');
+                        }
+                    })
+                    .catch(err => {
+                        loader.classList.add('d-none');
+                        errBox.textContent = 'রিকোয়েস্ট ব্যর্থ হয়েছে: ' + err.message;
+                        errBox.classList.remove('d-none');
+                    });
+                }
+
+                document.addEventListener('click', function (e) {
+                    const btn = e.target.closest('.btn-track-ip');
+                    if (btn) {
+                        const ip = btn.getAttribute('data-ip') || '127.0.0.1';
+                        ipBsModal.show();
+                        loadIpInfo(ip, false);
+                    }
+                });
+
+                if (demoBtn) {
+                    demoBtn.addEventListener('click', function () {
+                        loadIpInfo(currentQueryIp, true);
+                    });
+                }
+            }
         });
     </script>
+
+    <!-- Global IP Geolocation Modal -->
+    <div class="modal fade" id="ipLocationModal" tabindex="-1" aria-labelledby="ipLocationModalLabel" aria-hidden="true" style="z-index: 1065;">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <!-- Modal Header -->
+                <div class="modal-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: rgba(59, 130, 246, 0.12); color: #2563eb; font-size: 16px;">
+                            <i class="fas fa-location-crosshairs"></i>
+                        </div>
+                        <div>
+                            <h6 class="modal-title fw-bold text-dark mb-0 fs-6" id="ipLocationModalLabel">আইপি ট্র্যাকিং ও লোকেশন</h6>
+                            <span class="text-muted small" style="font-size: 11.5px;">ভৌগোলিক অবস্থান ও ইন্টারনেট প্রোভাইডার</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-4">
+                    <!-- Loading Spinner State -->
+                    <div id="ipModalLoader" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status" style="width: 2.2rem; height: 2.2rem;"></div>
+                        <div class="small text-muted mt-2">আইপি তথ্য অনুসন্ধান করা হচ্ছে...</div>
+                    </div>
+
+                    <!-- Error State -->
+                    <div id="ipModalError" class="alert alert-danger py-2 px-3 small d-none mb-0"></div>
+
+                    <!-- Content State -->
+                    <div id="ipModalContent" class="d-none">
+                        <!-- IP Address Banner -->
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                            <div>
+                                <span class="text-muted small d-block" style="font-size: 11px;">টার্গেট আইপি অ্যাড্রেস:</span>
+                                <span class="font-monospace fw-bold text-dark fs-5" id="ipModalIp">127.0.0.1</span>
+                            </div>
+                            <span id="ipModalSecurityBadge" class="badge py-1 px-2 fw-semibold"></span>
+                        </div>
+
+                        <!-- Details Grid -->
+                        <div class="d-flex flex-column gap-2 mb-3">
+                            <!-- Location -->
+                            <div class="d-flex align-items-start justify-content-between p-2 rounded-2 bg-light border">
+                                <div class="d-flex align-items-center gap-2 text-muted small">
+                                    <i class="fas fa-map-marker-alt text-danger" style="width: 16px;"></i>
+                                    <span>লোকেশন (City/Region):</span>
+                                </div>
+                                <span class="fw-bold text-dark small text-end" id="ipModalLocation">—</span>
+                            </div>
+
+                            <!-- Country -->
+                            <div class="d-flex align-items-center justify-content-between p-2 rounded-2 bg-light border">
+                                <div class="d-flex align-items-center gap-2 text-muted small">
+                                    <i class="fas fa-globe text-primary" style="width: 16px;"></i>
+                                    <span>দেশ (Country):</span>
+                                </div>
+                                <span class="fw-bold text-dark small text-end" id="ipModalCountry">—</span>
+                            </div>
+
+                            <!-- ISP -->
+                            <div class="d-flex align-items-start justify-content-between p-2 rounded-2 bg-light border">
+                                <div class="d-flex align-items-center gap-2 text-muted small">
+                                    <i class="fas fa-network-wired text-info" style="width: 16px;"></i>
+                                    <span>ISP / অপারেটর:</span>
+                                </div>
+                                <span class="fw-bold text-dark small text-end text-truncate" style="max-width: 55%;" id="ipModalIsp">—</span>
+                            </div>
+
+                            <!-- Connection Medium -->
+                            <div class="d-flex align-items-center justify-content-between p-2 rounded-2 bg-light border">
+                                <div class="d-flex align-items-center gap-2 text-muted small">
+                                    <i class="fas fa-wifi text-secondary" style="width: 16px;"></i>
+                                    <span>কানেকশন মাধ্যম:</span>
+                                </div>
+                                <span class="fw-bold text-dark small text-end" id="ipModalMedium">ব্রডব্যান্ড / ফিক্সড লাইন</span>
+                            </div>
+                        </div>
+
+                        <!-- Localhost Tip with Demo Switcher -->
+                        <div id="ipModalLocalTip" class="alert alert-info py-2 px-3 small d-none mb-3">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="fas fa-info-circle text-info mt-1"></i>
+                                <div>
+                                    <strong>লোকালহোস্ট টেস্ট আইপি:</strong> এটি আপনার লোকাল ডেভেলপমেন্ট আইপি।
+                                    <div class="mt-1">
+                                        <button type="button" class="btn btn-xs btn-primary fw-bold py-1 px-2 rounded-pill" id="ipModalDemoBtn">
+                                            <i class="fas fa-eye me-1"></i> বাংলাদেশ আইপিতে ডেমো রেজাল্ট দেখুন
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Google Maps Link Button -->
+                        <a id="ipModalMapLink" href="#" target="_blank" class="btn btn-outline-primary btn-sm w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 rounded-3 d-none">
+                            <i class="fas fa-map-marked-alt text-danger"></i>
+                            <span>গুগল ম্যাপে ভৌগোলিক অবস্থান দেখুন</span>
+                            <i class="fas fa-arrow-up-right-from-square small text-muted"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="modal-footer bg-light py-2 px-4 border-top d-flex justify-content-between">
+                    <span class="text-muted small" style="font-size: 11px;">
+                        <i class="fas fa-shield-halved text-success me-1"></i> লাইভ আইপি জিও-ডিটেকশন
+                    </span>
+                    <button type="button" class="btn btn-sm btn-secondary px-4 fw-semibold rounded-3" data-bs-dismiss="modal">বন্ধ করুন</button>
+                </div>
+            </div>
+        </div>
+    </div>
     @stack('scripts')
 </body>
 </html>

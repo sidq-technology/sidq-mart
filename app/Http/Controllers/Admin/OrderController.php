@@ -160,4 +160,27 @@ class OrderController extends Controller
 
         return redirect()->route('admin.orders.index')->with('success', 'অর্ডারটি মুছে ফেলা হয়েছে।');
     }
+
+    /**
+     * IP Geolocation & Network Lookup via AJAX
+     */
+    public function lookupIp(Request $request, \App\Services\IpLocationService $ipService)
+    {
+        $ip = trim($request->input('ip', ''));
+
+        // If demo testing is requested (helpful for localhost dev)
+        if ($request->boolean('demo')) {
+            $ip = '144.48.111.188'; // Real Bangladeshi IP
+        }
+
+        if (empty($ip)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'আইপি অ্যাড্রেস পাওয়া যায়নি।'
+            ], 422);
+        }
+
+        $result = $ipService->lookup($ip);
+        return response()->json($result);
+    }
 }

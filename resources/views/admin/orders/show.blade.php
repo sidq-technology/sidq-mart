@@ -227,6 +227,21 @@
                     <div class="small text-danger fw-bold">TrxID: {{ $order->transaction_id }}</div>
                     @endif
                 </div>
+
+                @if($order->ip_address)
+                <div class="pt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-1">
+                    <div>
+                        <span class="text-muted small">আইপি অ্যাড্রেস:</span>
+                        <div class="font-monospace text-muted small fw-bold">{{ $order->ip_address }}</div>
+                    </div>
+                    <button type="button" 
+                            class="btn btn-xs btn-outline-primary py-0 px-2 rounded-pill fw-semibold btn-track-ip" 
+                            data-ip="{{ $order->ip_address }}" 
+                            style="font-size: 11px;">
+                        <i class="fas fa-location-dot me-1"></i> লোকেশন দেখুন
+                    </button>
+                </div>
+                @endif
             </div>
         </div>
     </div>

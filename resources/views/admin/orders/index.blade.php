@@ -205,8 +205,17 @@
                                 <div><strong>গ্রাহকের নোট:</strong> <em class="text-dark">{{ $order->customer_note }}</em></div>
                                 @endif
                                 @if($order->ip_address)
-                                <div class="mt-2 pt-2 border-top">
-                                    <strong>আইপি অ্যাড্রেস:</strong> <span class="font-monospace text-muted">{{ $order->ip_address }}</span>
+                                <div class="mt-2 pt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-1">
+                                    <div>
+                                        <strong>আইপি অ্যাড্রেস:</strong> 
+                                        <span class="font-monospace text-muted small">{{ $order->ip_address }}</span>
+                                    </div>
+                                    <button type="button" 
+                                            class="btn btn-xs btn-outline-primary py-0 px-2 rounded-pill fw-semibold btn-track-ip" 
+                                            data-ip="{{ $order->ip_address }}" 
+                                            style="font-size: 11px;">
+                                        <i class="fas fa-location-dot me-1"></i> লোকেশন দেখুন
+                                    </button>
                                 </div>
                                 @endif
                             </div>
