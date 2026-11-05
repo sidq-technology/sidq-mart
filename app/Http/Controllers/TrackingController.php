@@ -23,12 +23,16 @@ class TrackingController extends Controller
             'event_id' => 'required|string|max:120',
             'custom_data' => 'nullable|array',
             'user_data' => 'nullable|array',
-            'event_source_url' => 'nullable|string|url|max:500',
+            'event_source_url' => 'nullable|string|max:500',
         ]);
 
         $userData = $validated['user_data'] ?? [];
         $userData['client_ip_address'] = $request->ip();
         $userData['client_user_agent'] = $request->userAgent();
+
+        if (empty($userData['external_id']) && $request->hasSession()) {
+            $userData['external_id'] = $request->session()->getId();
+        }
 
         if ($fbp = $request->cookie('_fbp')) {
             $userData['fbp'] = $fbp;

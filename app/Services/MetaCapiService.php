@@ -324,6 +324,12 @@ class MetaCapiService
             $userData['country'] = [hash('sha256', strtolower(trim($raw['country'])))];
         }
 
+        // 8. External ID (Hashed Session / Customer ID for anonymous visitors and matching)
+        $extId = $raw['external_id'] ?? ($raw['user_id'] ?? (session()->has('id') ? session()->getId() : (session()->getId() ?: null)));
+        if (!empty($extId)) {
+            $userData['external_id'] = [hash('sha256', (string) $extId)];
+        }
+
         return $userData;
     }
 }

@@ -78,7 +78,12 @@
     </script>
     @endif
 
-    @if((\App\Models\Setting::get('meta_pixel_enabled', '1') == '1') && $pixelId = \App\Models\Setting::get('meta_pixel_id'))
+    @php
+        $pixelId = \App\Models\Setting::get('meta_pixel_id');
+        $pixelEnabled = \App\Models\Setting::get('meta_pixel_enabled', '1') == '1';
+        $metaTestCode = \App\Models\Setting::get('meta_test_event_code');
+    @endphp
+    @if($pixelEnabled && !empty($pixelId))
     <!-- Meta Pixel & Native Conversions API (CAPI) Hybrid Tracking -->
     <script>
         !function(f,b,e,v,n,t,s)
@@ -97,13 +102,29 @@
                 eventId = 'evt_' + eventName.toLowerCase() + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
             }
 
-            // 1. Browser Meta Pixel with Deduplication eventID
+            // 1. Browser Meta Pixel with Deduplication eventID & Test Event Code
             if (typeof fbq === 'function') {
-                fbq('track', eventName, customData, { eventID: eventId });
+                const fbOptions = { eventID: eventId };
+                @if(!empty($metaTestCode))
+                fbOptions.test_event_code = '{{ $metaTestCode }}';
+                @endif
+                fbq('track', eventName, customData, fbOptions);
             }
 
             // 2. Server-Side Meta CAPI via Non-Blocking Beacon / Fetch
             try {
+                // Auto-capture cookies & session external_id
+                try {
+                    const cookieParts = document.cookie.split(';');
+                    for (let c of cookieParts) {
+                        const [k, v] = c.trim().split('=');
+                        if (k === '_fbp' && !userData.fbp) userData.fbp = v;
+                        if (k === '_fbc' && !userData.fbc) userData.fbc = v;
+                    }
+                } catch (e) {}
+
+                userData.external_id = userData.external_id || '{{ session()->getId() }}';
+
                 const payload = JSON.stringify({
                     event_name: eventName,
                     event_id: eventId,

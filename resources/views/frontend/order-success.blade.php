@@ -303,13 +303,18 @@
             // Meta (Facebook) Pixel & CAPI Deduplication: Purchase
             const purchaseEventId = 'order_' + orderNumber;
             if (typeof fbq === 'function') {
+                const fbPurchaseOptions = { eventID: purchaseEventId };
+                @php $orderSuccessTestCode = \App\Models\Setting::get('meta_test_event_code'); @endphp
+                @if(!empty($orderSuccessTestCode))
+                fbPurchaseOptions.test_event_code = '{{ $orderSuccessTestCode }}';
+                @endif
                 fbq('track', 'Purchase', {
                     content_type: 'product',
                     content_ids: orderItemIds,
                     value: orderGrandTotal,
                     currency: 'BDT',
                     num_items: totalQty
-                }, { eventID: purchaseEventId });
+                }, fbPurchaseOptions);
             }
 
             // TikTok Pixel: CompletePayment
@@ -453,13 +458,17 @@
                         // Meta Pixel Upsell Purchase tracking with Server CAPI deduplication
                         try {
                             if (typeof fbq === 'function' && data.meta_event_id) {
+                                const fbUpsellOptions = { eventID: data.meta_event_id };
+                                @if(!empty($orderSuccessTestCode))
+                                fbUpsellOptions.test_event_code = '{{ $orderSuccessTestCode }}';
+                                @endif
                                 fbq('track', 'Purchase', {
                                     content_type: 'product',
                                     content_ids: [String(prodId)],
                                     value: parseFloat(String(data.item.unit_price).replace(/,/g, '')),
                                     currency: 'BDT',
                                     num_items: 1
-                                }, { eventID: data.meta_event_id });
+                                }, fbUpsellOptions);
                             }
                         } catch (err) {
                             // Safe ignore
