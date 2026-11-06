@@ -380,18 +380,35 @@
                                 <i class="fas fa-user-circle text-primary me-1"></i> কাস্টমার তথ্য
                             </h6>
                             <div class="d-flex flex-column gap-2 small">
-                                <div><strong>নাম:</strong> <span class="text-dark">{{ $order->customer_name }}</span></div>
+                                <div>
+                                    <strong>নাম:</strong> <span class="text-dark">{{ $order->customer_name }}</span>
+                                    @if(!empty($order->customer_name))
+                                    <button type="button" class="btn btn-outline-secondary py-0 px-1 rounded ms-1 btn-copy-text" data-copy="{{ $order->customer_name }}" title="নাম কপি করুন" style="font-size: 10px; line-height: 1.2;">
+                                        <i class="far fa-copy"></i>
+                                    </button>
+                                    @endif
+                                </div>
                                 <div>
                                     <strong>ফোন:</strong> 
                                     @if($order->customer_phone)
                                         <a href="tel:{{ $order->customer_phone }}" class="font-monospace text-primary fw-bold text-decoration-none">
                                             {{ $order->customer_phone }}
                                         </a>
+                                        <button type="button" class="btn btn-outline-secondary py-0 px-1 rounded ms-1 btn-copy-text" data-copy="{{ $order->customer_phone }}" title="ফোন নম্বর কপি করুন" style="font-size: 10px; line-height: 1.2;">
+                                            <i class="far fa-copy"></i>
+                                        </button>
                                     @else
                                         <span class="text-muted">নেই</span>
                                     @endif
                                 </div>
-                                <div><strong>ঠিকানা:</strong> <span class="text-dark">{{ $order->shipping_address }}</span></div>
+                                <div>
+                                    <strong>ঠিকানা:</strong> <span class="text-dark">{{ $order->shipping_address }}</span>
+                                    @if(!empty($order->shipping_address))
+                                    <button type="button" class="btn btn-outline-secondary py-0 px-1 rounded ms-1 btn-copy-text" data-copy="{{ $order->shipping_address }}" title="ঠিকানা কপি করুন" style="font-size: 10px; line-height: 1.2;">
+                                        <i class="far fa-copy"></i>
+                                    </button>
+                                    @endif
+                                </div>
                                 <div>
                                     <strong>ডেলিভারি এরিয়া:</strong> 
                                     <span class="badge {{ $order->delivery_zone === 'inside_dhaka' ? 'bg-info text-dark' : 'bg-primary' }}">

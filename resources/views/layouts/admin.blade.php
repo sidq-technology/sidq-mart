@@ -837,6 +837,56 @@
                     });
                 }
             }
+
+            // Global One-Click Text Copy Handler
+            document.addEventListener('click', function (e) {
+                const copyBtn = e.target.closest('.btn-copy-text');
+                if (!copyBtn) return;
+                e.preventDefault();
+
+                const textToCopy = (copyBtn.getAttribute('data-copy') || '').trim();
+                if (!textToCopy) return;
+
+                const originalHtml = copyBtn.innerHTML;
+
+                const onCopySuccess = function () {
+                    copyBtn.innerHTML = '<i class="fas fa-check text-success"></i>';
+                    copyBtn.classList.remove('btn-outline-secondary');
+                    copyBtn.classList.add('btn-outline-success');
+                    setTimeout(function () {
+                        copyBtn.innerHTML = originalHtml;
+                        copyBtn.classList.remove('btn-outline-success');
+                        copyBtn.classList.add('btn-outline-secondary');
+                    }, 1500);
+                };
+
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(textToCopy).then(onCopySuccess).catch(function () {
+                        fallbackCopyText(textToCopy, onCopySuccess);
+                    });
+                } else {
+                    fallbackCopyText(textToCopy, onCopySuccess);
+                }
+            });
+
+            function fallbackCopyText(text, cb) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                ta.style.top = '0';
+                ta.setAttribute('readonly', '');
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    if (cb) cb();
+                } catch (err) {
+                    console.error('Fallback copy failed', err);
+                }
+                document.body.removeChild(ta);
+            }
         });
     </script>
 

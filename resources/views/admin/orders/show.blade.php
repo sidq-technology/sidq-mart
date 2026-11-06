@@ -201,20 +201,39 @@
             <div class="card-body">
                 <div class="mb-3">
                     <span class="text-muted small">গ্রাহকের নাম:</span>
-                    <div class="fw-bold fs-6">{{ $order->customer_name }}</div>
-                </div>
-
-                <div class="mb-3">
-                    <span class="text-muted small">মোবাইল নম্বর:</span>
-                    <div class="fw-bold fs-6">
-                        <a href="tel:{{ $order->customer_phone }}" class="text-danger text-decoration-none">
-                            <i class="fas fa-phone-alt me-1"></i> {{ $order->customer_phone }}
-                        </a>
+                    <div class="fw-bold fs-6 d-flex align-items-center">
+                        <span>{{ $order->customer_name }}</span>
+                        @if(!empty($order->customer_name))
+                        <button type="button" class="btn btn-outline-secondary py-0 px-1 rounded ms-2 btn-copy-text" data-copy="{{ $order->customer_name }}" title="নাম কপি করুন" style="font-size: 11px; line-height: 1.2;">
+                            <i class="far fa-copy"></i>
+                        </button>
+                        @endif
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <span class="text-muted small">ডেলিভারির সম্পূর্ণ ঠিকানা:</span>
+                    <span class="text-muted small">মোবাইল নম্বর:</span>
+                    <div class="fw-bold fs-6 d-flex align-items-center">
+                        <a href="tel:{{ $order->customer_phone }}" class="text-danger text-decoration-none">
+                            <i class="fas fa-phone-alt me-1"></i> {{ $order->customer_phone }}
+                        </a>
+                        @if(!empty($order->customer_phone))
+                        <button type="button" class="btn btn-outline-secondary py-0 px-1 rounded ms-2 btn-copy-text" data-copy="{{ $order->customer_phone }}" title="ফোন নম্বর কপি করুন" style="font-size: 11px; line-height: 1.2;">
+                            <i class="far fa-copy"></i>
+                        </button>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="text-muted small">ডেলিভারির সম্পূর্ণ ঠিকানা:</span>
+                        @if(!empty($order->shipping_address))
+                        <button type="button" class="btn btn-outline-secondary py-0 px-1 rounded btn-copy-text" data-copy="{{ $order->shipping_address }}" title="ঠিকানা কপি করুন" style="font-size: 11px; line-height: 1.2;">
+                            <i class="far fa-copy me-1"></i> কপি করুন
+                        </button>
+                        @endif
+                    </div>
                     <div class="p-2 bg-light rounded border small fw-medium mt-1">
                         {{ $order->shipping_address }}
                     </div>
