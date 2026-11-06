@@ -217,7 +217,7 @@
 
                     @if($product->primary_image)
                     <div class="mb-3 p-2 bg-light border rounded-3 d-flex align-items-center gap-2">
-                        <img src="{{ $product->primary_image_url }}" alt="Primary Image" class="rounded border" style="width: 60px; height: 60px; object-fit: cover;">
+                        <img src="{{ $product->primary_image_url }}" alt="Primary Image" class="rounded border" style="width: 60px; height: 60px; object-fit: cover;" onerror="this.src='{{ asset('images/placeholder-product.png') }}'" referrerpolicy="no-referrer">
                         <div>
                             <small class="text-muted d-block" style="font-size: 11px;">বর্তমান প্রধান ছবি:</small>
                             <span class="fw-semibold text-dark small text-truncate d-block" style="max-width: 180px;">{{ basename($product->primary_image) }}</span>
@@ -249,7 +249,14 @@
                     <div class="tab-content">
                         <!-- File Upload Pane -->
                         <div class="tab-pane fade show active" id="p-file-pane">
-                            <input type="file" name="primary_image" id="primary_image" class="form-control" accept="image/*">
+                            <div class="p-3 text-center border rounded-3 bg-white position-relative drop-zone-hover" id="primaryImageDropZone" style="border: 2px dashed #94a3b8 !important; cursor: pointer; transition: all 0.2s ease;">
+                                <input type="file" name="primary_image" id="primary_image" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" accept="image/*" style="cursor: pointer; z-index: 5;">
+                                <div style="pointer-events: none;">
+                                    <i class="fas fa-cloud-arrow-up text-primary fs-3 mb-1 d-block"></i>
+                                    <div class="fw-bold small text-dark">ছবি ড্রপ করুন বা ব্রাউজ করুন</div>
+                                    <div class="text-muted" style="font-size: 11px;">ড্র্যাগ & ড্রপ অথবা ক্লিপবোর্ড থেকে পেস্ট (Ctrl + V)</div>
+                                </div>
+                            </div>
                         </div>
                         <!-- URL Input Pane -->
                         <div class="tab-pane fade" id="p-url-pane">
@@ -306,8 +313,15 @@
 
                     <div class="tab-content mb-3">
                         <div class="tab-pane fade show active" id="g-file-pane">
-                            <input type="file" name="gallery_images[]" id="gallery_images" class="form-control" accept="image/*" multiple>
-                            <div class="form-text small" style="font-size: 11px;">ডিভাইস থেকে অতিরিক্ত গ্যালারি ছবি আপলোড করুন।</div>
+                            <div class="p-3 text-center border rounded-3 bg-white position-relative drop-zone-hover" id="galleryImagesDropZone" style="border: 2px dashed #94a3b8 !important; cursor: pointer; transition: all 0.2s ease;">
+                                <input type="file" name="gallery_images[]" id="gallery_images" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" accept="image/*" multiple style="cursor: pointer; z-index: 5;">
+                                <div style="pointer-events: none;">
+                                    <i class="fas fa-images text-primary fs-3 mb-1 d-block"></i>
+                                    <div class="fw-bold small text-dark">একাধিক ছবি ড্রপ করুন বা ব্রাউজ করুন</div>
+                                    <div class="text-muted" style="font-size: 11px;">ড্র্যাগ & ড্রপ অথবা ক্লিপবোর্ড থেকে পেস্ট (Ctrl + V)</div>
+                                </div>
+                            </div>
+                            <div class="form-text small mt-1" style="font-size: 11px;">ডিভাইস থেকে অতিরিক্ত গ্যালারি ছবি আপলোড করুন।</div>
                         </div>
                         <div class="tab-pane fade" id="g-url-pane">
                             <textarea name="gallery_image_urls" id="gallery_image_urls" class="form-control" rows="2" placeholder="প্রতি লাইনে ১টি করে Image URL দিন...&#10;https://example.com/img1.jpg&#10;https://example.com/img2.jpg"></textarea>
@@ -330,7 +344,7 @@
                         <div class="d-flex flex-wrap gap-2">
                             @foreach($product->galleryImages as $img)
                             <div class="position-relative border rounded p-1 bg-white shadow-xs" id="gallery-img-{{ $img->id }}" style="width: 70px; height: 70px;">
-                                <img src="{{ $img->image_url }}" alt="Gallery" class="w-100 h-100 rounded" style="object-fit: cover;">
+                                <img src="{{ $img->image_url }}" alt="Gallery" class="w-100 h-100 rounded" style="object-fit: cover;" onerror="this.src='{{ asset('images/placeholder-product.png') }}'" referrerpolicy="no-referrer">
                                 <button type="button" 
                                         class="btn btn-danger btn-xs position-absolute top-0 end-0 p-0 rounded-circle d-flex align-items-center justify-content-center" 
                                         style="width: 18px; height: 18px; transform: translate(30%, -30%);" 
@@ -556,7 +570,11 @@ function removeVariantRow(btn) {
 function clearPrimarySelection() {
     const mediaInput = document.getElementById('primaryImageMediaInput');
     const previewBox = document.getElementById('primaryImagePreviewBox');
+    const urlInput = document.getElementById('primary_image_url');
+    const fileInput = document.getElementById('primary_image');
     if (mediaInput) mediaInput.value = '';
+    if (urlInput) urlInput.value = '';
+    if (fileInput) fileInput.value = '';
     if (previewBox) {
         previewBox.classList.add('d-none');
         previewBox.classList.remove('d-flex');
@@ -564,19 +582,31 @@ function clearPrimarySelection() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Primary URL Preview
     const urlInput = document.getElementById('primary_image_url');
     const previewBtn = document.getElementById('btnPreviewPrimaryUrl');
+    const fileInput = document.getElementById('primary_image');
+    const mediaInput = document.getElementById('primaryImageMediaInput');
 
     function updateUrlPreview() {
         const val = urlInput ? urlInput.value.trim() : '';
         if (val) {
+            // When entering URL, clear file and media library selections
+            if (mediaInput) mediaInput.value = '';
+            if (fileInput) fileInput.value = '';
+
             const previewBox = document.getElementById('primaryImagePreviewBox');
             const previewImg = document.getElementById('primaryImagePreviewImg');
             const previewName = document.getElementById('primaryImagePreviewName');
 
-            if (previewImg) previewImg.src = val;
-            if (previewName) previewName.textContent = 'URL Image';
+            if (previewImg) {
+                previewImg.src = val;
+                previewImg.onerror = function() {
+                    this.src = '{{ asset('images/placeholder-product.png') }}';
+                };
+            }
+            if (previewName) {
+                previewName.textContent = 'URL: ' + (val.length > 25 ? val.substring(0, 25) + '...' : val);
+            }
             if (previewBox) {
                 previewBox.classList.remove('d-none');
                 previewBox.classList.add('d-flex');
@@ -585,7 +615,190 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (previewBtn) previewBtn.addEventListener('click', updateUrlPreview);
-    if (urlInput) urlInput.addEventListener('blur', updateUrlPreview);
+    if (urlInput) {
+        let timer = null;
+        urlInput.addEventListener('input', function() {
+            clearTimeout(timer);
+            timer = setTimeout(updateUrlPreview, 350);
+        });
+        urlInput.addEventListener('blur', updateUrlPreview);
+    }
+
+    function handlePrimaryFile(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        if (urlInput) urlInput.value = '';
+        if (mediaInput) mediaInput.value = '';
+
+        // Switch to file tab
+        document.getElementById('p-file-tab')?.click();
+
+        // Assign to file input using DataTransfer
+        try {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+        } catch (err) {
+            console.warn('DataTransfer assignment:', err);
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const previewBox = document.getElementById('primaryImagePreviewBox');
+            const previewImg = document.getElementById('primaryImagePreviewImg');
+            const previewName = document.getElementById('primaryImagePreviewName');
+
+            if (previewImg) previewImg.src = e.target.result;
+            if (previewName) previewName.textContent = file.name || 'Pasted Image';
+            if (previewBox) {
+                previewBox.classList.remove('d-none');
+                previewBox.classList.add('d-flex');
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Direct local file change
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                handlePrimaryFile(this.files[0]);
+            }
+        });
+    }
+
+    // Drag and Drop Helpers
+    function setupDropZone(zoneEl, onDropFiles) {
+        if (!zoneEl) return;
+        ['dragenter', 'dragover'].forEach(name => {
+            zoneEl.addEventListener(name, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                zoneEl.style.borderColor = '#2563eb';
+                zoneEl.style.backgroundColor = '#eff6ff';
+                zoneEl.style.transform = 'scale(1.01)';
+            });
+        });
+        ['dragleave', 'drop'].forEach(name => {
+            zoneEl.addEventListener(name, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                zoneEl.style.borderColor = '#94a3b8';
+                zoneEl.style.backgroundColor = '#ffffff';
+                zoneEl.style.transform = 'scale(1)';
+            });
+        });
+        zoneEl.addEventListener('drop', function (e) {
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) {
+                onDropFiles(dt.files);
+            }
+        });
+    }
+
+    // Setup Drag and Drop on Primary Dropzone
+    setupDropZone(document.getElementById('primaryImageDropZone'), function (files) {
+        if (files[0]) handlePrimaryFile(files[0]);
+    });
+
+    // Setup Drag and Drop on Gallery Dropzone
+    setupDropZone(document.getElementById('galleryImagesDropZone'), function (files) {
+        const galleryInput = document.getElementById('gallery_images');
+        if (galleryInput && files.length > 0) {
+            try {
+                const dt = new DataTransfer();
+                if (galleryInput.files) {
+                    Array.from(galleryInput.files).forEach(f => dt.items.add(f));
+                }
+                Array.from(files).forEach(f => {
+                    if (f.type.startsWith('image/')) dt.items.add(f);
+                });
+                galleryInput.files = dt.files;
+            } catch (err) {
+                console.warn('Gallery DataTransfer:', err);
+            }
+            renderLocalGalleryPreviews(files);
+        }
+    });
+
+    // Render local preview chips for gallery dropped/chosen files
+    function renderLocalGalleryPreviews(files) {
+        const cont = document.getElementById('selectedGalleryMediaContainer');
+        if (!cont) return;
+        Array.from(files).forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const chip = document.createElement('div');
+                chip.className = 'position-relative border rounded p-1 bg-white shadow-xs gallery-media-chip';
+                chip.style.width = '75px';
+                chip.style.height = '75px';
+                chip.innerHTML = `
+                    <img src="${e.target.result}" class="w-100 h-100 rounded" style="object-fit: cover;">
+                    <span class="badge bg-primary position-absolute bottom-0 start-50 translate-middle-x px-1" style="font-size: 8px;">নতুন ফাইল</span>
+                `;
+                cont.appendChild(chip);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Universal Clipboard Paste Listener (Ctrl + V)
+    document.addEventListener('paste', function (e) {
+        const activeEl = document.activeElement;
+        const isTextInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA') && activeEl.id !== 'primary_image_url';
+
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        let imageFile = null;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                imageFile = items[i].getAsFile();
+                break;
+            }
+        }
+
+        if (imageFile) {
+            e.preventDefault();
+            if (activeEl && (activeEl.closest('#g-file-pane') || activeEl.closest('#galleryImagesDropZone'))) {
+                const galleryInput = document.getElementById('gallery_images');
+                if (galleryInput) {
+                    const dt = new DataTransfer();
+                    if (galleryInput.files) {
+                        Array.from(galleryInput.files).forEach(f => dt.items.add(f));
+                    }
+                    dt.items.add(imageFile);
+                    galleryInput.files = dt.files;
+                    renderLocalGalleryPreviews([imageFile]);
+                }
+            } else {
+                handlePrimaryFile(imageFile);
+            }
+            return;
+        }
+
+        // If user pasted text URL
+        const pastedText = e.clipboardData?.getData('text/plain')?.trim();
+        if (pastedText && /^(https?:)?\/\/[^\s]+(\.(jpg|jpeg|png|webp|gif|svg|avif)|\?)/i.test(pastedText)) {
+            if (!isTextInput || activeEl.id === 'primary_image_url') {
+                document.getElementById('p-url-tab')?.click();
+                if (urlInput) {
+                    urlInput.value = pastedText;
+                    updateUrlPreview();
+                }
+            }
+        }
+    });
+
+    // Gallery File Input change listener
+    const galleryInput = document.getElementById('gallery_images');
+    if (galleryInput) {
+        galleryInput.addEventListener('change', function () {
+            if (this.files && this.files.length > 0) {
+                renderLocalGalleryPreviews(this.files);
+            }
+        });
+    }
 
     // Watch gallery chips container to toggle empty note
     const container = document.getElementById('selectedGalleryMediaContainer');
@@ -605,6 +818,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
-@include('admin.partials.media-picker-modal')
 @endpush
 @endsection

@@ -1003,6 +1003,10 @@
             </div>
         </div>
     </div>
+
+    <!-- SIDQ Media Picker Modal Partial -->
+    @include('admin.partials.media-picker-modal')
+
     @stack('scripts')
 </body>
 </html>

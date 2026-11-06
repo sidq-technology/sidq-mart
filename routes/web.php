@@ -263,13 +263,40 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // Fallback direct storage file server (Guarantees image delivery on cPanel / shared hosting without symlink support)
 Route::get('/storage/{path}', function ($path) {
+    // 1. Check storage/app/public
     $filePath = storage_path('app/public/' . $path);
-    if (!file_exists($filePath) || !is_file($filePath)) {
-        abort(404);
+    if (file_exists($filePath) && is_file($filePath)) {
+        return response()->file($filePath, [
+            'Cache-Control' => 'public, max-age=2592000',
+        ]);
     }
-    return response()->file($filePath, [
-        'Cache-Control' => 'public, max-age=2592000',
-    ]);
+
+    // 2. Check public/storage (if public directory exists directly)
+    $pubStoragePath = public_path('storage/' . $path);
+    if (file_exists($pubStoragePath) && is_file($pubStoragePath)) {
+        return response()->file($pubStoragePath, [
+            'Cache-Control' => 'public, max-age=2592000',
+        ]);
+    }
+
+    // 3. Check public_path directly
+    $rootPub = public_path($path);
+    if (file_exists($rootPub) && is_file($rootPub)) {
+        return response()->file($rootPub, [
+            'Cache-Control' => 'public, max-age=2592000',
+        ]);
+    }
+
+    // 4. Return clean placeholder PNG instead of raw HTML 404 to prevent broken img icons
+    $placeholder = public_path('images/placeholder-product.png');
+    if (file_exists($placeholder)) {
+        return response()->file($placeholder, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'no-cache, must-revalidate',
+        ]);
+    }
+
+    abort(404);
 })->where('path', '.*')->name('storage.fallback');
 
 // Quick storage symlink helper for cPanel / live hosting without SSH terminal access

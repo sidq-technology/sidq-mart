@@ -79,20 +79,20 @@
                     <!-- Tab 2: Upload New / From URL -->
                     <div class="tab-pane fade" id="tabMediaUpload" role="tabpanel">
                         <div class="row g-4">
-                            <!-- Section A: File Upload -->
+                            <!-- Section A: File Upload / Drag & Drop -->
                             <div class="col-12 col-md-6">
-                                <div class="p-4 border rounded-3 bg-light text-center h-100 d-flex flex-column justify-content-center">
-                                    <div class="mb-3">
+                                <div class="p-4 border rounded-3 bg-light text-center h-100 d-flex flex-column justify-content-center position-relative" id="mediaModalDropZone" style="border: 2px dashed #94a3b8 !important; transition: all 0.2s ease;">
+                                    <input type="file" id="mediaDirectFileInput" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" accept="image/*" style="cursor: pointer; z-index: 5;">
+                                    <div class="mb-3" style="pointer-events: none;">
                                         <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(37,99,235,0.1); color: #2563eb; font-size: 22px;">
-                                            <i class="fas fa-upload"></i>
+                                            <i class="fas fa-cloud-arrow-up"></i>
                                         </div>
                                     </div>
-                                    <h6 class="fw-bold text-dark mb-1">ডিভাইস থেকে ছবি আপলোড</h6>
-                                    <p class="text-muted small mb-3">JPG, PNG, WebP বা GIF (সর্বোচ্চ ৫ MB)</p>
-                                    <input type="file" id="mediaDirectFileInput" class="form-control mb-2" accept="image/*">
-                                    <button type="button" class="btn btn-primary fw-bold" id="btnUploadDirectFile">
-                                        <i class="fas fa-cloud-arrow-up me-1"></i> আপলোড করুন
-                                    </button>
+                                    <h6 class="fw-bold text-dark mb-1" style="pointer-events: none;">ছবি ড্রপ করুন বা ব্রাউজ করুন</h6>
+                                    <p class="text-muted small mb-2" style="pointer-events: none;">JPG, PNG, WebP (Ctrl + V পেস্ট সমর্থিত)</p>
+                                    <span class="btn btn-sm btn-primary fw-bold mx-auto px-3" style="pointer-events: none; z-index: 1;">
+                                        <i class="fas fa-arrow-up-from-bracket me-1"></i> ফাইল বেছে নিন
+                                    </span>
                                 </div>
                             </div>
 
@@ -136,7 +136,6 @@
     </div>
 </div>
 
-@push('styles')
 <style>
 .media-card {
     cursor: pointer;
@@ -187,29 +186,26 @@
     line-height: 1.25;
 }
 </style>
-@endpush
 
-@push('scripts')
 <script>
 window.SIDQMediaPicker = (function () {
     let currentTarget = 'primary'; // 'primary' or 'gallery'
     let isMultiple = false;
     let selectedItems = []; // Array of { path, url, name }
     let allMediaItems = [];
-
-    const modalEl = document.getElementById('mediaPickerModal');
     let bsModalInstance = null;
 
     function getModal() {
-        if (!bsModalInstance && modalEl) {
+        const modalEl = document.getElementById('mediaPickerModal');
+        if (!bsModalInstance && modalEl && typeof bootstrap !== 'undefined') {
             bsModalInstance = new bootstrap.Modal(modalEl);
         }
         return bsModalInstance;
     }
 
-    function open(targetType = 'primary', multiple = false) {
-        currentTarget = targetType;
-        isMultiple = multiple;
+    function open(targetType, multiple) {
+        currentTarget = targetType || 'primary';
+        isMultiple = (multiple === true);
         selectedItems = [];
         updateFooterSelection();
 
@@ -220,7 +216,12 @@ window.SIDQMediaPicker = (function () {
                 : 'গ্যালারির জন্য মিডিয়া সিলেক্ট করুন';
         }
 
-        getModal()?.show();
+        const modal = getModal();
+        if (modal) {
+            modal.show();
+        } else {
+            console.error('[SIDQMediaPicker] Bootstrap modal instance could not be opened.');
+        }
         loadMedia();
     }
 
@@ -288,6 +289,7 @@ window.SIDQMediaPicker = (function () {
 
             grid.appendChild(col);
         });
+        updateFooterSelection();
     }
 
     function handleCardClick(cardEl, item) {
@@ -340,7 +342,10 @@ window.SIDQMediaPicker = (function () {
             if (mediaInput) mediaInput.value = item.path;
             if (previewImg) previewImg.src = item.url;
             if (previewName) previewName.textContent = item.name;
-            if (previewBox) previewBox.classList.remove('d-none');
+            if (previewBox) {
+                previewBox.classList.remove('d-none');
+                previewBox.classList.add('d-flex');
+            }
 
             // Clear URL or file input if media selected
             const fileInput = document.getElementById('primary_image');
@@ -377,8 +382,8 @@ window.SIDQMediaPicker = (function () {
         return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    // Initialize DOM events
-    document.addEventListener('DOMContentLoaded', function () {
+    // Initialize DOM events safely
+    function initEvents() {
         document.getElementById('btnConfirmMediaSelection')?.addEventListener('click', confirmSelection);
         document.getElementById('mediaFolderFilter')?.addEventListener('change', loadMedia);
         document.getElementById('btnRefreshMedia')?.addEventListener('click', loadMedia);
@@ -389,48 +394,100 @@ window.SIDQMediaPicker = (function () {
             searchDebounce = setTimeout(loadMedia, 300);
         });
 
-        // Upload Direct File
-        document.getElementById('btnUploadDirectFile')?.addEventListener('click', function () {
-            const fileInput = document.getElementById('mediaDirectFileInput');
-            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-                alert('অনুগ্রহ করে একটি ছবি নির্বাচন করুন।');
-                return;
-            }
+        function uploadModalFile(file) {
+            if (!file) return;
+            const loader = document.getElementById('mediaLoader');
+            const feedback = document.getElementById('mediaUploadFeedback');
 
             const fd = new FormData();
-            fd.append('file', fileInput.files[0]);
+            fd.append('file', file);
             fd.append('folder', 'products');
 
-            const btn = this;
-            const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> আপলোড হচ্ছে...';
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+            // Switch to browse tab immediately and show loader
+            document.getElementById('tabMediaBrowseBtn')?.click();
+            if (loader) loader.classList.remove('d-none');
 
             fetch('{{ route('admin.media.upload') }}', {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': csrfToken
                 },
                 body: fd
             })
             .then(res => res.json())
             .then(data => {
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
                 if (data.success) {
-                    fileInput.value = '';
-                    // Switch to browse tab and refresh
-                    document.getElementById('tabMediaBrowseBtn')?.click();
+                    const fileInput = document.getElementById('mediaDirectFileInput');
+                    if (fileInput) fileInput.value = '';
+                    if (data.path && data.url) {
+                        selectedItems = [{
+                            path: data.path,
+                            url: data.url,
+                            name: data.name || 'Uploaded Image'
+                        }];
+                    }
                     loadMedia();
                 } else {
+                    if (loader) loader.classList.add('d-none');
                     alert(data.message || 'আপলোড ব্যর্থ হয়েছে।');
                 }
             })
             .catch(err => {
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
+                if (loader) loader.classList.add('d-none');
                 alert('সার্ভার এরর: ' + err.message);
             });
+        }
+
+        // File Input Change
+        document.getElementById('mediaDirectFileInput')?.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                uploadModalFile(this.files[0]);
+            }
+        });
+
+        // Dropzone inside Modal
+        const modalDropZone = document.getElementById('mediaModalDropZone');
+        if (modalDropZone) {
+            ['dragenter', 'dragover'].forEach(name => {
+                modalDropZone.addEventListener(name, function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    modalDropZone.style.borderColor = '#2563eb';
+                    modalDropZone.style.backgroundColor = '#eff6ff';
+                });
+            });
+            ['dragleave', 'drop'].forEach(name => {
+                modalDropZone.addEventListener(name, function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    modalDropZone.style.borderColor = '#94a3b8';
+                    modalDropZone.style.backgroundColor = '';
+                });
+            });
+            modalDropZone.addEventListener('drop', function (e) {
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files[0]) {
+                    uploadModalFile(dt.files[0]);
+                }
+            });
+        }
+
+        // Modal level paste listener
+        document.getElementById('mediaPickerModal')?.addEventListener('paste', function (e) {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    e.preventDefault();
+                    const file = items[i].getAsFile();
+                    if (file) {
+                        uploadModalFile(file);
+                        return;
+                    }
+                }
+            }
         });
 
         // Upload from URL
@@ -447,12 +504,14 @@ window.SIDQMediaPicker = (function () {
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> ডাউনলোড হচ্ছে...';
 
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
             fetch('{{ route('admin.media.upload') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': csrfToken
                 },
                 body: JSON.stringify({ url: urlVal, folder: 'products' })
             })
@@ -462,6 +521,13 @@ window.SIDQMediaPicker = (function () {
                 btn.innerHTML = originalHtml;
                 if (data.success) {
                     urlInput.value = '';
+                    if (data.path && data.url) {
+                        selectedItems = [{
+                            path: data.path,
+                            url: data.url,
+                            name: data.name || 'Downloaded Image'
+                        }];
+                    }
                     document.getElementById('tabMediaBrowseBtn')?.click();
                     loadMedia();
                 } else {
@@ -474,11 +540,17 @@ window.SIDQMediaPicker = (function () {
                 alert('সার্ভার এরর: ' + err.message);
             });
         });
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initEvents);
+    } else {
+        initEvents();
+    }
 
     return {
-        open: open
+        open: open,
+        loadMedia: loadMedia
     };
 })();
 </script>
-@endpush

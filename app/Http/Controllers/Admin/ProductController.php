@@ -287,27 +287,41 @@ class ProductController extends Controller
     }
 
     /**
-     * Resolve primary image from either file upload, media library path, or external URL
+     * Resolve primary image from either file upload, external URL, or media library path
      */
     protected function resolvePrimaryImage(Request $request, ?string $current = null): ?string
     {
-        // 1. Direct File Upload
+        $mediaCtrl = app(\App\Http\Controllers\Admin\MediaController::class);
+
+        // 1. Direct File Upload (highest priority if uploaded)
         if ($request->hasFile('primary_image')) {
-            return $request->file('primary_image')->store('products', 'public');
+            $path = $request->file('primary_image')->store('products', 'public');
+            $mediaCtrl->syncToPublicDirectory($path);
+            return $path;
         }
 
-        // 2. Chosen from Media Library
-        if ($request->filled('primary_image_media')) {
-            return trim($request->input('primary_image_media'));
-        }
-
-        // 3. Provided via Image URL
+        // 2. Provided via Image URL
         if ($request->filled('primary_image_url')) {
             $url = trim($request->input('primary_image_url'));
-            if (filter_var($url, FILTER_VALIDATE_URL)) {
-                $mediaCtrl = app(\App\Http\Controllers\Admin\MediaController::class);
+            if (str_starts_with($url, '//')) {
+                $url = 'https:' . $url;
+            }
+            if (preg_match('/^(https?:)?\/\//i', $url)) {
                 $downloaded = $mediaCtrl->downloadAndSaveUrl($url, 'products');
-                return $downloaded ?: $url;
+                if ($downloaded) {
+                    return $downloaded;
+                }
+                if (filter_var($url, FILTER_VALIDATE_URL)) {
+                    return $url;
+                }
+            }
+        }
+
+        // 3. Chosen from Media Library
+        if ($request->filled('primary_image_media')) {
+            $mediaPath = trim($request->input('primary_image_media'));
+            if (!empty($mediaPath)) {
+                return $mediaPath;
             }
         }
 
@@ -321,11 +335,13 @@ class ProductController extends Controller
     {
         $currentCount = $product->galleryImages()->count();
         $newIndex = 0;
+        $mediaCtrl = app(\App\Http\Controllers\Admin\MediaController::class);
 
         // 1. Physical file uploads
         if ($request->hasFile('gallery_images')) {
             foreach ($request->file('gallery_images') as $file) {
                 $path = $file->store('products/gallery', 'public');
+                $mediaCtrl->syncToPublicDirectory($path);
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image_path' => $path,
@@ -352,17 +368,28 @@ class ProductController extends Controller
         // 3. Gallery Image URLs (newline or comma separated)
         if ($request->filled('gallery_image_urls')) {
             $rawUrls = preg_split('/[\r\n,]+/', (string) $request->input('gallery_image_urls'));
-            $mediaCtrl = app(\App\Http\Controllers\Admin\MediaController::class);
 
             foreach ($rawUrls as $url) {
                 $url = trim($url);
-                if (filter_var($url, FILTER_VALIDATE_URL)) {
-                    $savedPath = $mediaCtrl->downloadAndSaveUrl($url, 'products/gallery') ?: $url;
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => $savedPath,
-                        'sort_order' => $currentCount + $newIndex++,
-                    ]);
+                if (empty($url)) continue;
+                if (str_starts_with($url, '//')) {
+                    $url = 'https:' . $url;
+                }
+                if (preg_match('/^(https?:)?\/\//i', $url)) {
+                    $savedPath = $mediaCtrl->downloadAndSaveUrl($url, 'products/gallery');
+                    if ($savedPath) {
+                        ProductImage::create([
+                            'product_id' => $product->id,
+                            'image_path' => $savedPath,
+                            'sort_order' => $currentCount + $newIndex++,
+                        ]);
+                    } elseif (filter_var($url, FILTER_VALIDATE_URL)) {
+                        ProductImage::create([
+                            'product_id' => $product->id,
+                            'image_path' => $url,
+                            'sort_order' => $currentCount + $newIndex++,
+                        ]);
+                    }
                 }
             }
         }

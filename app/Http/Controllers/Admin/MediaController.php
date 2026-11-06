@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\ProductImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,90 +11,67 @@ use Illuminate\Support\Str;
 class MediaController extends Controller
 {
     /**
-     * List all media files from storage disk and database
+     * List previously uploaded images from public storage
      */
     public function index(Request $request): JsonResponse
     {
-        $disk = Storage::disk('public');
-        $allFiles = $disk->allFiles();
-
-        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'];
         $folderFilter = $request->input('folder', 'all');
-        $search = strtolower(trim((string) $request->input('search', '')));
+        $search = strtolower(trim($request->input('search', '')));
+
+        $directories = [
+            'products' => 'Products',
+            'banners' => 'Banners',
+            'categories' => 'Categories',
+        ];
+
+        if ($folderFilter !== 'all' && isset($directories[$folderFilter])) {
+            $directories = [$folderFilter => $directories[$folderFilter]];
+        }
 
         $items = [];
-        $seenPaths = [];
+        $disk = Storage::disk('public');
 
-        // 1. Collect files from Storage disk
-        foreach ($allFiles as $file) {
-            $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-            if (!in_array($ext, $allowedExtensions)) {
+        foreach ($directories as $folder => $label) {
+            if (!$disk->exists($folder)) {
                 continue;
             }
 
-            // Exclude system files if any
-            if (str_starts_with($file, '.') || str_contains($file, '/.')) {
-                continue;
+            $files = $disk->allFiles($folder);
+
+            foreach ($files as $file) {
+                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'])) {
+                    continue;
+                }
+
+                $filename = basename($file);
+                if (!empty($search) && !str_contains(strtolower($filename), $search)) {
+                    continue;
+                }
+
+                try {
+                    $lastModified = $disk->lastModified($file);
+                    $size = $disk->size($file);
+                } catch (\Throwable $e) {
+                    $lastModified = time();
+                    $size = 0;
+                }
+
+                $items[] = [
+                    'path' => $file,
+                    'url' => asset('storage/' . ltrim($file, '/')),
+                    'name' => $filename,
+                    'folder' => $label,
+                    'size' => $this->formatBytes($size),
+                    'timestamp' => $lastModified,
+                    'date' => date('d M Y, h:i A', $lastModified),
+                ];
             }
-
-            // Apply folder filter
-            if ($folderFilter !== 'all' && !str_starts_with($file, $folderFilter . '/')) {
-                continue;
-            }
-
-            $basename = basename($file);
-
-            // Apply search filter
-            if ($search !== '' && !str_contains(strtolower($basename), $search) && !str_contains(strtolower($file), $search)) {
-                continue;
-            }
-
-            $sizeBytes = 0;
-            $timestamp = 0;
-            try {
-                $sizeBytes = $disk->size($file);
-                $timestamp = $disk->lastModified($file);
-            } catch (\Throwable $e) {}
-
-            $items[] = [
-                'path' => $file,
-                'url' => asset('storage/' . $file),
-                'name' => $basename,
-                'size' => $this->formatBytes($sizeBytes),
-                'timestamp' => $timestamp,
-                'folder' => explode('/', $file)[0] ?? 'other',
-                'is_external' => false,
-            ];
-            $seenPaths[$file] = true;
         }
 
-        // 2. Collect any external URLs stored in Product / ProductImage
-        $externalProducts = Product::where('primary_image', 'LIKE', 'http%')->pluck('primary_image');
-        $externalGallery = ProductImage::where('image_path', 'LIKE', 'http%')->pluck('image_path');
-
-        foreach ($externalProducts->merge($externalGallery)->unique() as $extUrl) {
-            if (isset($seenPaths[$extUrl])) continue;
-
-            $basename = basename(parse_url($extUrl, PHP_URL_PATH) ?: 'image.jpg');
-            if ($search !== '' && !str_contains(strtolower($basename), $search)) {
-                continue;
-            }
-
-            $items[] = [
-                'path' => $extUrl,
-                'url' => $extUrl,
-                'name' => $basename,
-                'size' => 'External',
-                'timestamp' => time(),
-                'folder' => 'external',
-                'is_external' => true,
-            ];
-            $seenPaths[$extUrl] = true;
-        }
-
-        // Sort newest first
+        // Sort descending by timestamp (newest first)
         usort($items, function ($a, $b) {
-            return ($b['timestamp'] ?? 0) <=> ($a['timestamp'] ?? 0);
+            return $b['timestamp'] <=> $a['timestamp'];
         });
 
         return response()->json([
@@ -124,6 +99,9 @@ class MediaController extends Controller
 
             $path = $request->file('file')->store($folder, 'public');
 
+            // Sync to public/storage if it's a real directory (cPanel fallback)
+            $this->syncToPublicDirectory($path);
+
             return response()->json([
                 'success' => true,
                 'message' => 'ছবি সফলভাবে আপলোড হয়েছে!',
@@ -136,7 +114,7 @@ class MediaController extends Controller
         // Case 2: Upload from Image URL
         if ($request->filled('url')) {
             $url = trim($request->input('url'));
-            if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            if (!preg_match('/^(https?:)?\/\//i', $url)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'একটি সঠিক ইমেজ ইউআরএল (Valid Image URL) প্রদান করুন।',
@@ -155,15 +133,10 @@ class MediaController extends Controller
                 ]);
             }
 
-            // Fallback: Use direct external URL if download timed out
             return response()->json([
-                'success' => true,
-                'message' => 'বাহ্যিক ইমেজ ইউআরএল সফলভাবে যুক্ত হয়েছে!',
-                'path' => $url,
-                'url' => $url,
-                'name' => basename(parse_url($url, PHP_URL_PATH) ?: 'external-image.jpg'),
-                'is_external' => true,
-            ]);
+                'success' => false,
+                'message' => 'প্রদত্ত লিংক থেকে ছবিটি ডাউনলোড করা সম্ভব হয়নি। অনুগ্রহ করে নিশ্চিত করুন লিংকটি একটি সরাসরি ছবির লিংক (Direct Image URL)।',
+            ], 422);
         }
 
         return response()->json([
@@ -174,38 +147,138 @@ class MediaController extends Controller
 
     /**
      * Download an external image URL and store it locally
+     * Robust cURL downloader with browser headers, redirect following, and image MIME verification
      */
     public function downloadAndSaveUrl(string $url, string $folder = 'products'): ?string
     {
         try {
-            $context = stream_context_create([
-                'http' => [
-                    'timeout' => 8,
-                    'follow_location' => 1,
-                    'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIDQ Mart Image Downloader',
-                ],
-                'ssl' => [
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                ]
-            ]);
-
-            $contents = @file_get_contents($url, false, $context);
-            if ($contents && strlen($contents) > 200) {
-                $ext = strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?: '', PATHINFO_EXTENSION));
-                if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'])) {
-                    $ext = 'jpg';
-                }
-
-                $filename = $folder . '/' . Str::random(40) . '.' . $ext;
-                Storage::disk('public')->put($filename, $contents);
-                return $filename;
+            $url = trim($url);
+            if (str_starts_with($url, '//')) {
+                $url = 'https:' . $url;
             }
+
+            $parsed = parse_url($url);
+            $host = $parsed['host'] ?? '';
+
+            $headers = [
+                'Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+                'Accept-Language: en-US,en;q=0.9',
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            ];
+            if (!empty($host)) {
+                $headers[] = "Referer: https://{$host}/";
+            }
+
+            $contents = null;
+            $httpCode = 0;
+
+            // 1. Primary Downloader: cURL
+            if (function_exists('curl_init')) {
+                $ch = curl_init($url);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_MAXREDIRS => 5,
+                    CURLOPT_TIMEOUT => 15,
+                    CURLOPT_CONNECTTIMEOUT => 7,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_SSL_VERIFYHOST => false,
+                    CURLOPT_HTTPHEADER => $headers,
+                ]);
+                $contents = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+            }
+
+            // 2. Fallback Downloader: stream_context
+            if (!$contents || $httpCode >= 400) {
+                $context = stream_context_create([
+                    'http' => [
+                        'timeout' => 10,
+                        'follow_location' => 1,
+                        'header' => implode("\r\n", $headers),
+                    ],
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                    ],
+                ]);
+                $contents = @file_get_contents($url, false, $context);
+            }
+
+            if (!$contents || strlen($contents) < 50) {
+                return null;
+            }
+
+            // 3. MIME-Type Detection & Image Integrity Verification
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_buffer($finfo, $contents);
+            finfo_close($finfo);
+
+            // Reject HTML error pages or non-image payloads
+            if (!str_starts_with($mime, 'image/') && $mime !== 'application/octet-stream') {
+                \Log::warning("Rejected non-image payload from URL [{$url}], mime detected: {$mime}");
+                return null;
+            }
+
+            $mimeMap = [
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/webp' => 'webp',
+                'image/gif' => 'gif',
+                'image/svg+xml' => 'svg',
+                'image/avif' => 'avif',
+            ];
+
+            // Resolve extension from mime or URL path
+            $ext = $mimeMap[$mime] ?? null;
+            if (!$ext) {
+                $pathExt = strtolower(pathinfo($parsed['path'] ?? '', PATHINFO_EXTENSION));
+                $ext = in_array($pathExt, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif']) ? $pathExt : 'jpg';
+            }
+
+            $filename = trim($folder, '/') . '/' . Str::random(40) . '.' . $ext;
+
+            // Save to standard Laravel public storage disk
+            Storage::disk('public')->put($filename, $contents);
+
+            // Sync to public/storage if it's a real directory
+            $this->syncToPublicDirectory($filename, $contents);
+
+            return $filename;
         } catch (\Throwable $e) {
-            \Log::warning("Media download failed for URL [{$url}]: " . $e->getMessage());
+            \Log::warning("MediaController URL download error for [{$url}]: " . $e->getMessage());
         }
 
         return null;
+    }
+
+    /**
+     * If public/storage is a real directory (common on shared cPanel hosting without symlinks),
+     * keep it synchronized so the web server can serve files directly.
+     */
+    public function syncToPublicDirectory(string $relativePath, ?string $contents = null): void
+    {
+        try {
+            $publicStorage = public_path('storage');
+            if (!is_link($publicStorage) && is_dir($publicStorage)) {
+                $dest = $publicStorage . '/' . ltrim($relativePath, '/');
+                $destDir = dirname($dest);
+                if (!is_dir($destDir)) {
+                    @mkdir($destDir, 0755, true);
+                }
+                if ($contents !== null) {
+                    @file_put_contents($dest, $contents);
+                } else {
+                    $source = storage_path('app/public/' . ltrim($relativePath, '/'));
+                    if (file_exists($source)) {
+                        @copy($source, $dest);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Non-critical, fallback route handles delivery
+        }
     }
 
     /**
