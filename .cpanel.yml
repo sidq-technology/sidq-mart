@@ -1,5 +1,5 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/ordhangi/sidqtech.com
+    - export DEPLOYPATH=/home/ordhangi/sidq.shop
     - /bin/cp -R * $DEPLOYPATH
