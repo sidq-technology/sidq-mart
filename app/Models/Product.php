@@ -142,11 +142,11 @@ class Product extends Model
 
     public function getPrimaryImageUrlAttribute()
     {
-        if ($this->primary_image && file_exists(public_path('storage/' . $this->primary_image))) {
-            return asset('storage/' . $this->primary_image);
-        }
         if ($this->primary_image && (str_starts_with($this->primary_image, 'http://') || str_starts_with($this->primary_image, 'https://'))) {
             return $this->primary_image;
+        }
+        if (!empty($this->primary_image)) {
+            return asset('storage/' . ltrim($this->primary_image, '/'));
         }
         return asset('images/placeholder-product.png');
     }

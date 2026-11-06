@@ -871,6 +871,23 @@
                 </div>
             </div>
         </div>
+        <!-- ==========================================
+             9. SYSTEM & STORAGE MAINTENANCE
+        =========================================== -->
+        <div class="card border bg-white rounded-3 shadow-xs p-3 p-sm-4 mb-3 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
+            <div>
+                <h6 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                    <i class="fas fa-images text-primary"></i>
+                    <span>পণ্য ও মিডিয়া ফাইল স্টোরেজ লিংক (Storage Symlink Fixer)</span>
+                </h6>
+                <div class="text-muted small">
+                    cPanel বা লাইভ সার্ভারে আপলোড করা পণ্যের ছবি শো না করলে এই বাটনে ক্লিক করে স্টোরেজ সিমলিংক স্বয়ংক্রিয়ভাবে তৈরি ও মেরামত করে নিন।
+                </div>
+            </div>
+            <a href="{{ url('/fix-storage-link') }}" target="_blank" class="btn btn-outline-primary fw-bold text-nowrap">
+                <i class="fas fa-link me-1"></i> স্টোরেজ লিংক মেরামত করুন
+            </a>
+        </div>
     </div>
 
     <!-- Bottom Save Action Bar -->

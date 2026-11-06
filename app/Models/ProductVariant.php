@@ -63,11 +63,11 @@ class ProductVariant extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        if ($this->image_path && file_exists(public_path('storage/' . $this->image_path))) {
-            return asset('storage/' . $this->image_path);
-        }
         if ($this->image_path && (str_starts_with($this->image_path, 'http://') || str_starts_with($this->image_path, 'https://'))) {
             return $this->image_path;
+        }
+        if (!empty($this->image_path)) {
+            return asset('storage/' . ltrim($this->image_path, '/'));
         }
         return $this->product?->primary_image_url;
     }

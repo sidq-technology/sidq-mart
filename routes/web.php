@@ -254,3 +254,25 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('support.index');
     });
 });
+
+// Fallback direct storage file server (Guarantees image delivery on cPanel / shared hosting without symlink support)
+Route::get('/storage/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    if (!file_exists($filePath) || !is_file($filePath)) {
+        abort(404);
+    }
+    return response()->file($filePath, [
+        'Cache-Control' => 'public, max-age=2592000',
+    ]);
+})->where('path', '.*')->name('storage.fallback');
+
+// Quick storage symlink helper for cPanel / live hosting without SSH terminal access
+Route::get('/fix-storage-link', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('storage:link');
+        $output = trim(\Illuminate\Support\Facades\Artisan::output());
+        return response('<div style="font-family:sans-serif;padding:40px;text-align:center;"><h2 style="color:#16a34a;">✅ Storage Linked Successfully!</h2><p style="color:#64748b;">' . htmlspecialchars($output ?: 'The [public/storage] link has been connected to [storage/app/public].') . '</p><a href="/" style="display:inline-block;padding:10px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;margin-top:15px;">Go to Storefront</a></div>');
+    } catch (\Throwable $e) {
+        return response('<div style="font-family:sans-serif;padding:40px;text-align:center;"><h2 style="color:#dc2626;">Notice on Storage Link</h2><p style="color:#64748b;">' . htmlspecialchars($e->getMessage()) . '</p><p style="color:#16a34a;margin-top:10px;">However, SIDQ Mart\'s Direct Storage Fallback is active, so images will still serve automatically!</p><a href="/" style="display:inline-block;padding:10px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;margin-top:15px;">Go to Storefront</a></div>');
+    }
+});

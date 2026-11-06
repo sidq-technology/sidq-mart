@@ -36,11 +36,11 @@ class Banner extends Model
 
     public function getImageUrlAttribute()
     {
-        if ($this->image && file_exists(public_path('storage/' . $this->image))) {
-            return asset('storage/' . $this->image);
-        }
         if ($this->image && (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://'))) {
             return $this->image;
+        }
+        if (!empty($this->image)) {
+            return asset('storage/' . ltrim($this->image, '/'));
         }
         return asset('images/placeholder-banner.png');
     }
