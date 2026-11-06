@@ -202,35 +202,148 @@
 
             <!-- Media Upload Box -->
             <div class="card border-0 shadow-sm rounded-3 p-4 mb-4">
-                <h5 class="fw-bold mb-3 text-dark">পণ্যের ছবি (Images)</h5>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-bold mb-0 text-dark">পণ্যের ছবি (Images)</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" onclick="window.SIDQMediaPicker.open('primary', false)">
+                        <i class="fas fa-photo-film me-1"></i> মিডিয়া লাইব্রেরি
+                    </button>
+                </div>
 
-                <div class="mb-3">
-                    <label for="primary_image" class="form-label fw-bold">প্রধান ছবি পরিবর্তন করুন</label>
+                <!-- 1. Primary Image Section -->
+                <div class="mb-4 pb-3 border-bottom">
+                    <label class="form-label fw-bold d-flex align-items-center justify-content-between mb-2">
+                        <span>প্রধান ছবি (Primary Image)</span>
+                    </label>
+
                     @if($product->primary_image)
-                    <div class="mb-2">
-                        <img src="{{ $product->primary_image_url }}" alt="Primary Image" class="rounded border p-1" style="width: 80px; height: 80px; object-fit: cover;">
+                    <div class="mb-3 p-2 bg-light border rounded-3 d-flex align-items-center gap-2">
+                        <img src="{{ $product->primary_image_url }}" alt="Primary Image" class="rounded border" style="width: 60px; height: 60px; object-fit: cover;">
+                        <div>
+                            <small class="text-muted d-block" style="font-size: 11px;">বর্তমান প্রধান ছবি:</small>
+                            <span class="fw-semibold text-dark small text-truncate d-block" style="max-width: 180px;">{{ basename($product->primary_image) }}</span>
+                        </div>
                     </div>
                     @endif
-                    <input type="file" name="primary_image" id="primary_image" class="form-control" accept="image/*">
-                </div>
 
-                <div class="mb-3">
-                    <label for="gallery_images" class="form-label fw-bold">আরো গ্যালারি ছবি যুক্ত করুন</label>
-                    <input type="file" name="gallery_images[]" id="gallery_images" class="form-control" accept="image/*" multiple>
-                </div>
+                    <div class="small fw-semibold text-muted mb-2">ছবি পরিবর্তন করতে নিচের যেকোনো একটি অপশন ব্যবহার করুন:</div>
 
-                @if($product->galleryImages->count() > 0)
-                <div class="mb-2">
-                    <label class="form-label small fw-bold">বর্তমান গ্যালারি ছবিসমূহ:</label>
-                    <div class="d-flex flex-wrap gap-2">
-                        @foreach($product->galleryImages as $img)
-                        <div class="position-relative" id="gallery-img-{{ $img->id }}">
-                            <img src="{{ $img->image_url }}" alt="Gallery" class="rounded border p-1" style="width: 60px; height: 60px; object-fit: cover;">
+                    <!-- Selection Methods Pills -->
+                    <ul class="nav nav-pills nav-fill mb-2 p-1 bg-light rounded-3" id="primaryImgTabs" role="tablist" style="font-size: 12px;">
+                        <li class="nav-item">
+                            <button class="nav-link active py-1" id="p-file-tab" data-bs-toggle="pill" data-bs-target="#p-file-pane" type="button">
+                                <i class="fas fa-upload me-1"></i> ফাইল আপলোড
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-1" id="p-url-tab" data-bs-toggle="pill" data-bs-target="#p-url-pane" type="button">
+                                <i class="fas fa-link me-1"></i> ইমেজ URL
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-1 text-primary fw-bold" type="button" onclick="window.SIDQMediaPicker.open('primary', false)">
+                                <i class="fas fa-images me-1"></i> মিডিয়া লাইব্রেরি
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- File Upload Pane -->
+                        <div class="tab-pane fade show active" id="p-file-pane">
+                            <input type="file" name="primary_image" id="primary_image" class="form-control" accept="image/*">
                         </div>
-                        @endforeach
+                        <!-- URL Input Pane -->
+                        <div class="tab-pane fade" id="p-url-pane">
+                            <div class="input-group">
+                                <input type="url" name="primary_image_url" id="primary_image_url" class="form-control" placeholder="https://example.com/product-image.jpg">
+                                <button class="btn btn-outline-secondary" type="button" id="btnPreviewPrimaryUrl">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text small" style="font-size: 11px;">অনলাইনের যেকোনো ইমেজের লিংক দিলে সেটি সরাসরি সেভ হবে।</div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Media Library Selection Input -->
+                    <input type="hidden" name="primary_image_media" id="primaryImageMediaInput">
+
+                    <!-- Selected Primary Image Preview Box -->
+                    <div id="primaryImagePreviewBox" class="mt-2 p-2 bg-light border rounded-3 d-none align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <img id="primaryImagePreviewImg" src="" class="rounded border" style="width: 50px; height: 50px; object-fit: cover;">
+                            <div>
+                                <small class="fw-bold text-dark d-block text-truncate" id="primaryImagePreviewName" style="max-width: 170px;">New Image</small>
+                                <span class="badge bg-success-subtle text-success" style="font-size: 10px;">নতুন ছবি সিলেক্টেড</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill" onclick="clearPrimarySelection()" style="font-size: 11px;">
+                            <i class="fas fa-times me-1"></i> সরান
+                        </button>
                     </div>
                 </div>
-                @endif
+
+                <!-- 2. Gallery Images Section -->
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <label class="form-label fw-bold mb-0">গ্যালারি ছবি (Gallery Images)</label>
+                        <button type="button" class="btn btn-xs btn-outline-primary py-1 px-2 rounded-pill fw-semibold" style="font-size: 11px;" onclick="window.SIDQMediaPicker.open('gallery', true)">
+                            <i class="fas fa-photo-film me-1"></i> মিডিয়া থেকে যোগ করুন
+                        </button>
+                    </div>
+
+                    <!-- Gallery Options Tabs -->
+                    <ul class="nav nav-pills nav-fill mb-2 p-1 bg-light rounded-3" id="galleryImgTabs" role="tablist" style="font-size: 12px;">
+                        <li class="nav-item">
+                            <button class="nav-link active py-1" id="g-file-tab" data-bs-toggle="pill" data-bs-target="#g-file-pane" type="button">
+                                <i class="fas fa-upload me-1"></i> ফাইল আপলোড
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-1" id="g-url-tab" data-bs-toggle="pill" data-bs-target="#g-url-pane" type="button">
+                                <i class="fas fa-link me-1"></i> ইমেজ URLs
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mb-3">
+                        <div class="tab-pane fade show active" id="g-file-pane">
+                            <input type="file" name="gallery_images[]" id="gallery_images" class="form-control" accept="image/*" multiple>
+                            <div class="form-text small" style="font-size: 11px;">ডিভাইস থেকে অতিরিক্ত গ্যালারি ছবি আপলোড করুন।</div>
+                        </div>
+                        <div class="tab-pane fade" id="g-url-pane">
+                            <textarea name="gallery_image_urls" id="gallery_image_urls" class="form-control" rows="2" placeholder="প্রতি লাইনে ১টি করে Image URL দিন...&#10;https://example.com/img1.jpg&#10;https://example.com/img2.jpg"></textarea>
+                            <div class="form-text small" style="font-size: 11px;">একাধিক ইমেজ লিংক প্রতি লাইনে অথবা কমা দিয়ে লিখুন।</div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Gallery Media Chips Container -->
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">মিডিয়া থেকে নতুন নির্বাচিত ছবিসমূহ:</small>
+                        <div id="selectedGalleryMediaContainer" class="d-flex flex-wrap gap-2 min-vh-10 p-2 bg-light border rounded-3">
+                            <span class="text-muted small align-self-center empty-gallery-note" id="emptyGalleryNote" style="font-size: 11px;">কোনো মিডিয়া ছবি সিলেক্ট করা নেই। উপরের 'মিডিয়া থেকে যোগ করুন' বাটনে ক্লিক করুন।</span>
+                        </div>
+                    </div>
+
+                    <!-- Existing Gallery Images -->
+                    @if($product->galleryImages->count() > 0)
+                    <div>
+                        <label class="form-label small fw-bold text-dark">বর্তমান গ্যালারি ছবিসমূহ (Current Gallery):</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach($product->galleryImages as $img)
+                            <div class="position-relative border rounded p-1 bg-white shadow-xs" id="gallery-img-{{ $img->id }}" style="width: 70px; height: 70px;">
+                                <img src="{{ $img->image_url }}" alt="Gallery" class="w-100 h-100 rounded" style="object-fit: cover;">
+                                <button type="button" 
+                                        class="btn btn-danger btn-xs position-absolute top-0 end-0 p-0 rounded-circle d-flex align-items-center justify-content-center" 
+                                        style="width: 18px; height: 18px; transform: translate(30%, -30%);" 
+                                        onclick="deleteGalleryImage({{ $img->id }})" 
+                                        title="ছবি মুছুন">
+                                    <i class="fas fa-times" style="font-size: 9px;"></i>
+                                </button>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                </div>
             </div>
 
             <button type="submit" class="btn btn-danger w-100 py-3 fw-bold fs-6">
@@ -438,6 +551,60 @@ function removeVariantRow(btn) {
         row.remove();
     }
 }
+
+// Media Selection Helpers
+function clearPrimarySelection() {
+    const mediaInput = document.getElementById('primaryImageMediaInput');
+    const previewBox = document.getElementById('primaryImagePreviewBox');
+    if (mediaInput) mediaInput.value = '';
+    if (previewBox) {
+        previewBox.classList.add('d-none');
+        previewBox.classList.remove('d-flex');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Primary URL Preview
+    const urlInput = document.getElementById('primary_image_url');
+    const previewBtn = document.getElementById('btnPreviewPrimaryUrl');
+
+    function updateUrlPreview() {
+        const val = urlInput ? urlInput.value.trim() : '';
+        if (val) {
+            const previewBox = document.getElementById('primaryImagePreviewBox');
+            const previewImg = document.getElementById('primaryImagePreviewImg');
+            const previewName = document.getElementById('primaryImagePreviewName');
+
+            if (previewImg) previewImg.src = val;
+            if (previewName) previewName.textContent = 'URL Image';
+            if (previewBox) {
+                previewBox.classList.remove('d-none');
+                previewBox.classList.add('d-flex');
+            }
+        }
+    }
+
+    if (previewBtn) previewBtn.addEventListener('click', updateUrlPreview);
+    if (urlInput) urlInput.addEventListener('blur', updateUrlPreview);
+
+    // Watch gallery chips container to toggle empty note
+    const container = document.getElementById('selectedGalleryMediaContainer');
+    if (container) {
+        const observer = new MutationObserver(() => {
+            const chips = container.querySelectorAll('.gallery-media-chip');
+            const emptyNote = document.getElementById('emptyGalleryNote');
+            if (emptyNote) {
+                if (chips.length > 0) {
+                    emptyNote.classList.add('d-none');
+                } else {
+                    emptyNote.classList.remove('d-none');
+                }
+            }
+        });
+        observer.observe(container, { childList: true });
+    }
+});
 </script>
+@include('admin.partials.media-picker-modal')
 @endpush
 @endsection

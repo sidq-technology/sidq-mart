@@ -50,8 +50,13 @@ class ProductController extends Controller
             'regular_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0|lt:regular_price',
             'stock_quantity' => 'required|integer|min:0',
-            'primary_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'primary_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'primary_image_url' => 'nullable|string|max:1000',
+            'primary_image_media' => 'nullable|string|max:500',
+            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'gallery_image_urls' => 'nullable|string',
+            'gallery_image_media' => 'nullable|array',
+            'gallery_image_media.*' => 'nullable|string|max:500',
             'short_description' => 'nullable|string',
             'description' => 'nullable|string',
             'is_featured' => 'nullable|boolean',
@@ -73,25 +78,16 @@ class ProductController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['has_variants'] = $request->boolean('has_variants');
 
-        // Handle Primary Image upload
-        if ($request->hasFile('primary_image')) {
-            $path = $request->file('primary_image')->store('products', 'public');
-            $validated['primary_image'] = $path;
+        // Resolve Primary Image (file, media library, or image url)
+        $primaryImg = $this->resolvePrimaryImage($request);
+        if ($primaryImg) {
+            $validated['primary_image'] = $primaryImg;
         }
 
         $product = Product::create($validated);
 
-        // Handle Gallery Images upload
-        if ($request->hasFile('gallery_images')) {
-            foreach ($request->file('gallery_images') as $index => $file) {
-                $path = $file->store('products/gallery', 'public');
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_path' => $path,
-                    'sort_order' => $index,
-                ]);
-            }
-        }
+        // Attach Gallery Images (files, media library, and image urls)
+        $this->attachGalleryImages($request, $product);
 
         // Handle Variants if enabled
         if ($product->has_variants && $request->has('variants')) {
@@ -156,8 +152,13 @@ class ProductController extends Controller
             'regular_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'stock_quantity' => 'required|integer|min:0',
-            'primary_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'primary_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'primary_image_url' => 'nullable|string|max:1000',
+            'primary_image_media' => 'nullable|string|max:500',
+            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'gallery_image_urls' => 'nullable|string',
+            'gallery_image_media' => 'nullable|array',
+            'gallery_image_media.*' => 'nullable|string|max:500',
             'short_description' => 'nullable|string',
             'description' => 'nullable|string',
             'is_featured' => 'nullable|boolean',
@@ -178,23 +179,16 @@ class ProductController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['has_variants'] = $request->boolean('has_variants');
 
-        if ($request->hasFile('primary_image')) {
-            $path = $request->file('primary_image')->store('products', 'public');
-            $validated['primary_image'] = $path;
+        // Resolve Primary Image (file, media library, or image url)
+        $primaryImg = $this->resolvePrimaryImage($request, $product->primary_image);
+        if ($primaryImg) {
+            $validated['primary_image'] = $primaryImg;
         }
 
         $product->update($validated);
 
-        if ($request->hasFile('gallery_images')) {
-            foreach ($request->file('gallery_images') as $index => $file) {
-                $path = $file->store('products/gallery', 'public');
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_path' => $path,
-                    'sort_order' => $product->galleryImages()->count() + $index,
-                ]);
-            }
-        }
+        // Attach Gallery Images (files, media library, and image urls)
+        $this->attachGalleryImages($request, $product);
 
         // Handle Variants Update
         if ($product->has_variants && $request->has('variants')) {
@@ -290,5 +284,87 @@ class ProductController extends Controller
         }
 
         return response()->json(['status' => 'error', 'message' => 'ছবি আপলোড করতে ব্যর্থ হয়েছে।'], 400);
+    }
+
+    /**
+     * Resolve primary image from either file upload, media library path, or external URL
+     */
+    protected function resolvePrimaryImage(Request $request, ?string $current = null): ?string
+    {
+        // 1. Direct File Upload
+        if ($request->hasFile('primary_image')) {
+            return $request->file('primary_image')->store('products', 'public');
+        }
+
+        // 2. Chosen from Media Library
+        if ($request->filled('primary_image_media')) {
+            return trim($request->input('primary_image_media'));
+        }
+
+        // 3. Provided via Image URL
+        if ($request->filled('primary_image_url')) {
+            $url = trim($request->input('primary_image_url'));
+            if (filter_var($url, FILTER_VALIDATE_URL)) {
+                $mediaCtrl = app(\App\Http\Controllers\Admin\MediaController::class);
+                $downloaded = $mediaCtrl->downloadAndSaveUrl($url, 'products');
+                return $downloaded ?: $url;
+            }
+        }
+
+        return $current;
+    }
+
+    /**
+     * Attach gallery images from file uploads, media library selections, and URLs
+     */
+    protected function attachGalleryImages(Request $request, Product $product): void
+    {
+        $currentCount = $product->galleryImages()->count();
+        $newIndex = 0;
+
+        // 1. Physical file uploads
+        if ($request->hasFile('gallery_images')) {
+            foreach ($request->file('gallery_images') as $file) {
+                $path = $file->store('products/gallery', 'public');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $path,
+                    'sort_order' => $currentCount + $newIndex++,
+                ]);
+            }
+        }
+
+        // 2. Media Library Selections
+        if ($request->has('gallery_image_media')) {
+            $mediaPaths = (array) $request->input('gallery_image_media');
+            foreach ($mediaPaths as $mPath) {
+                $mPath = trim((string) $mPath);
+                if (!empty($mPath)) {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $mPath,
+                        'sort_order' => $currentCount + $newIndex++,
+                    ]);
+                }
+            }
+        }
+
+        // 3. Gallery Image URLs (newline or comma separated)
+        if ($request->filled('gallery_image_urls')) {
+            $rawUrls = preg_split('/[\r\n,]+/', (string) $request->input('gallery_image_urls'));
+            $mediaCtrl = app(\App\Http\Controllers\Admin\MediaController::class);
+
+            foreach ($rawUrls as $url) {
+                $url = trim($url);
+                if (filter_var($url, FILTER_VALIDATE_URL)) {
+                    $savedPath = $mediaCtrl->downloadAndSaveUrl($url, 'products/gallery') ?: $url;
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $savedPath,
+                        'sort_order' => $currentCount + $newIndex++,
+                    ]);
+                }
+            }
+        }
     }
 }

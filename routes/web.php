@@ -174,6 +174,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->middleware('permission:products.create')
             ->name('products.upload-description-image');
 
+        // Media Library API & Uploads
+        Route::get('/media', [\App\Http\Controllers\Admin\MediaController::class, 'index'])
+            ->name('media.index');
+        Route::post('/media/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload'])
+            ->name('media.upload');
+
         // Categories
         Route::resource('categories', CategoryController::class)
             ->middleware('permission:categories.manage');
