@@ -27,7 +27,7 @@ class TrackingController extends Controller
         ]);
 
         $userData = $validated['user_data'] ?? [];
-        $userData['client_ip_address'] = $request->ip();
+        $userData['client_ip_address'] = $capiService->resolveClientIp($request->ip());
         $userData['client_user_agent'] = $request->userAgent();
 
         if (empty($userData['external_id']) && $request->hasSession()) {

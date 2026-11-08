@@ -201,6 +201,13 @@ class MetaCapiService
 
         $url = "{$this->baseUrl}/{$this->graphApiVersion}/{$pixelId}/events?access_token={$token}";
 
+        $testUserData = [];
+        $testIp = $this->resolveClientIp();
+        if (!empty($testIp)) {
+            $testUserData['client_ip_address'] = $testIp;
+            $testUserData['client_user_agent'] = request()->userAgent() ?: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
+        }
+
         $testPayload = [
             'data' => [
                 [
@@ -209,10 +216,7 @@ class MetaCapiService
                     'event_id' => 'test_' . uniqid(),
                     'event_source_url' => url('/'),
                     'action_source' => 'website',
-                    'user_data' => [
-                        'client_ip_address' => request()->ip() ?: '127.0.0.1',
-                        'client_user_agent' => request()->userAgent() ?: 'Mozilla/5.0 SIDQ Test Agent',
-                    ]
+                    'user_data' => $testUserData,
                 ]
             ]
         ];
@@ -254,21 +258,77 @@ class MetaCapiService
     }
 
     /**
+     * Resolve a valid, public client IP address from candidate or request headers (supports Cloudflare, Proxies, cPanel)
+     */
+    public function resolveClientIp(?string $candidate = null): ?string
+    {
+        $ip = $candidate;
+
+        if (empty($ip)) {
+            $headers = [
+                'HTTP_CF_CONNECTING_IP',
+                'HTTP_X_REAL_IP',
+                'HTTP_X_FORWARDED_FOR',
+                'HTTP_CLIENT_IP',
+            ];
+
+            foreach ($headers as $header) {
+                $val = request()->server($header);
+                if (!empty($val)) {
+                    $parts = explode(',', $val);
+                    foreach ($parts as $part) {
+                        $trimmed = trim($part);
+                        if ($this->isValidPublicIp($trimmed)) {
+                            return $trimmed;
+                        }
+                    }
+                }
+            }
+
+            $ip = request()->ip();
+        }
+
+        if (!empty($ip) && $this->isValidPublicIp($ip)) {
+            return $ip;
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if an IP address is a valid public, non-reserved, non-loopback IP
+     */
+    public function isValidPublicIp(string $ip): bool
+    {
+        if ($ip === '127.0.0.1' || $ip === '::1' || strtolower($ip) === 'localhost') {
+            return false;
+        }
+
+        return (bool) filter_var(
+            $ip,
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+        );
+    }
+
+    /**
      * Format and securely hash user data according to Meta Graph API specifications
      */
     protected function formatUserData(array $raw): array
     {
         $userData = [];
 
-        // 1. IP Address (Plaintext)
-        $ip = $raw['client_ip_address'] ?? ($raw['ip'] ?? request()->ip());
-        if (!empty($ip) && $ip !== '127.0.0.1' && $ip !== '::1') {
+        // 1. IP Address (Plaintext) - Resolve valid public IP
+        $ip = $this->resolveClientIp($raw['client_ip_address'] ?? ($raw['ip'] ?? null));
+        if (!empty($ip)) {
             $userData['client_ip_address'] = $ip;
         }
 
         // 2. User Agent (Plaintext)
+        // Meta Strict Requirement: 'client_user_agent' and 'client_ip_address' MUST be sent together.
+        // Sending client_user_agent without client_ip_address triggers Meta's Diagnostics error.
         $ua = $raw['client_user_agent'] ?? ($raw['user_agent'] ?? request()->userAgent());
-        if (!empty($ua)) {
+        if (!empty($ua) && !empty($userData['client_ip_address'])) {
             $userData['client_user_agent'] = $ua;
         }
 
