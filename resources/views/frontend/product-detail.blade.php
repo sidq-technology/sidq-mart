@@ -161,16 +161,47 @@
                             </div>
                         </div>
 
-                        <div class="d-grid gap-3 d-sm-flex">
-                            <!-- Direct Checkout / Buy Now -->
-                            <button type="submit" class="btn btn-primary-sidq flex-fill py-3 fs-6">
-                                <i class="fas fa-bolt me-1"></i> অর্ডার করুন
-                            </button>
+                        @php
+                            $supportPhone = \App\Models\Setting::get('whatsapp_number') ?: \App\Models\Setting::get('contact_phone', '01711223344');
+                            $displayPhone = trim($supportPhone);
+                            $callPhone = preg_replace('/[^\d+]/', '', $displayPhone);
 
-                            <!-- Add to Cart -->
-                            <button type="button" class="btn btn-secondary-sidq flex-fill py-3 fs-6" onclick="addPdpToCart()">
-                                <i class="fas fa-shopping-basket me-1"></i> কার্টে যোগ করুন
-                            </button>
+                            $waPhone = preg_replace('/[^\d]/', '', $displayPhone);
+                            if (str_starts_with($waPhone, '01')) {
+                                $waPhone = '88' . $waPhone;
+                            } elseif (!str_starts_with($waPhone, '8801') && str_starts_with($waPhone, '1') && strlen($waPhone) === 10) {
+                                $waPhone = '880' . $waPhone;
+                            }
+                            $waDefaultMsg = urlencode("হ্যালো, আমি এই পণ্যটি সম্পর্কে জানতে / অর্ডার করতে চাই:\n*{$product->name}*\nমূল্য: ৳" . number_format($product->final_price, 0) . "\nলিংক: " . url()->current());
+                            $waUrl = "https://wa.me/{$waPhone}?text={$waDefaultMsg}";
+                        @endphp
+
+                        <div class="pdp-actions-wrap mb-3">
+                            <!-- Row 1: Order Now & Call Now -->
+                            <div class="row g-2 mb-2">
+                                <div class="col-12 col-sm-6">
+                                    <button type="submit" class="btn btn-order-pdp w-100 py-3 px-2 fs-6 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                                        <i class="fas fa-bolt text-warning"></i>
+                                        <span>অর্ডার করুন</span>
+                                    </button>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <a href="tel:{{ $callPhone }}" onclick="trackPdpCall()" class="btn btn-call-pdp w-100 py-3 px-2 fs-6 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-decoration-none">
+                                        <i class="fas fa-phone-alt"></i>
+                                        <span class="text-truncate">কল করুন {{ $displayPhone }}</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Row 2: WhatsApp Now -->
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <a href="{{ $waUrl }}" onclick="trackPdpWhatsApp()" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp-pdp w-100 py-3 px-2 fs-6 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-decoration-none">
+                                        <i class="fab fa-whatsapp fs-5"></i>
+                                        <span>WhatsApp করুন {{ $displayPhone }}</span>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -415,6 +446,63 @@
     color: #0f172a;
     margin-top: 1.25rem;
     margin-bottom: 0.6rem;
+}
+
+/* Product Detail Action Buttons (Order, Call, WhatsApp) */
+.btn-order-pdp {
+    background: linear-gradient(135deg, #e11d48 0%, #dc2626 100%);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    min-height: 50px;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.btn-order-pdp:hover {
+    background: linear-gradient(135deg, #be123c 0%, #b91c1c 100%);
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35);
+}
+
+.btn-call-pdp {
+    background: #ffffff;
+    color: #0f172a !important;
+    border: 1.5px solid #0f172a;
+    border-radius: 8px;
+    font-weight: 700;
+    min-height: 50px;
+    font-size: 15px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    transition: all 0.2s ease;
+}
+.btn-call-pdp:hover {
+    background: #0f172a;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+}
+
+.btn-whatsapp-pdp {
+    background: #25D366;
+    color: #ffffff !important;
+    border: 1px solid #20ba59;
+    border-radius: 8px;
+    font-weight: 700;
+    min-height: 50px;
+    font-size: 15px;
+    box-shadow: 0 3px 10px rgba(37, 211, 102, 0.25);
+    transition: all 0.2s ease;
+}
+.btn-whatsapp-pdp:hover {
+    background: #1ebd5b;
+    border-color: #1ebd5b;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(37, 211, 102, 0.35);
 }
 </style>
 
@@ -852,6 +940,28 @@
             price: price,
             value: price * qty
         });
+    }
+
+    function trackPdpCall() {
+        try {
+            if (typeof window.sidqTrackEvent === 'function') {
+                window.sidqTrackEvent('Contact', {
+                    content_name: @json($product->name),
+                    contact_channel: 'phone_call'
+                });
+            }
+        } catch(e) {}
+    }
+
+    function trackPdpWhatsApp() {
+        try {
+            if (typeof window.sidqTrackEvent === 'function') {
+                window.sidqTrackEvent('Contact', {
+                    content_name: @json($product->name),
+                    contact_channel: 'whatsapp'
+                });
+            }
+        } catch(e) {}
     }
 </script>
 @endpush
