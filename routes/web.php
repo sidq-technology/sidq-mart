@@ -106,6 +106,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/orders', [OrderController::class, 'index'])
             ->middleware('permission:orders.view')
             ->name('orders.index');
+        Route::get('/orders/create', [OrderController::class, 'create'])
+            ->middleware('permission:orders.create')
+            ->name('orders.create');
+        Route::post('/orders', [OrderController::class, 'store'])
+            ->middleware('permission:orders.create')
+            ->name('orders.store');
+        Route::get('/orders/api/search-products', [OrderController::class, 'searchProducts'])
+            ->middleware('permission:orders.create')
+            ->name('orders.search-products');
         Route::get('/orders/ip-lookup', [OrderController::class, 'lookupIp'])
             ->middleware('permission:orders.view')
             ->name('orders.ip-lookup');

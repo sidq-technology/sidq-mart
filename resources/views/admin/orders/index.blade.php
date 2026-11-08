@@ -3,11 +3,19 @@
 @section('title', 'অর্ডার ব্যবস্থাপনা - Orders')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
         <h3 class="fw-bold mb-1 text-dark">অর্ডার ব্যবস্থাপনা (Order Management)</h3>
         <p class="text-muted small mb-0">গ্রাহকদের অর্ডারের তালিকা, স্ট্যাটাস পরিবর্তন এবং চালান প্রিন্ট করুন। যেকোনো অর্ডারে ক্লিক করে বিস্তারিত পপআপে দেখুন।</p>
     </div>
+    @if(auth()->user()->canDo('orders.create'))
+    <div>
+        <a href="{{ route('admin.orders.create') }}" class="btn btn-danger btn-sm fw-bold px-3 py-2 rounded-3 shadow-sm d-flex align-items-center gap-2">
+            <i class="fas fa-plus-circle"></i>
+            <span>নতুন অর্ডার তৈরি করুন</span>
+        </a>
+    </div>
+    @endif
 </div>
 
 @if(session('success'))

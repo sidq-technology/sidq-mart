@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -41,6 +45,194 @@ class OrderController extends Controller
         $enabledCouriers = app(\App\Services\Courier\CourierManager::class)->getEnabledCouriers();
 
         return view('admin.orders.index', compact('orders', 'counts', 'status', 'search', 'enabledCouriers'));
+    }
+
+    /**
+     * Show form for creating a new order manually by Admin
+     */
+    public function create()
+    {
+        $products = Product::where('is_active', true)
+            ->with(['variants' => function ($q) {
+                $q->orderBy('id');
+            }, 'category'])
+            ->latest()
+            ->get();
+
+        $insideDhakaFee = (float) Setting::get('delivery_inside_dhaka', 70);
+        $outsideDhakaFee = (float) Setting::get('delivery_outside_dhaka', 130);
+
+        return view('admin.orders.create', compact('products', 'insideDhakaFee', 'outsideDhakaFee'));
+    }
+
+    /**
+     * API search products for manual order creation
+     */
+    public function searchProducts(Request $request)
+    {
+        $query = trim($request->input('q', ''));
+        $products = Product::where('is_active', true)
+            ->when($query, function ($q) use ($query) {
+                $q->where(function ($sub) use ($query) {
+                    $sub->where('name', 'like', "%{$query}%")
+                        ->orWhere('sku', 'like', "%{$query}%");
+                });
+            })
+            ->with(['variants' => function ($q) {
+                $q->orderBy('id');
+            }])
+            ->latest()
+            ->take(30)
+            ->get();
+
+        return response()->json($products);
+    }
+
+    /**
+     * Store a newly created order manually by Admin
+     */
+    public function store(Request $request)
+    {
+        // 1. Phone number cleanup and normalization
+        if ($request->filled('customer_phone')) {
+            $rawPhone = (string) $request->input('customer_phone');
+            $bengaliDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+            $englishDigits = ['0','1','2','3','4','5','6','7','8','9'];
+            $cleanPhone = str_replace($bengaliDigits, $englishDigits, $rawPhone);
+            $cleanPhone = preg_replace('/[^\d]/', '', $cleanPhone);
+            if (str_starts_with($cleanPhone, '8801')) {
+                $cleanPhone = substr($cleanPhone, 2);
+            } elseif (str_starts_with($cleanPhone, '1') && strlen($cleanPhone) === 10) {
+                $cleanPhone = '0' . $cleanPhone;
+            }
+            $request->merge(['customer_phone' => $cleanPhone]);
+        }
+
+        $validated = $request->validate([
+            'customer_name' => 'required|string|min:2|max:100',
+            'customer_phone' => ['required', 'regex:/^(?:\+88|88)?(01[3-9]\d{8})$/'],
+            'shipping_address' => 'required|string|min:3|max:500',
+            'delivery_zone' => 'required|in:inside_dhaka,outside_dhaka',
+            'shipping_charge' => 'required|numeric|min:0',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'payment_method' => 'required|in:cod,bkash,nagad',
+            'payment_status' => 'required|in:pending,paid',
+            'transaction_id' => 'nullable|string|max:100',
+            'order_status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'customer_note' => 'nullable|string|max:500',
+            'admin_notes' => 'nullable|string|max:1000',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.variant_id' => 'nullable',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit_price' => 'required|numeric|min:0',
+        ], [
+            'items.required' => 'অর্ডারে অন্তত একটি পণ্য যুক্ত করা আবশ্যক।',
+            'items.min' => 'অর্ডারে অন্তত একটি পণ্য যুক্ত করা আবশ্যক।',
+            'customer_phone.regex' => 'অনুগ্রহ করে সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)।',
+        ]);
+
+        try {
+            $order = DB::transaction(function () use ($validated) {
+                $orderService = app(\App\Services\OrderService::class);
+                $orderNumber = $orderService->generateOrderNumber();
+
+                $subtotal = 0;
+                $orderItemsData = [];
+
+                foreach ($validated['items'] as $itemInput) {
+                    $product = Product::findOrFail($itemInput['product_id']);
+                    $variant = !empty($itemInput['variant_id']) ? ProductVariant::find($itemInput['variant_id']) : null;
+
+                    $quantity = (int) $itemInput['quantity'];
+                    $unitPrice = (float) $itemInput['unit_price'];
+                    $rowTotal = $unitPrice * $quantity;
+                    $subtotal += $rowTotal;
+
+                    $orderItemsData[] = [
+                        'product' => $product,
+                        'variant' => $variant,
+                        'product_id' => $product->id,
+                        'variant_id' => $variant ? $variant->id : null,
+                        'product_name' => $product->name,
+                        'color' => $variant ? $variant->color : null,
+                        'size' => $variant ? $variant->size : null,
+                        'product_image' => $product->primary_image_url,
+                        'unit_price' => $unitPrice,
+                        'quantity' => $quantity,
+                        'total_price' => $rowTotal,
+                    ];
+                }
+
+                $shippingCharge = (float) $validated['shipping_charge'];
+                $discountAmount = (float) ($validated['discount_amount'] ?? 0);
+                $grandTotal = max(0, ($subtotal + $shippingCharge - $discountAmount));
+
+                $adminNoteText = 'ম্যানুয়ালি অ্যাডমিন দ্বারা তৈরি করা অর্ডার।';
+                if (!empty($validated['admin_notes'])) {
+                    $adminNoteText .= ' | ' . $validated['admin_notes'];
+                }
+
+                $order = Order::create([
+                    'order_number' => $orderNumber,
+                    'user_id' => auth()->id() ?? null,
+                    'customer_name' => $validated['customer_name'],
+                    'customer_phone' => $validated['customer_phone'],
+                    'shipping_address' => $validated['shipping_address'],
+                    'delivery_zone' => $validated['delivery_zone'],
+                    'shipping_charge' => $shippingCharge,
+                    'subtotal' => $subtotal,
+                    'discount_amount' => $discountAmount,
+                    'grand_total' => $grandTotal,
+                    'payment_method' => $validated['payment_method'],
+                    'payment_status' => $validated['payment_status'],
+                    'transaction_id' => $validated['transaction_id'] ?? null,
+                    'order_status' => $validated['order_status'],
+                    'customer_note' => $validated['customer_note'] ?? null,
+                    'admin_notes' => $adminNoteText,
+                    'ip_address' => request()->ip() ?: '127.0.0.1',
+                ]);
+
+                foreach ($orderItemsData as $itemData) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $itemData['product_id'],
+                        'variant_id' => $itemData['variant_id'],
+                        'product_name' => $itemData['product_name'],
+                        'color' => $itemData['color'],
+                        'size' => $itemData['size'],
+                        'product_image' => $itemData['product_image'],
+                        'unit_price' => $itemData['unit_price'],
+                        'quantity' => $itemData['quantity'],
+                        'total_price' => $itemData['total_price'],
+                    ]);
+
+                    // Atomic stock decrement
+                    if ($itemData['variant']) {
+                        $itemData['variant']->decrement('stock_quantity', $itemData['quantity']);
+                    }
+                    if ($itemData['product']) {
+                        $itemData['product']->decrement('stock_quantity', $itemData['quantity']);
+                    }
+                }
+
+                return $order;
+            });
+
+            // Send SMS notification if configured
+            try {
+                app(\App\Services\SmsService::class)->sendOrderNotification($order, 'order_placed');
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Admin Order Create SMS Error: ' . $e->getMessage());
+            }
+
+            return redirect()->route('admin.orders.show', $order->id)
+                ->with('success', "নতুন অর্ডারটি সফলভাবে তৈরি হয়েছে! (অর্ডার নং: {$order->order_number})");
+        } catch (\Throwable $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'অর্ডার তৈরি করতে সমস্যা হয়েছে: ' . $e->getMessage());
+        }
     }
 
     public function show(Order $order)

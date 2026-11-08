@@ -197,6 +197,7 @@ class User extends Authenticatable
             self::ROLE_ADMIN => array_keys(self::getAllPermissionsList()),
             self::ROLE_SHOP_MANAGER => [
                 'orders.view',
+                'orders.create',
                 'orders.status',
                 'products.view',
                 'products.create',
@@ -211,6 +212,7 @@ class User extends Authenticatable
             ],
             self::ROLE_EMPLOYEE => [
                 'orders.view',
+                'orders.create',
                 'orders.status',
                 'products.view',
             ],
@@ -226,6 +228,7 @@ class User extends Authenticatable
         return [
             'অর্ডার ব্যবস্থাপনা (Orders Management)' => [
                 'orders.view'   => 'অর্ডার তালিকা ও গ্রাহক তথ্য দেখা',
+                'orders.create' => 'ম্যানুয়ালি নতুন অর্ডার তৈরি করা',
                 'orders.status' => 'অর্ডার স্ট্যাটাস পরিবর্তন ও চালান প্রিন্ট',
                 'orders.delete' => 'অর্ডার ডিলিট বা মুছে ফেলা',
             ],
