@@ -89,6 +89,49 @@ class OrderController extends Controller
     }
 
     /**
+     * Check for new orders since last known order ID (for real-time sound/toast alert)
+     */
+    public function checkNewOrders(Request $request)
+    {
+        $lastId = (int) $request->input('last_id', 0);
+
+        if ($lastId <= 0) {
+            $latestOrder = Order::latest('id')->first(['id']);
+            return response()->json([
+                'has_new' => false,
+                'latest_id' => $latestOrder ? (int) $latestOrder->id : 0,
+            ]);
+        }
+
+        // Search for newest order with ID > $lastId
+        $newOrder = Order::where('id', '>', $lastId)
+            ->latest('id')
+            ->first();
+
+        if ($newOrder) {
+            return response()->json([
+                'has_new' => true,
+                'latest_id' => (int) $newOrder->id,
+                'order' => [
+                    'id' => $newOrder->id,
+                    'order_number' => $newOrder->order_number,
+                    'customer_name' => $newOrder->customer_name ?: 'সম্মানিত গ্রাহক',
+                    'customer_phone' => $newOrder->customer_phone ?: '',
+                    'grand_total' => (float) $newOrder->grand_total,
+                    'order_status' => $newOrder->order_status,
+                    'created_at' => $newOrder->created_at ? $newOrder->created_at->format('h:i A') : 'এইমাত্র',
+                    'show_url' => route('admin.orders.show', $newOrder->id),
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'has_new' => false,
+            'latest_id' => $lastId,
+        ]);
+    }
+
+    /**
      * Store a newly created order manually by Admin
      */
     public function store(Request $request)

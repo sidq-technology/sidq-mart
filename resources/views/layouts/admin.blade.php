@@ -612,6 +612,18 @@
             </div>
 
             <div class="d-flex align-items-center gap-3">
+                @if(auth()->check() && auth()->user()->canDo('orders.view'))
+                <!-- Sound Alert Toggle -->
+                <button type="button" 
+                        class="btn btn-sm btn-light border d-flex align-items-center gap-2 shadow-2xs position-relative px-2 py-1 rounded-pill" 
+                        id="adminSoundAlertToggle" 
+                        title="নতুন অর্ডার সাউন্ড নোটিফিকেশন">
+                    <i class="fas fa-bell text-success" id="adminSoundAlertIcon"></i>
+                    <span class="small fw-semibold d-none d-md-inline" id="adminSoundAlertText" style="font-size: 12px;">সাউন্ড চালু</span>
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle" id="adminSoundAlertDot"></span>
+                </button>
+                @endif
+
                 <a href="{{ route('home') }}" target="_blank" class="btn btn-sm btn-outline-secondary d-none d-md-inline-flex align-items-center gap-1">
                     <i class="fas fa-store"></i> লাইভ স্টোর
                 </a>
@@ -1006,6 +1018,254 @@
 
     <!-- SIDQ Media Picker Modal Partial -->
     @include('admin.partials.media-picker-modal')
+
+    @if(auth()->check() && auth()->user()->canDo('orders.view'))
+    <!-- New Order Floating Alert Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 10900;" id="newOrderToastContainer"></div>
+
+    <script>
+    (function() {
+        const checkUrl = "{{ route('admin.orders.check-new') }}";
+        const STORAGE_KEY_LAST_ID = 'sidq_admin_last_order_id';
+        const STORAGE_KEY_SOUND_ENABLED = 'sidq_admin_sound_alert_enabled';
+
+        let isSoundEnabled = localStorage.getItem(STORAGE_KEY_SOUND_ENABLED) !== 'false';
+        let lastKnownOrderId = parseInt(localStorage.getItem(STORAGE_KEY_LAST_ID)) || 0;
+        let isPolling = false;
+        let pollTimer = null;
+
+        // UI Elements
+        const toggleBtn = document.getElementById('adminSoundAlertToggle');
+        const iconEl = document.getElementById('adminSoundAlertIcon');
+        const textEl = document.getElementById('adminSoundAlertText');
+        const dotEl = document.getElementById('adminSoundAlertDot');
+        const toastContainer = document.getElementById('newOrderToastContainer');
+
+        function updateToggleUI() {
+            if (!toggleBtn) return;
+            if (isSoundEnabled) {
+                if (iconEl) iconEl.className = 'fas fa-bell text-success';
+                if (textEl) textEl.textContent = 'সাউন্ড চালু';
+                if (dotEl) {
+                    dotEl.className = 'position-absolute top-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle';
+                    dotEl.style.display = 'block';
+                }
+                toggleBtn.setAttribute('title', 'নতুন অর্ডার সাউন্ড নোটিফিকেশন চালু আছে (ক্লিক করে বন্ধ করুন)');
+            } else {
+                if (iconEl) iconEl.className = 'fas fa-bell-slash text-secondary';
+                if (textEl) textEl.textContent = 'সাউন্ড বন্ধ';
+                if (dotEl) dotEl.style.display = 'none';
+                toggleBtn.setAttribute('title', 'নতুন অর্ডার সাউন্ড নোটিফিকেশন বন্ধ আছে (ক্লিক করে চালু করুন)');
+            }
+        }
+
+        // Web Audio API Pleasant Cash Register / Bell Chime
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    audioCtx = new AudioCtx();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playOrderChime() {
+            if (!isSoundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+
+                const now = ctx.currentTime;
+
+                // Tone 1: Bright harmonic ping (E5 -> A5)
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'triangle';
+                osc1.frequency.setValueAtTime(659.25, now);
+                osc1.frequency.exponentialRampToValueAtTime(880.00, now + 0.1);
+                gain1.gain.setValueAtTime(0.28, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.45);
+
+                // Tone 2: Rich bell chord (C6)
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1046.50, now + 0.1);
+                gain2.gain.setValueAtTime(0.35, now + 0.1);
+                gain2.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.1);
+                osc2.stop(now + 1.2);
+
+                // Tone 3: Harmony shimmer (E6)
+                const osc3 = ctx.createOscillator();
+                const gain3 = ctx.createGain();
+                osc3.type = 'sine';
+                osc3.frequency.setValueAtTime(1318.51, now + 0.15);
+                gain3.gain.setValueAtTime(0.25, now + 0.15);
+                gain3.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+                osc3.connect(gain3);
+                gain3.connect(ctx.destination);
+                osc3.start(now + 0.15);
+                osc3.stop(now + 1.4);
+            } catch (err) {
+                console.warn('Audio chime notice:', err);
+            }
+        }
+
+        // Unlock AudioContext on first user interaction anywhere
+        function unlockAudio() {
+            getAudioContext();
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('keydown', unlockAudio);
+        }
+        document.addEventListener('click', unlockAudio, { once: true });
+        document.addEventListener('keydown', unlockAudio, { once: true });
+
+        // Toggle Sound Alert Button
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                isSoundEnabled = !isSoundEnabled;
+                localStorage.setItem(STORAGE_KEY_SOUND_ENABLED, isSoundEnabled ? 'true' : 'false');
+                updateToggleUI();
+
+                if (isSoundEnabled) {
+                    playOrderChime();
+                }
+            });
+        }
+        updateToggleUI();
+
+        // Show Toast Notification
+        function showOrderToast(order) {
+            if (!toastContainer) return;
+
+            const toastId = 'order_toast_' + order.id;
+            const existingToast = document.getElementById(toastId);
+            if (existingToast) return;
+
+            const toastEl = document.createElement('div');
+            toastEl.id = toastId;
+            toastEl.className = 'toast show border-0 shadow-lg rounded-3 mb-3';
+            toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+            toastEl.style.cssText = 'min-width: 330px; max-width: 380px; border-left: 5px solid #10b981 !important; background: #ffffff;';
+
+            toastEl.innerHTML = `
+                <div class="toast-header bg-white border-bottom py-2 px-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                            <i class="fas fa-shopping-bag text-white" style="font-size: 11px;"></i>
+                        </span>
+                        <strong class="text-dark small">নতুন অর্ডার এসেছে! 🎉</strong>
+                    </div>
+                    <small class="text-muted" style="font-size: 10px;">${order.created_at || 'এইমাত্র'}</small>
+                    <button type="button" class="btn-close ms-2" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge bg-danger-subtle text-danger fw-bold" style="font-size: 12px;">#${order.order_number}</span>
+                        <span class="fw-bold fs-6 text-success">৳${Number(order.grand_total).toLocaleString('en-US')}</span>
+                    </div>
+                    <div class="text-muted small mb-2 text-truncate">
+                        <i class="fas fa-user text-secondary me-1"></i> ${order.customer_name} ${order.customer_phone ? '(' + order.customer_phone + ')' : ''}
+                    </div>
+                    <div class="d-flex gap-2 mt-2">
+                        <a href="${order.show_url}" class="btn btn-sm btn-primary-sidq w-100 fw-bold py-1">
+                            <i class="fas fa-eye me-1"></i> অর্ডারটি দেখুন
+                        </a>
+                        <button type="button" class="btn btn-sm btn-light border px-2 btn-toast-close">
+                            বন্ধ
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            toastEl.querySelectorAll('[data-bs-dismiss="toast"], .btn-toast-close').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    toastEl.remove();
+                });
+            });
+
+            setTimeout(() => {
+                if (toastEl.parentNode) {
+                    toastEl.remove();
+                }
+            }, 25000);
+
+            toastContainer.appendChild(toastEl);
+        }
+
+        // Polling Routine
+        async function checkForNewOrders() {
+            if (isPolling) return;
+            isPolling = true;
+
+            try {
+                const response = await fetch(checkUrl + '?last_id=' + encodeURIComponent(lastKnownOrderId), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (lastKnownOrderId === 0) {
+                        lastKnownOrderId = data.latest_id || 0;
+                        localStorage.setItem(STORAGE_KEY_LAST_ID, lastKnownOrderId);
+                    } else if (data.has_new && data.order) {
+                        lastKnownOrderId = data.latest_id;
+                        localStorage.setItem(STORAGE_KEY_LAST_ID, lastKnownOrderId);
+
+                        playOrderChime();
+                        showOrderToast(data.order);
+
+                        const originalTitle = document.title;
+                        document.title = '🔔 (১) নতুন অর্ডার! | ' + originalTitle;
+                        setTimeout(() => { document.title = originalTitle; }, 10000);
+                    } else if (data.latest_id && data.latest_id > lastKnownOrderId) {
+                        lastKnownOrderId = data.latest_id;
+                        localStorage.setItem(STORAGE_KEY_LAST_ID, lastKnownOrderId);
+                    }
+                }
+            } catch (err) {
+                // Ignore transient network errors
+            } finally {
+                isPolling = false;
+                scheduleNextPoll();
+            }
+        }
+
+        function scheduleNextPoll() {
+            clearTimeout(pollTimer);
+            const interval = document.hidden ? 25000 : 10000;
+            pollTimer = setTimeout(checkForNewOrders, interval);
+        }
+
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                checkForNewOrders();
+            }
+        });
+
+        scheduleNextPoll();
+    })();
+    </script>
+    @endif
 
     @stack('scripts')
 </body>
