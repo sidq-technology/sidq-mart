@@ -121,6 +121,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/orders/{order}', [OrderController::class, 'show'])
             ->middleware('permission:orders.view')
             ->name('orders.show');
+        Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])
+            ->middleware('permission:orders.edit')
+            ->name('orders.edit');
+        Route::put('/orders/{order}', [OrderController::class, 'update'])
+            ->middleware('permission:orders.edit')
+            ->name('orders.update');
         Route::post('/orders/{order}/status', [OrderController::class, 'updateStatus'])
             ->middleware('permission:orders.status')
             ->name('orders.status');

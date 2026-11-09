@@ -71,6 +71,9 @@
             @endif
         </div>
 
+        <a href="{{ route('admin.orders.edit', $order->id) }}" class="btn btn-warning text-dark fw-bold">
+            <i class="fas fa-edit me-1"></i> অর্ডার এডিট করুন
+        </a>
         <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" class="btn btn-dark">
             <i class="fas fa-print me-1"></i> ইনভয়েস প্রিন্ট করুন
         </a>

@@ -113,6 +113,9 @@
                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#orderModal{{ $order->id }}" title="অর্ডার বিবরণ">
                                 <i class="fas fa-eye"></i>
                             </button>
+                            <a href="{{ route('admin.orders.edit', $order->id) }}" class="btn btn-sm btn-outline-warning text-dark" title="অর্ডার এডিট করুন">
+                                <i class="fas fa-edit"></i>
+                            </a>
                             <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="ইনভয়েস প্রিন্ট">
                                 <i class="fas fa-print"></i>
                             </a>
@@ -170,7 +173,13 @@
                     <span class="badge bg-light text-dark border">{{ strtoupper($order->payment_method) }}</span>
                     <span class="text-muted small ms-2">{{ $order->created_at->format('d M Y, h:i A') }}</span>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{ route('admin.orders.edit', $order->id) }}" class="btn btn-sm btn-outline-warning text-dark fw-bold d-inline-flex align-items-center gap-1 shadow-xs" title="অর্ডার এডিট করুন">
+                        <i class="fas fa-edit"></i>
+                        <span>এডিট করুন</span>
+                    </a>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
             </div>
 
             <!-- Modal Body (Two-Column Layout exactly like Failed Orders popup) -->
@@ -430,6 +439,10 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2">
+                    <a href="{{ route('admin.orders.edit', $order->id) }}" class="btn btn-sm btn-warning text-dark fw-bold d-inline-flex align-items-center gap-1 shadow-xs">
+                        <i class="fas fa-edit me-1"></i>
+                        <span>অর্ডার এডিট করুন</span>
+                    </a>
                     <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" class="btn btn-sm btn-dark fw-bold d-inline-flex align-items-center gap-1 shadow-xs">
                         <i class="fas fa-print me-1"></i>
                         <span>ইনভয়েস প্রিন্ট করুন</span>

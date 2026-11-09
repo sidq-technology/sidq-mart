@@ -2,6 +2,38 @@
 
 @section('title', 'নতুন অর্ডার তৈরি করুন - Create Order')
 
+@push('styles')
+<style>
+    .product-search-item {
+        transition: background-color 0.15s ease-in-out;
+        cursor: pointer;
+    }
+    .product-search-item:hover, .product-search-item.active {
+        background-color: #f1f5f9;
+    }
+    .product-search-item:last-child {
+        border-bottom: 0 !important;
+    }
+    #productSearchResults {
+        width: 660px;
+        max-width: min(720px, calc(100vw - 32px));
+    }
+    @media (max-width: 767.98px) {
+        #productSearchResults {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+    }
+    #productSearchResults::-webkit-scrollbar {
+        width: 6px;
+    }
+    #productSearchResults::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
@@ -152,22 +184,50 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-2 align-items-end mb-3">
-                        <!-- Product Selection -->
+                        <!-- Product Selection with Live Type-to-Search -->
                         <div class="col-12 col-md-6">
-                            <label for="productPicker" class="form-label fw-bold small text-dark mb-1">পণ্য নির্বাচন করুন</label>
-                            <select id="productPicker" class="form-select">
-                                <option value="" selected disabled>-- তালিকা থেকে পণ্য বেছে নিন --</option>
-                                @foreach($products as $prod)
-                                <option value="{{ $prod->id }}"
-                                        data-name="{{ $prod->name }}"
-                                        data-price="{{ $prod->final_price }}"
-                                        data-image="{{ $prod->primary_image_url }}"
-                                        data-stock="{{ $prod->stock_quantity }}"
-                                        data-variants="{{ json_encode($prod->variants) }}">
-                                    {{ $prod->name }} (৳{{ number_format($prod->final_price, 0) }}) - স্টক: {{ $prod->stock_quantity }}
-                                </option>
-                                @endforeach
-                            </select>
+                            <label for="productSearchInput" class="form-label fw-bold small text-dark mb-1 d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-search text-primary me-1"></i> পণ্য নির্বাচন করুন</span>
+                                <span class="text-muted fw-normal" style="font-size: 11px;">নাম বা SKU টাইপ করুন</span>
+                            </label>
+                            <div class="position-relative" id="productSearchContainer">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0 text-muted">
+                                        <i class="fas fa-magnifying-glass text-secondary"></i>
+                                    </span>
+                                    <input type="text"
+                                           id="productSearchInput"
+                                           class="form-control border-start-0 ps-1"
+                                           placeholder="নাম বা SKU লিখে সার্চ করুন..."
+                                           autocomplete="off">
+                                    <button type="button" class="btn btn-outline-secondary border-start-0 d-none" id="productSearchClear" title="রিসেট করুন">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Backing Select -->
+                                <select id="productPicker" class="d-none">
+                                    <option value="" selected disabled>-- তালিকা থেকে পণ্য বেছে নিন --</option>
+                                    @foreach($products as $prod)
+                                    <option value="{{ $prod->id }}"
+                                            data-name="{{ $prod->name }}"
+                                            data-price="{{ $prod->final_price }}"
+                                            data-image="{{ $prod->primary_image_url }}"
+                                            data-stock="{{ $prod->stock_quantity }}"
+                                            data-sku="{{ $prod->sku ?? '' }}"
+                                            data-category="{{ $prod->category ? $prod->category->name : '' }}"
+                                            data-variants="{{ json_encode($prod->variants) }}">
+                                        {{ $prod->name }} (৳{{ number_format($prod->final_price, 0) }}) - স্টক: {{ $prod->stock_quantity }}
+                                    </option>
+                                    @endforeach
+                                </select>
+
+                                <!-- Dropdown Results Popup (Expanded for higher visibility) -->
+                                <div id="productSearchResults"
+                                     class="dropdown-menu shadow-lg p-0 border rounded-3 mt-1"
+                                     style="max-height: 480px; overflow-y: auto; z-index: 1060; display: none; position: absolute; left: 0; top: 100%; box-shadow: 0 12px 35px rgba(0,0,0,0.2) !important;">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Variant Selection (Dynamically populated) -->
@@ -270,6 +330,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let itemCounter = 0;
 
     const productPicker = document.getElementById('productPicker');
+    const productSearchInput = document.getElementById('productSearchInput');
+    const productSearchResults = document.getElementById('productSearchResults');
+    const productSearchClear = document.getElementById('productSearchClear');
+    const productSearchContainer = document.getElementById('productSearchContainer');
+
     const variantContainer = document.getElementById('variantPickerContainer');
     const variantPicker = document.getElementById('variantPicker');
     const pickerUnitPrice = document.getElementById('pickerUnitPrice');
@@ -284,6 +349,189 @@ document.addEventListener('DOMContentLoaded', function() {
     const displaySubtotal = document.getElementById('displaySubtotal');
     const displayGrandTotal = document.getElementById('displayGrandTotal');
     const orderForm = document.getElementById('manualOrderForm');
+
+    // Build Catalog List for Live Search
+    const catalogList = Array.from(productPicker.options)
+        .filter(opt => opt.value)
+        .map(opt => ({
+            id: opt.value,
+            name: opt.getAttribute('data-name') || opt.textContent.trim(),
+            price: parseFloat(opt.getAttribute('data-price')) || 0,
+            image: opt.getAttribute('data-image') || '/images/placeholder-product.png',
+            stock: parseInt(opt.getAttribute('data-stock')) || 0,
+            sku: opt.getAttribute('data-sku') || '',
+            category: opt.getAttribute('data-category') || '',
+            variants: opt.getAttribute('data-variants') || '[]'
+        }));
+
+    let currentActiveIndex = -1;
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, function(m) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+        });
+    }
+
+    function renderSearchResults(filterText = '') {
+        const query = filterText.trim().toLowerCase();
+        let matches = [];
+
+        if (!query) {
+            matches = catalogList.slice(0, 100);
+        } else {
+            const words = query.split(/\s+/).filter(Boolean);
+            matches = catalogList.filter(item => {
+                const corpus = (item.name + ' ' + item.sku + ' ' + item.category).toLowerCase();
+                return words.every(w => corpus.includes(w));
+            });
+        }
+
+        currentActiveIndex = -1;
+        productSearchResults.innerHTML = '';
+
+        if (matches.length === 0) {
+            productSearchResults.innerHTML = `
+                <div class="p-3 text-center text-muted small">
+                    <i class="fas fa-search me-1 text-secondary opacity-50"></i> "${escapeHtml(filterText)}" নামে কোনো পণ্য পাওয়া যায়নি!
+                </div>
+            `;
+            productSearchResults.style.display = 'block';
+            return;
+        }
+
+        const header = document.createElement('div');
+        header.className = 'px-3 py-2 bg-light border-bottom d-flex justify-content-between align-items-center text-muted small';
+        header.style.fontSize = '11px';
+        header.innerHTML = `<span><strong>${matches.length}</strong> টি পণ্য পাওয়া গেছে</span><span>ক্লিক করে বেছে নিন</span>`;
+        productSearchResults.appendChild(header);
+
+        matches.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'product-search-item d-flex align-items-center gap-3 px-3 py-2 border-bottom';
+            row.setAttribute('data-id', item.id);
+            row.setAttribute('data-index', index);
+
+            const isStockOut = item.stock <= 0;
+            const stockBadge = isStockOut 
+                ? `<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="font-size: 11px;">স্টক শেষ</span>`
+                : `<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 11px;">স্টক: ${item.stock}</span>`;
+
+            row.innerHTML = `
+                <img src="${item.image}" alt="" class="rounded border object-fit-cover flex-shrink-0" width="44" height="44" onerror="this.src='/images/placeholder-product.png'">
+                <div class="flex-grow-1 min-w-0 pe-2">
+                    <div class="fw-semibold text-dark small" style="line-height: 1.35;">${escapeHtml(item.name)}</div>
+                    <div class="d-flex align-items-center gap-2 text-muted mt-1" style="font-size: 11px;">
+                        ${item.sku ? `<span><strong class="text-secondary">SKU:</strong> ${escapeHtml(item.sku)}</span><span>•</span>` : ''}
+                        ${item.category ? `<span><strong class="text-secondary">ক্যাটাগরি:</strong> ${escapeHtml(item.category)}</span><span>•</span>` : ''}
+                        <span class="text-danger fw-bold fs-6">৳${item.price.toLocaleString()}</span>
+                    </div>
+                </div>
+                <div class="text-end flex-shrink-0 ps-2">
+                    ${stockBadge}
+                </div>
+            `;
+
+            row.addEventListener('click', () => {
+                selectProduct(item);
+            });
+
+            productSearchResults.appendChild(row);
+        });
+
+        productSearchResults.style.display = 'block';
+    }
+
+    function selectProduct(item) {
+        productPicker.value = item.id;
+        productSearchInput.value = item.name + ' (৳' + item.price.toLocaleString() + ')';
+        productSearchClear.classList.remove('d-none');
+        productSearchResults.style.display = 'none';
+
+        // Trigger change on select
+        productPicker.dispatchEvent(new Event('change'));
+
+        // If product has variants, focus variant picker, otherwise focus quantity
+        let variants = [];
+        try { variants = JSON.parse(item.variants) || []; } catch(e) {}
+        if (variants && variants.length > 0) {
+            setTimeout(() => variantPicker.focus(), 50);
+        } else {
+            setTimeout(() => pickerQuantity.focus(), 50);
+        }
+    }
+
+    function highlightActive(items) {
+        items.forEach((it, idx) => {
+            if (idx === currentActiveIndex) {
+                it.classList.add('active');
+                it.scrollIntoView({ block: 'nearest' });
+            } else {
+                it.classList.remove('active');
+            }
+        });
+    }
+
+    // Input events
+    productSearchInput.addEventListener('focus', function() {
+        if (!productPicker.value) {
+            renderSearchResults(this.value);
+        } else {
+            this.select();
+            renderSearchResults('');
+        }
+    });
+
+    productSearchInput.addEventListener('input', function() {
+        productSearchClear.classList.toggle('d-none', !this.value);
+        renderSearchResults(this.value);
+    });
+
+    // Clear selection
+    productSearchClear.addEventListener('click', function() {
+        productSearchInput.value = '';
+        productPicker.value = '';
+        productSearchClear.classList.add('d-none');
+        productPicker.dispatchEvent(new Event('change'));
+        productSearchInput.focus();
+        renderSearchResults('');
+    });
+
+    // Keyboard navigation
+    productSearchInput.addEventListener('keydown', function(e) {
+        const items = productSearchResults.querySelectorAll('.product-search-item');
+        if (productSearchResults.style.display !== 'block' || items.length === 0) {
+            if (e.key === 'ArrowDown') {
+                renderSearchResults(this.value);
+                e.preventDefault();
+            }
+            return;
+        }
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            currentActiveIndex = (currentActiveIndex + 1) % items.length;
+            highlightActive(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentActiveIndex = (currentActiveIndex - 1 + items.length) % items.length;
+            highlightActive(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentActiveIndex >= 0 && currentActiveIndex < items.length) {
+                items[currentActiveIndex].click();
+            }
+        } else if (e.key === 'Escape') {
+            productSearchResults.style.display = 'none';
+        }
+    });
+
+    // Close on click outside
+    document.addEventListener('click', function(e) {
+        if (!productSearchContainer.contains(e.target)) {
+            productSearchResults.style.display = 'none';
+        }
+    });
 
     // 1. When Product is Selected
     productPicker.addEventListener('change', function() {
@@ -342,7 +590,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedOpt = productPicker.options[productPicker.selectedIndex];
         if (!selectedOpt || !selectedOpt.value) {
             alert('অনুগ্রহ করে একটি পণ্য নির্বাচন করুন!');
-            productPicker.focus();
+            productSearchInput.focus();
             return;
         }
 
@@ -395,8 +643,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Reset Picker Inputs
+        // Reset Picker Inputs for rapid next entry
+        productPicker.value = '';
+        productSearchInput.value = '';
+        productSearchClear.classList.add('d-none');
+        variantContainer.style.display = 'none';
+        variantPicker.innerHTML = '<option value="">-- সাধারণ পণ্য (ডিফল্ট) --</option>';
+        pickerUnitPrice.value = '';
         pickerQuantity.value = 1;
+        productSearchInput.focus();
 
         renderCart();
     });
@@ -519,7 +774,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (cartItems.length === 0) {
             e.preventDefault();
             alert('অর্ডার সম্পন্ন করতে অন্তত একটি পণ্য যুক্ত করা আবশ্যক!');
-            productPicker.focus();
+            productSearchInput.focus();
             return false;
         }
 

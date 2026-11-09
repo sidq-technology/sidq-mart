@@ -243,6 +243,189 @@ class OrderController extends Controller
         return view('admin.orders.show', compact('order', 'enabledCouriers'));
     }
 
+    /**
+     * Show form for editing an existing order
+     */
+    public function edit(Order $order)
+    {
+        $order->load(['items.product.variants', 'user']);
+
+        $products = Product::where('is_active', true)
+            ->with(['variants' => function ($q) {
+                $q->orderBy('id');
+            }, 'category'])
+            ->latest()
+            ->get();
+
+        $insideDhakaFee = (float) Setting::get('delivery_inside_dhaka', 70);
+        $outsideDhakaFee = (float) Setting::get('delivery_outside_dhaka', 130);
+
+        $cartItems = $order->items->map(function ($it) {
+            return [
+                'uid' => (string) $it->id,
+                'productId' => (string) $it->product_id,
+                'variantId' => $it->variant_id ? (string) $it->variant_id : null,
+                'productName' => $it->product_name,
+                'productImage' => $it->product_image ?: ($it->product ? $it->product->primary_image_url : '/images/placeholder-product.png'),
+                'variantColor' => $it->color ?: '',
+                'variantSize' => $it->size ?: '',
+                'unitPrice' => (float) $it->unit_price,
+                'quantity' => (int) $it->quantity,
+            ];
+        })->values();
+
+        return view('admin.orders.edit', compact('order', 'products', 'insideDhakaFee', 'outsideDhakaFee', 'cartItems'));
+    }
+
+    /**
+     * Update an existing order
+     */
+    public function update(Request $request, Order $order)
+    {
+        // 1. Phone number cleanup and normalization
+        if ($request->filled('customer_phone')) {
+            $rawPhone = (string) $request->input('customer_phone');
+            $bengaliDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+            $englishDigits = ['0','1','2','3','4','5','6','7','8','9'];
+            $cleanPhone = str_replace($bengaliDigits, $englishDigits, $rawPhone);
+            $cleanPhone = preg_replace('/[^\d]/', '', $cleanPhone);
+            if (str_starts_with($cleanPhone, '8801')) {
+                $cleanPhone = substr($cleanPhone, 2);
+            } elseif (str_starts_with($cleanPhone, '1') && strlen($cleanPhone) === 10) {
+                $cleanPhone = '0' . $cleanPhone;
+            }
+            $request->merge(['customer_phone' => $cleanPhone]);
+        }
+
+        $validated = $request->validate([
+            'customer_name' => 'required|string|min:2|max:100',
+            'customer_phone' => ['required', 'regex:/^(?:\+88|88)?(01[3-9]\d{8})$/'],
+            'shipping_address' => 'required|string|min:3|max:500',
+            'delivery_zone' => 'required|in:inside_dhaka,outside_dhaka',
+            'shipping_charge' => 'required|numeric|min:0',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'payment_method' => 'required|in:cod,bkash,nagad',
+            'payment_status' => 'required|in:pending,paid',
+            'transaction_id' => 'nullable|string|max:100',
+            'order_status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'customer_note' => 'nullable|string|max:500',
+            'admin_notes' => 'nullable|string|max:1000',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.variant_id' => 'nullable',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit_price' => 'required|numeric|min:0',
+        ], [
+            'items.required' => 'অর্ডারে অন্তত একটি পণ্য থাকা আবশ্যক।',
+            'items.min' => 'অর্ডারে অন্তত একটি পণ্য থাকা আবশ্যক।',
+            'customer_phone.regex' => 'অনুগ্রহ করে সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)।',
+        ]);
+
+        try {
+            DB::transaction(function () use ($validated, $order) {
+                // 1. Restore previous stock for this order's items
+                $oldItems = $order->items;
+                foreach ($oldItems as $oldItem) {
+                    if ($oldItem->variant_id) {
+                        $variant = ProductVariant::find($oldItem->variant_id);
+                        if ($variant) {
+                            $variant->increment('stock_quantity', $oldItem->quantity);
+                        }
+                    }
+                    if ($oldItem->product_id) {
+                        $product = Product::find($oldItem->product_id);
+                        if ($product) {
+                            $product->increment('stock_quantity', $oldItem->quantity);
+                        }
+                    }
+                }
+
+                // 2. Delete old items
+                $order->items()->delete();
+
+                // 3. Prepare new items and calculate subtotal
+                $subtotal = 0;
+                $newItemsData = [];
+
+                foreach ($validated['items'] as $itemInput) {
+                    $product = Product::findOrFail($itemInput['product_id']);
+                    $variant = !empty($itemInput['variant_id']) ? ProductVariant::find($itemInput['variant_id']) : null;
+
+                    $quantity = (int) $itemInput['quantity'];
+                    $unitPrice = (float) $itemInput['unit_price'];
+                    $rowTotal = $unitPrice * $quantity;
+                    $subtotal += $rowTotal;
+
+                    $newItemsData[] = [
+                        'product' => $product,
+                        'variant' => $variant,
+                        'product_id' => $product->id,
+                        'variant_id' => $variant ? $variant->id : null,
+                        'product_name' => $product->name,
+                        'color' => $variant ? $variant->color : null,
+                        'size' => $variant ? $variant->size : null,
+                        'product_image' => $product->primary_image_url,
+                        'unit_price' => $unitPrice,
+                        'quantity' => $quantity,
+                        'total_price' => $rowTotal,
+                    ];
+                }
+
+                $shippingCharge = (float) $validated['shipping_charge'];
+                $discountAmount = (float) ($validated['discount_amount'] ?? 0);
+                $grandTotal = max(0, ($subtotal + $shippingCharge - $discountAmount));
+
+                // 4. Update Order record
+                $order->update([
+                    'customer_name' => $validated['customer_name'],
+                    'customer_phone' => $validated['customer_phone'],
+                    'shipping_address' => $validated['shipping_address'],
+                    'delivery_zone' => $validated['delivery_zone'],
+                    'shipping_charge' => $shippingCharge,
+                    'subtotal' => $subtotal,
+                    'discount_amount' => $discountAmount,
+                    'grand_total' => $grandTotal,
+                    'payment_method' => $validated['payment_method'],
+                    'payment_status' => $validated['payment_status'],
+                    'transaction_id' => $validated['transaction_id'] ?? null,
+                    'order_status' => $validated['order_status'],
+                    'customer_note' => $validated['customer_note'] ?? null,
+                    'admin_notes' => $validated['admin_notes'] ?? null,
+                ]);
+
+                // 5. Create new items and decrement stock
+                foreach ($newItemsData as $itemData) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $itemData['product_id'],
+                        'variant_id' => $itemData['variant_id'],
+                        'product_name' => $itemData['product_name'],
+                        'color' => $itemData['color'],
+                        'size' => $itemData['size'],
+                        'product_image' => $itemData['product_image'],
+                        'unit_price' => $itemData['unit_price'],
+                        'quantity' => $itemData['quantity'],
+                        'total_price' => $itemData['total_price'],
+                    ]);
+
+                    if ($itemData['variant']) {
+                        $itemData['variant']->decrement('stock_quantity', $itemData['quantity']);
+                    }
+                    if ($itemData['product']) {
+                        $itemData['product']->decrement('stock_quantity', $itemData['quantity']);
+                    }
+                }
+            });
+
+            return redirect()->route('admin.orders.show', $order->id)
+                ->with('success', "অর্ডার (#{$order->order_number}) সফলভাবে আপডেট করা হয়েছে!");
+        } catch (\Throwable $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'অর্ডার আপডেট করতে সমস্যা হয়েছে: ' . $e->getMessage());
+        }
+    }
+
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
