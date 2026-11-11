@@ -10,6 +10,19 @@
             $allGalleryImages->push($gImg->image_url);
         }
     }
+
+    $supportPhone = \App\Models\Setting::get('whatsapp_number') ?: \App\Models\Setting::get('contact_phone', '01711223344');
+    $displayPhone = trim($supportPhone);
+    $callPhone = preg_replace('/[^\d+]/', '', $displayPhone);
+
+    $waPhone = preg_replace('/[^\d]/', '', $displayPhone);
+    if (str_starts_with($waPhone, '01')) {
+        $waPhone = '88' . $waPhone;
+    } elseif (!str_starts_with($waPhone, '8801') && str_starts_with($waPhone, '1') && strlen($waPhone) === 10) {
+        $waPhone = '880' . $waPhone;
+    }
+    $waDefaultMsg = urlencode("হ্যালো, আমি এই পণ্যটি সম্পর্কে জানতে / অর্ডার করতে চাই:\n*{$product->name}*\nমূল্য: ৳" . number_format($product->final_price, 0) . "\nলিংক: " . url()->current());
+    $waUrl = "https://wa.me/{$waPhone}?text={$waDefaultMsg}";
 @endphp
 
 <div class="container my-4">
@@ -18,15 +31,30 @@
         <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm p-3 rounded-3 position-relative">
                 
-                <!-- Main Image with Hover Zoom Hint and Lightbox Trigger -->
-                <div class="position-relative text-center mb-3 main-image-container rounded-3 overflow-hidden" 
-                     style="cursor: zoom-in; background: #fafafa; border: 1px solid #f1f5f9; min-height: 320px; display: flex; align-items: center; justify-content: center;"
-                     onclick="openImageLightbox()"
-                     title="ছবিটি বড় করে দেখতে ক্লিক করুন">
+                <!-- Main Image Container with Slide / Drag Support (No Zoom) -->
+                <div class="position-relative text-center mb-3 main-image-container rounded-3 overflow-hidden select-none" 
+                     id="pdpMainImageWrapper"
+                     style="background: #fafafa; border: 1px solid #f1f5f9; min-height: 320px; display: flex; align-items: center; justify-content: center; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y;">
                     
                     <img id="mainProductImg" src="{{ $product->primary_image_url }}" alt="{{ $product->name }}" 
                          class="img-fluid rounded-3" 
-                         style="max-height: 440px; width: 100%; object-fit: contain; transition: opacity 0.2s ease, transform 0.2s ease;">
+                         draggable="false"
+                         style="max-height: 440px; width: 100%; object-fit: contain; transition: opacity 0.2s ease; pointer-events: none; user-select: none;">
+
+                    @if($allGalleryImages->count() > 1)
+                    <!-- Prev / Next Navigation Arrows -->
+                    <button type="button" class="pdp-carousel-nav pdp-carousel-prev" onclick="slidePdpImage(-1, event)" aria-label="পূর্ববর্তী ছবি">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button type="button" class="pdp-carousel-nav pdp-carousel-next" onclick="slidePdpImage(1, event)" aria-label="পরবর্তী ছবি">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+
+                    <!-- Image Counter Badge -->
+                    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-2 px-2 py-1 rounded-pill bg-dark bg-opacity-75 text-white small" style="font-size: 11px; z-index: 2; pointer-events: none;">
+                        <span id="pdpImageCounterText">1 / {{ $allGalleryImages->count() }}</span>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Thumbnails Strip (Only if multiple unique images exist) -->
@@ -161,20 +189,7 @@
                             </div>
                         </div>
 
-                        @php
-                            $supportPhone = \App\Models\Setting::get('whatsapp_number') ?: \App\Models\Setting::get('contact_phone', '01711223344');
-                            $displayPhone = trim($supportPhone);
-                            $callPhone = preg_replace('/[^\d+]/', '', $displayPhone);
 
-                            $waPhone = preg_replace('/[^\d]/', '', $displayPhone);
-                            if (str_starts_with($waPhone, '01')) {
-                                $waPhone = '88' . $waPhone;
-                            } elseif (!str_starts_with($waPhone, '8801') && str_starts_with($waPhone, '1') && strlen($waPhone) === 10) {
-                                $waPhone = '880' . $waPhone;
-                            }
-                            $waDefaultMsg = urlencode("হ্যালো, আমি এই পণ্যটি সম্পর্কে জানতে / অর্ডার করতে চাই:\n*{$product->name}*\nমূল্য: ৳" . number_format($product->final_price, 0) . "\nলিংক: " . url()->current());
-                            $waUrl = "https://wa.me/{$waPhone}?text={$waDefaultMsg}";
-                        @endphp
 
                         <div class="pdp-actions-wrap mb-3">
                             <!-- Row 1: Order Now & Call Now -->
@@ -280,76 +295,111 @@
 </div>
 
 <!-- ===========================================
-     PRODUCT IMAGE FULL VIEW LIGHTBOX MODAL
+     MOBILE STICKY BOTTOM ORDER BUTTON
 =========================================== -->
-<div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(8px); background: rgba(0, 0, 0, 0.92);">
-    <div class="modal-dialog modal-fullscreen m-0 p-0 border-0">
-        <div class="modal-content bg-transparent border-0 text-white position-relative d-flex flex-column justify-content-between h-100">
-            
-            <!-- Top Controls Bar -->
-            <div class="d-flex justify-content-between align-items-center p-3 p-md-4 w-100 position-relative z-3" style="background: linear-gradient(to bottom, rgba(0,0,0,0.85), transparent);">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-dark bg-opacity-75 text-white border border-secondary px-3 py-2 rounded-pill font-monospace" id="lightboxCounter" style="font-size: 13px;">
-                        1 / {{ $allGalleryImages->count() }}
-                    </span>
-                    <span class="d-none d-md-inline small text-light opacity-75 text-truncate" style="max-width: 400px;">{{ $product->name }}</span>
-                </div>
-                
-                <div class="d-flex gap-2 align-items-center">
-                    <button type="button" class="btn btn-dark btn-sm rounded-circle p-2 border-0 bg-opacity-75 text-white" onclick="toggleLightboxZoom()" title="জুম করুন / স্বাভাবিক আকার">
-                        <i class="fas fa-search-plus fs-5" id="lightboxZoomIcon"></i>
-                    </button>
-                    <button type="button" class="btn btn-dark btn-sm rounded-circle p-2 border-0 bg-opacity-75 text-white" data-bs-dismiss="modal" aria-label="Close" title="বন্ধ করুন">
-                        <i class="fas fa-times fs-5"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Main Fullscreen Image Area -->
-            <div class="flex-grow-1 d-flex align-items-center justify-content-center position-relative px-2 px-md-4 overflow-hidden" onclick="handleBackdropClick(event)">
-                @if($allGalleryImages->count() > 1)
-                <button type="button" class="btn btn-dark rounded-circle p-3 position-absolute start-0 ms-2 ms-md-4 border-0 shadow bg-opacity-75 text-white z-3" onclick="prevLightboxImage(event)" title="পূর্ববর্তী ছবি">
-                    <i class="fas fa-chevron-left fs-4"></i>
-                </button>
-                @endif
-
-                <div class="lightbox-img-wrapper d-flex align-items-center justify-content-center" style="max-height: 80vh; max-width: 92vw;">
-                    <img id="lightboxMainImg" src="{{ $product->primary_image_url }}" alt="{{ $product->name }}" 
-                         class="img-fluid rounded-2 shadow-lg" 
-                         style="max-height: 80vh; max-width: 92vw; object-fit: contain; cursor: zoom-in; transition: transform 0.25s ease;" 
-                         onclick="toggleLightboxZoom()">
-                </div>
-
-                @if($allGalleryImages->count() > 1)
-                <button type="button" class="btn btn-dark rounded-circle p-3 position-absolute end-0 me-2 me-md-4 border-0 shadow bg-opacity-75 text-white z-3" onclick="nextLightboxImage(event)" title="পরবর্তী ছবি">
-                    <i class="fas fa-chevron-right fs-4"></i>
-                </button>
-                @endif
-            </div>
-
-            <!-- Bottom Thumbnails Strip (if multiple images) -->
-            @if($allGalleryImages->count() > 1)
-            <div class="p-3 w-100 d-flex justify-content-center overflow-auto position-relative z-3" style="background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);">
-                <div class="d-flex gap-2">
-                    @foreach($allGalleryImages as $idx => $imgUrl)
-                    <img src="{{ $imgUrl }}" alt="Thumb {{ $idx + 1 }}" 
-                         class="rounded border border-2 lightbox-thumb" 
-                         style="width: 58px; height: 58px; object-fit: cover; cursor: pointer; opacity: {{ $loop->first ? '1' : '0.45' }}; border-color: {{ $loop->first ? '#dc2626' : 'transparent' }} !important; transition: all 0.2s ease;" 
-                         onclick="setLightboxImage({{ $idx }})">
-                    @endforeach
-                </div>
-            </div>
-            @else
-            <div class="p-2"></div>
-            @endif
-
+<div class="pdp-mobile-sticky-bar d-block d-md-none" id="pdpMobileStickyBar">
+    <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="pdp-sticky-price-box">
+            <span class="text-muted d-block" style="font-size: 11px; line-height: 1.1;">মূল্য:</span>
+            <span class="pdp-sticky-price fw-bold text-danger" id="pdpStickyPrice">Tk {{ number_format($product->final_price, 0) }}</span>
         </div>
+        <button type="button" onclick="triggerPdpOrder()" class="btn btn-order-pdp flex-grow-1 py-2 px-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+            <i class="fas fa-bolt text-warning"></i>
+            <span>অর্ডার করুন</span>
+        </button>
     </div>
 </div>
 
 <style>
-.main-image-container:hover #mainProductImg {
-    transform: scale(1.02);
+/* Mobile Sticky Floating Bottom Order Bar */
+@media (max-width: 767.98px) {
+    body {
+        padding-bottom: 74px !important;
+    }
+    .support-floating-wrapper {
+        bottom: 84px !important;
+    }
+}
+.pdp-mobile-sticky-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1040;
+    background: #ffffff;
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
+    border-top: 1px solid #e2e8f0;
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+}
+.pdp-sticky-price-box {
+    flex-shrink: 0;
+}
+.pdp-sticky-price {
+    font-size: 18px;
+    letter-spacing: -0.3px;
+}
+.pdp-mobile-sticky-bar .btn-order-pdp {
+    min-height: 44px;
+    font-size: 16px;
+    border-radius: 8px;
+}
+
+/* Product Image Slide Arrows (No Zoom) */
+.pdp-carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.2s ease;
+}
+.pdp-carousel-nav:hover {
+    background: #ffffff;
+    color: #dc2626;
+    transform: translateY(-50%) scale(1.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+.pdp-carousel-prev {
+    left: 10px;
+}
+.pdp-carousel-next {
+    right: 10px;
+}
+@media (max-width: 576px) {
+    .pdp-carousel-nav {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+    .pdp-carousel-prev {
+        left: 6px;
+    }
+    .pdp-carousel-next {
+        right: 6px;
+    }
+}
+
+@keyframes pdpShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+.pdp-variant-shake {
+    animation: pdpShake 0.4s ease-in-out 3;
+    outline: 2px solid #ef4444;
+    border-radius: 8px;
 }
 .thumb-item.active {
     border-color: #dc2626 !important;
@@ -510,8 +560,6 @@
 <script>
     const galleryImages = @json($allGalleryImages->values());
     let currentImageIndex = 0;
-    let isZoomed = false;
-    let lightboxModalInstance = null;
 
     function changeMainImage(src, index, element) {
         currentImageIndex = index;
@@ -531,133 +579,68 @@
         };
 
         // Update active state on thumbnails
-        document.querySelectorAll('#pdpThumbnailStrip .thumb-item').forEach(el => el.classList.remove('active'));
+        const thumbs = document.querySelectorAll('#pdpThumbnailStrip .thumb-item');
+        thumbs.forEach(el => el.classList.remove('active'));
         if (element) {
             element.classList.add('active');
+            element.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        } else if (thumbs[index]) {
+            thumbs[index].classList.add('active');
+            thumbs[index].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
-    }
-
-    function openImageLightbox() {
-        const modalEl = document.getElementById('imageLightboxModal');
-        if (!modalEl) return;
-        
-        if (!lightboxModalInstance) {
-            lightboxModalInstance = new bootstrap.Modal(modalEl);
-        }
-        
-        setLightboxImage(currentImageIndex);
-        lightboxModalInstance.show();
-    }
-
-    function setLightboxImage(index) {
-        if (!galleryImages || galleryImages.length === 0) return;
-        if (index < 0) index = galleryImages.length - 1;
-        if (index >= galleryImages.length) index = 0;
-        
-        currentImageIndex = index;
-        const targetSrc = galleryImages[currentImageIndex];
-        
-        const lbImg = document.getElementById('lightboxMainImg');
-        if (lbImg) {
-            lbImg.style.opacity = '0.35';
-            const temp = new Image();
-            temp.src = targetSrc;
-            temp.onload = function() {
-                lbImg.src = targetSrc;
-                lbImg.style.opacity = '1';
-            };
-            temp.onerror = function() {
-                lbImg.src = targetSrc;
-                lbImg.style.opacity = '1';
-            };
-        }
-
-        // Reset zoom state
-        resetLightboxZoom();
 
         // Update Counter
-        const counter = document.getElementById('lightboxCounter');
-        if (counter) {
-            counter.innerText = (currentImageIndex + 1) + ' / ' + galleryImages.length;
-        }
-
-        // Update Lightbox thumbnails
-        document.querySelectorAll('.lightbox-thumb').forEach((thumb, i) => {
-            if (i === currentImageIndex) {
-                thumb.style.opacity = '1';
-                thumb.style.borderColor = '#dc2626';
-            } else {
-                thumb.style.opacity = '0.45';
-                thumb.style.borderColor = 'transparent';
-            }
-        });
-
-        // Sync main page image & thumbnail
-        const pageMainImg = document.getElementById('mainProductImg');
-        if (pageMainImg) pageMainImg.src = targetSrc;
-        const pageThumbs = document.querySelectorAll('#pdpThumbnailStrip .thumb-item');
-        if (pageThumbs && pageThumbs[currentImageIndex]) {
-            pageThumbs.forEach(t => t.classList.remove('active'));
-            pageThumbs[currentImageIndex].classList.add('active');
+        const counter = document.getElementById('pdpImageCounterText');
+        if (counter && galleryImages.length > 0) {
+            counter.innerText = (index + 1) + ' / ' + galleryImages.length;
         }
     }
 
-    function prevLightboxImage(e) {
-        if (e) e.stopPropagation();
-        setLightboxImage(currentImageIndex - 1);
+    function slidePdpImage(direction, event) {
+        if (event && event.stopPropagation) event.stopPropagation();
+        if (!galleryImages || galleryImages.length <= 1) return;
+
+        let newIndex = currentImageIndex + direction;
+        if (newIndex < 0) newIndex = galleryImages.length - 1;
+        if (newIndex >= galleryImages.length) newIndex = 0;
+
+        const thumbs = document.querySelectorAll('#pdpThumbnailStrip .thumb-item');
+        const targetThumb = thumbs[newIndex] || null;
+        changeMainImage(galleryImages[newIndex], newIndex, targetThumb);
     }
 
-    function nextLightboxImage(e) {
-        if (e) e.stopPropagation();
-        setLightboxImage(currentImageIndex + 1);
-    }
+    function triggerPdpOrder() {
+        const orderForm = document.getElementById('pdpOrderForm');
+        if (!orderForm) return;
 
-    function toggleLightboxZoom() {
-        const lbImg = document.getElementById('lightboxMainImg');
-        const zoomIcon = document.getElementById('lightboxZoomIcon');
-        if (!lbImg) return;
-
-        isZoomed = !isZoomed;
-        if (isZoomed) {
-            lbImg.style.transform = 'scale(1.75)';
-            lbImg.style.cursor = 'zoom-out';
-            if (zoomIcon) {
-                zoomIcon.classList.remove('fa-search-plus');
-                zoomIcon.classList.add('fa-search-minus');
+        if (hasColorOptions && !selectedColor) {
+            alert('অনুগ্রহ করে আপনার পছন্দের কালার নির্বাচন করুন।');
+            const vBox = document.getElementById('pdpVariationsBox');
+            if (vBox) {
+                vBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                vBox.classList.add('pdp-variant-shake');
+                setTimeout(() => vBox.classList.remove('pdp-variant-shake'), 1200);
             }
+            return;
+        }
+
+        if (hasSizeOptions && !selectedSize) {
+            alert('অনুগ্রহ করে পণ্যের সাইজ নির্বাচন করুন।');
+            const vBox = document.getElementById('pdpVariationsBox');
+            if (vBox) {
+                vBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                vBox.classList.add('pdp-variant-shake');
+                setTimeout(() => vBox.classList.remove('pdp-variant-shake'), 1200);
+            }
+            return;
+        }
+
+        if (orderForm.requestSubmit) {
+            orderForm.requestSubmit();
         } else {
-            resetLightboxZoom();
+            orderForm.submit();
         }
     }
-
-    function resetLightboxZoom() {
-        isZoomed = false;
-        const lbImg = document.getElementById('lightboxMainImg');
-        const zoomIcon = document.getElementById('lightboxZoomIcon');
-        if (lbImg) {
-            lbImg.style.transform = 'scale(1)';
-            lbImg.style.cursor = 'zoom-in';
-        }
-        if (zoomIcon) {
-            zoomIcon.classList.remove('fa-search-minus');
-            zoomIcon.classList.add('fa-search-plus');
-        }
-    }
-
-    function handleBackdropClick(e) {
-        if (e.target === e.currentTarget) {
-            if (lightboxModalInstance) lightboxModalInstance.hide();
-        }
-    }
-
-    // Keyboard navigation (ArrowLeft, ArrowRight, Escape)
-    document.addEventListener('keydown', function(e) {
-        const modalEl = document.getElementById('imageLightboxModal');
-        if (modalEl && modalEl.classList.contains('show')) {
-            if (e.key === 'ArrowLeft') prevLightboxImage();
-            else if (e.key === 'ArrowRight') nextLightboxImage();
-        }
-    });
 
     function incrementQty() {
         const input = document.getElementById('pdpQtyInput');
@@ -758,6 +741,8 @@
             currentProductPrice = effectivePrice;
             const priceEl = document.getElementById('pdpPriceDisplay');
             if (priceEl) priceEl.innerText = 'Tk ' + Math.round(effectivePrice).toLocaleString('en-US');
+            const stickyPrice = document.getElementById('pdpStickyPrice');
+            if (stickyPrice) stickyPrice.innerText = 'Tk ' + Math.round(effectivePrice).toLocaleString('en-US');
 
             if (baseRegularPrice && baseRegularPrice > effectivePrice) {
                 const savings = baseRegularPrice - effectivePrice;
@@ -798,6 +783,10 @@
         } else {
             if (variantIdInput) variantIdInput.value = '';
             currentProductPrice = baseProductPrice;
+            const priceEl = document.getElementById('pdpPriceDisplay');
+            if (priceEl) priceEl.innerText = 'Tk ' + Math.round(baseProductPrice).toLocaleString('en-US');
+            const stickyPrice = document.getElementById('pdpStickyPrice');
+            if (stickyPrice) stickyPrice.innerText = 'Tk ' + Math.round(baseProductPrice).toLocaleString('en-US');
         }
     }
 
@@ -865,6 +854,84 @@
             }
         } catch (e) {
             console.error('Tracking Error (ViewContent):', e);
+        }
+
+        // Product Main Image Swipe (Mobile) & Drag / Click (Desktop) - No Zoom
+        const imageWrapper = document.getElementById('pdpMainImageWrapper');
+        if (imageWrapper) {
+            let startX = 0;
+            let startY = 0;
+            let isDragging = false;
+            let startTime = 0;
+
+            // Mobile touch swipe
+            imageWrapper.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1) {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    startTime = Date.now();
+                }
+            }, { passive: true });
+
+            imageWrapper.addEventListener('touchend', function(e) {
+                if (!startX || !galleryImages || galleryImages.length <= 1) return;
+                const endX = e.changedTouches[0].clientX;
+                const endY = e.changedTouches[0].clientY;
+                const diffX = endX - startX;
+                const diffY = endY - startY;
+                const elapsed = Date.now() - startTime;
+
+                if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+                    if (diffX < 0) {
+                        slidePdpImage(1); // Swipe left -> Next
+                    } else {
+                        slidePdpImage(-1); // Swipe right -> Prev
+                    }
+                } else if (Math.abs(diffX) < 12 && Math.abs(diffY) < 12 && elapsed < 350) {
+                    // Tap on image advances to next image
+                    slidePdpImage(1);
+                }
+                startX = 0;
+                startY = 0;
+            }, { passive: true });
+
+            // Desktop mouse drag & click
+            imageWrapper.addEventListener('mousedown', function(e) {
+                if (e.target.closest('.pdp-carousel-nav')) return;
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startTime = Date.now();
+                imageWrapper.style.cursor = 'grabbing';
+            });
+
+            window.addEventListener('mouseup', function(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                imageWrapper.style.cursor = (galleryImages && galleryImages.length > 1) ? 'grab' : 'default';
+
+                if (!galleryImages || galleryImages.length <= 1) return;
+                const diffX = e.clientX - startX;
+                const diffY = e.clientY - startY;
+                const elapsed = Date.now() - startTime;
+
+                if (Math.abs(diffX) > 35) {
+                    if (diffX < 0) {
+                        slidePdpImage(1);
+                    } else {
+                        slidePdpImage(-1);
+                    }
+                } else if (Math.abs(diffX) < 8 && Math.abs(diffY) < 8 && elapsed < 350) {
+                    // Quick click on image: left 35% goes back, right 65% goes forward
+                    const rect = imageWrapper.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    if (clickX < rect.width * 0.35) {
+                        slidePdpImage(-1);
+                    } else {
+                        slidePdpImage(1);
+                    }
+                }
+            });
         }
 
         const orderForm = document.getElementById('pdpOrderForm');
