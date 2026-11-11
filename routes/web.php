@@ -52,6 +52,7 @@ Route::get('/order-success/{order_number}', [CheckoutController::class, 'success
 Route::post('/order/{order_number}/add-upsell', [CheckoutController::class, 'addUpsellItem'])->name('order.add-upsell');
 Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('coupon.apply');
 Route::post('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
+Route::post('/exit-intent/claim', [CheckoutController::class, 'claimExitOffer'])->name('exit-intent.claim');
 
 // Order Tracking
 Route::get('/order-tracking', [OrderTrackingController::class, 'index'])->name('order.tracking');

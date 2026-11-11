@@ -14,8 +14,14 @@ class SettingController extends Controller
         $settings = Setting::getAll();
         $allProducts = \App\Models\Product::where('is_active', true)->orderBy('name')->get();
         $selectedUpsellProductIds = json_decode($settings['upsell_product_ids'] ?? '[]', true) ?: [];
+        $availableCoupons = \App\Models\Coupon::where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()->toDateString());
+            })
+            ->orderBy('code')
+            ->get();
 
-        return view('admin.settings.index', compact('settings', 'allProducts', 'selectedUpsellProductIds'));
+        return view('admin.settings.index', compact('settings', 'allProducts', 'selectedUpsellProductIds', 'availableCoupons'));
     }
 
     public function update(Request $request)
@@ -100,9 +106,26 @@ class SettingController extends Controller
             'show_stock_badge',
             'pdp_floating_btn_color',
             'fomo_popup_enabled',
+            'fomo_popup_first_delay',
+            'fomo_popup_interval',
+            'fomo_popup_duration',
 
             // Checkout Display Customizations
             'show_delivery_time',
+
+            // Exit-Intent & Customer Abandonment Recovery Popup
+            'exit_intent_enabled',
+            'exit_intent_scope',
+            'exit_intent_coupon_code',
+            'exit_intent_heading',
+            'exit_intent_subtitle',
+            'exit_intent_btn_text',
+            'exit_intent_dismiss_text',
+            'exit_intent_trigger_back_button',
+            'exit_intent_trigger_scroll_up',
+            'exit_intent_trigger_idle',
+            'exit_intent_idle_seconds',
+            'exit_intent_trigger_desktop',
         ];
 
         foreach ($fields as $field) {
@@ -113,7 +136,9 @@ class SettingController extends Controller
                 'sms_enabled', 'sms_event_order_placed', 'sms_event_order_processing',
                 'sms_event_order_shipped', 'sms_event_order_delivered', 'sms_event_order_cancelled',
                 'show_savings_badge', 'show_stock_badge', 'show_delivery_time',
-                'fomo_popup_enabled'
+                'fomo_popup_enabled',
+                'exit_intent_enabled', 'exit_intent_trigger_back_button', 'exit_intent_trigger_scroll_up',
+                'exit_intent_trigger_idle', 'exit_intent_trigger_desktop'
             ])) {
                 // Checkbox unselected
                 Setting::set($field, '0');

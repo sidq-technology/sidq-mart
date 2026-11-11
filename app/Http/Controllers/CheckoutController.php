@@ -57,9 +57,22 @@ class CheckoutController extends Controller
             $coupon = Coupon::where('code', $appliedCoupon['code'])->where('is_active', true)->first();
             if ($coupon && $coupon->isValidForSubtotal($subtotal)) {
                 $discountAmount = $coupon->calculateDiscount($subtotal);
+                $appliedCoupon['discount'] = $discountAmount;
+                Session::put('applied_coupon', $appliedCoupon);
             } else {
                 Session::forget('applied_coupon');
                 $appliedCoupon = null;
+            }
+        } elseif (request()->filled('coupon')) {
+            $couponParam = strtoupper(trim((string) request()->query('coupon')));
+            $coupon = Coupon::where('code', $couponParam)->where('is_active', true)->first();
+            if ($coupon && $coupon->isValidForSubtotal($subtotal)) {
+                $discountAmount = $coupon->calculateDiscount($subtotal);
+                $appliedCoupon = [
+                    'code' => $coupon->code,
+                    'discount' => $discountAmount,
+                ];
+                Session::put('applied_coupon', $appliedCoupon);
             }
         }
 
@@ -646,6 +659,56 @@ class CheckoutController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'কুপন বাতিল করা হয়েছে।',
+        ]);
+    }
+
+    /**
+     * Claim Exit-Intent discount offer, add item to cart (if PDP), apply coupon, and return checkout URL.
+     */
+    public function claimExitOffer(Request $request, CartService $cart)
+    {
+        $productId = $request->input('product_id');
+        $variantId = $request->filled('variant_id') ? (int) $request->input('variant_id') : null;
+        $couponCode = strtoupper(trim((string) $request->input('coupon_code', '')));
+
+        if (!empty($productId)) {
+            $product = Product::where('id', $productId)->where('is_active', true)->first();
+            if ($product) {
+                $cart->add($product->id, 1, $variantId);
+            }
+        }
+
+        $subtotal = $cart->getSubtotal();
+        $discountAmount = 0.00;
+        $couponApplied = false;
+
+        if (!empty($couponCode)) {
+            $coupon = Coupon::where('code', $couponCode)->where('is_active', true)->first();
+            if ($coupon) {
+                if ($coupon->isValidForSubtotal($subtotal)) {
+                    $discountAmount = $coupon->calculateDiscount($subtotal);
+                    Session::put('applied_coupon', [
+                        'code' => $coupon->code,
+                        'discount' => $discountAmount,
+                    ]);
+                    $couponApplied = true;
+                } else {
+                    Session::put('applied_coupon', [
+                        'code' => $coupon->code,
+                        'discount' => 0.00,
+                    ]);
+                }
+            }
+        }
+
+        $items = $cart->getItems();
+        $redirectUrl = !empty($items) ? route('checkout') : route('shop');
+
+        return response()->json([
+            'success' => true,
+            'coupon_applied' => $couponApplied,
+            'discount' => $discountAmount,
+            'redirect_url' => $redirectUrl,
         ]);
     }
 }

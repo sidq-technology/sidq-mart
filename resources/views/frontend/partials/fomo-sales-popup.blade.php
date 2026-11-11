@@ -1,5 +1,14 @@
 @if(\App\Models\Setting::get('fomo_popup_enabled', '1') === '1' && !request()->routeIs('checkout', 'order.success', 'admin.*'))
 @php
+    $fomoFirstDelay = (float) \App\Models\Setting::get('fomo_popup_first_delay', 7);
+    if ($fomoFirstDelay < 1) $fomoFirstDelay = 7;
+
+    $fomoInterval = (float) \App\Models\Setting::get('fomo_popup_interval', 12);
+    if ($fomoInterval < 3) $fomoInterval = 12;
+
+    $fomoDuration = (float) \App\Models\Setting::get('fomo_popup_duration', 5);
+    if ($fomoDuration < 2) $fomoDuration = 5;
+
     $fomoProducts = [];
     if (isset($product) && $product instanceof \App\Models\Product) {
         $fomoProducts = [
@@ -32,7 +41,7 @@
 
 @if(!empty($fomoProducts))
 <!-- ==========================================
-     SIDQ Mart — Live Social Proof FOMO Popup
+     SIDQ Mart — Live Social Proof FOMO Popup (Center Screen, Left-in / Left-out)
 =========================================== -->
 <div id="sidqFomoToast" class="sidq-fomo-toast" style="display:none;" aria-live="polite">
     <button type="button" class="fomo-close-btn" onclick="dismissSidqFomo(event)" title="বন্ধ করুন" aria-label="Close">
@@ -58,42 +67,57 @@
 </div>
 
 <style>
-/* SIDQ FOMO Recent Sales Notification Styles */
+/* SIDQ FOMO Recent Sales Notification Styles — Center of Screen */
 .sidq-fomo-toast {
     position: fixed;
-    bottom: 20px;
-    left: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 1045;
-    width: 320px;
-    max-width: calc(100vw - 24px);
+    width: 330px;
+    max-width: calc(100vw - 32px);
     background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 14px;
-    box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.15), 0 4px 12px -2px rgba(15, 23, 42, 0.08);
-    padding: 10px 12px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    padding: 12px 14px;
     font-family: inherit;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
     user-select: none;
+    will-change: transform, opacity;
 }
 
+/* Enter from Left into Screen Center */
 .sidq-fomo-toast.fomo-entering {
-    animation: fomoSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fomoSlideInCenter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Exit to Left from Screen Center */
 .sidq-fomo-toast.fomo-leaving {
-    animation: fomoSlideOut 0.35s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+    animation: fomoSlideOutCenter 0.42s cubic-bezier(0.7, 0, 0.84, 0) forwards;
 }
 
-@keyframes fomoSlideIn {
-    0% { transform: translateY(35px) scale(0.96); opacity: 0; }
-    100% { transform: translateY(0) scale(1); opacity: 1; }
+@keyframes fomoSlideInCenter {
+    0% {
+        transform: translate(calc(-50% - 100vw), -50%);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
 }
 
-@keyframes fomoSlideOut {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(35px) scale(0.96); opacity: 0; }
+@keyframes fomoSlideOutCenter {
+    0% {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(calc(-50% - 100vw), -50%);
+        opacity: 0;
+    }
 }
 
 .sidq-fomo-toast .fomo-close-btn {
@@ -202,18 +226,14 @@
     100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
-/* Mobile Responsive Optimization - Clearance above Sticky Order Bar */
+/* Mobile Responsive Optimization — Stays Centered */
 @media (max-width: 768px) {
     .sidq-fomo-toast {
-        left: 12px;
-        right: 12px;
-        width: auto;
-        bottom: 20px;
-    }
-
-    /* When bottom sticky bar is present on PDP */
-    body.has-pdp-sticky-bar .sidq-fomo-toast {
-        bottom: 84px !important;
+        top: 50%;
+        left: 50%;
+        width: calc(100vw - 32px);
+        max-width: 320px;
+        padding: 10px 12px;
     }
 }
 </style>
@@ -227,6 +247,10 @@
 
     const fomoProducts = @json($fomoProducts);
     if (!fomoProducts || !fomoProducts.length) return;
+
+    const firstDelayMs = {{ (int)($fomoFirstDelay * 1000) }};
+    const intervalMs = {{ (int)($fomoInterval * 1000) }};
+    const durationMs = {{ (int)($fomoDuration * 1000) }};
 
     const buyerNames = [
         'তানিয়া আক্তার', 'সাদিয়া সুলতানা', 'ফারহানা ইসলাম', 'নুসরাত জাহান', 
@@ -255,11 +279,6 @@
     const productLinkEl = document.getElementById('fomoProductLink');
     const locationEl = document.getElementById('fomoLocation');
     const timeEl = document.getElementById('fomoTime');
-
-    // Add marker class to body if PDP mobile sticky bar exists
-    if (document.getElementById('pdpMobileStickyBar')) {
-        document.body.classList.add('has-pdp-sticky-bar');
-    }
 
     let fomoTimeout = null;
     let isFomoVisible = false;
@@ -290,10 +309,10 @@
         toastEl.classList.add('fomo-entering');
         isFomoVisible = true;
 
-        // Auto hide after 4.5 seconds
+        // Auto hide after configured duration
         fomoTimeout = setTimeout(function() {
             hideFomo();
-        }, 4500);
+        }, durationMs);
     }
 
     function hideFomo() {
@@ -306,12 +325,11 @@
             toastEl.classList.remove('fomo-leaving');
             isFomoVisible = false;
 
-            // Schedule next popup after 16 - 24 seconds random jitter
+            // Schedule next popup after configured interval
             if (sessionStorage.getItem('sidq_fomo_dismissed') !== '1') {
-                const nextInterval = Math.floor(Math.random() * 8000) + 16000;
-                setTimeout(showRandomFomo, nextInterval);
+                setTimeout(showRandomFomo, intervalMs);
             }
-        }, 350);
+        }, 420);
     }
 
     window.dismissSidqFomo = function(e) {
@@ -324,8 +342,8 @@
         hideFomo();
     };
 
-    // First trigger after 5.5 seconds of page interaction
-    setTimeout(showRandomFomo, 5500);
+    // First trigger after configured first delay (default 7s)
+    setTimeout(showRandomFomo, firstDelayMs);
 })();
 </script>
 @endif

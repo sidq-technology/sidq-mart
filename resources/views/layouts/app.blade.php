@@ -795,6 +795,9 @@
     {{-- Live Social Proof Recent Sales Popup --}}
     @include('frontend.partials.fomo-sales-popup')
 
+    {{-- Customer Abandonment & Exit-Intent Prevention Modal --}}
+    @include('frontend.partials.exit-intent-modal')
+
     @stack('scripts')
 </body>
 </html>

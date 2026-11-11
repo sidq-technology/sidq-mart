@@ -698,7 +698,69 @@
                                            name="fomo_popup_enabled" 
                                            value="1" 
                                            style="width: 2.8em; height: 1.5em; cursor: pointer;"
+                                           onchange="document.getElementById('fomoTimingOptions').style.display = this.checked ? 'block' : 'none';"
                                            {{ ($settings['fomo_popup_enabled'] ?? '1') === '1' ? 'checked' : '' }}>
+                                </div>
+
+                                <!-- FOMO Timing Controls & Side Slide-in Settings -->
+                                <div class="mt-3 pt-3 border-top" id="fomoTimingOptions" style="{{ ($settings['fomo_popup_enabled'] ?? '1') === '1' ? '' : 'display: none;' }}">
+                                    <div class="small fw-bold text-dark mb-2 d-flex align-items-center gap-1">
+                                        <i class="fas fa-sliders-h text-primary"></i>
+                                        <span>নোটিফিকেশন সময়সীমা ও বিরতি নিয়ন্ত্রণ (Timing Controls):</span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-12 col-md-4">
+                                            <div class="p-2.5 bg-light rounded-3 border">
+                                                <label for="fomo_popup_first_delay" class="form-label small fw-semibold text-dark mb-1 d-block">
+                                                    ১ম নোটিফিকেশন প্রদর্শন
+                                                </label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" min="1" max="60" step="1" 
+                                                           name="fomo_popup_first_delay" id="fomo_popup_first_delay" 
+                                                           class="form-control text-center fw-bold" 
+                                                           value="{{ old('fomo_popup_first_delay', $settings['fomo_popup_first_delay'] ?? '7') }}">
+                                                    <span class="input-group-text small">সেকেন্ড পর</span>
+                                                </div>
+                                                <div class="text-muted small mt-1" style="font-size: 11px;">পেজে ঢোকার কত সেকেন্ড পর প্রথম নোটিফিকেশন আসবে (ডিফল্ট: ৭ সেকেন্ড)।</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-4">
+                                            <div class="p-2.5 bg-light rounded-3 border">
+                                                <label for="fomo_popup_interval" class="form-label small fw-semibold text-dark mb-1 d-block">
+                                                    পরবর্তী নোটিফিকেশনের বিরতি
+                                                </label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" min="3" max="120" step="1" 
+                                                           name="fomo_popup_interval" id="fomo_popup_interval" 
+                                                           class="form-control text-center fw-bold" 
+                                                           value="{{ old('fomo_popup_interval', $settings['fomo_popup_interval'] ?? '12') }}">
+                                                    <span class="input-group-text small">সেকেন্ড পর পর</span>
+                                                </div>
+                                                <div class="text-muted small mt-1" style="font-size: 11px;">একটি চলে যাওয়ার কত সেকেন্ড পর পরবর্তীটি আসবে (ডিফল্ট: ১২ সেকেন্ড)।</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-4">
+                                            <div class="p-2.5 bg-light rounded-3 border">
+                                                <label for="fomo_popup_duration" class="form-label small fw-semibold text-dark mb-1 d-block">
+                                                    স্ক্রিনে দৃশ্যমান থাকার সময়
+                                                </label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" min="2" max="30" step="1" 
+                                                           name="fomo_popup_duration" id="fomo_popup_duration" 
+                                                           class="form-control text-center fw-bold" 
+                                                           value="{{ old('fomo_popup_duration', $settings['fomo_popup_duration'] ?? '5') }}">
+                                                    <span class="input-group-text small">সেকেন্ড স্থায়ী</span>
+                                                </div>
+                                                <div class="text-muted small mt-1" style="font-size: 11px;">কত সেকেন্ড ভেসে থাকার পর স্বয়ংক্রিয়ভাবে সরে যাবে (ডিফল্ট: ৫ সেকেন্ড)।</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2 mt-2 pt-1 text-muted small" style="font-size: 11.5px;">
+                                        <i class="fas fa-arrow-right-to-bracket text-success"></i>
+                                        <span><strong>স্মার্ট অ্যানিমেশন:</strong> নোটিফিকেশনটি স্ক্রিনের বাম পাশ থেকে স্লাইড হয়ে স্ক্রিনের মাঝখানে (Screen Center) আসবে এবং সময় শেষ হলে আবার একই বাম পাশ দিয়েই প্রস্থান করবে।</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -869,7 +931,222 @@
         </div>
 
         <!-- ==========================================
-             8. SMS & NOTIFICATION GATEWAY (MRAM API)
+             8. EXIT-INTENT & BOUNCE RECOVERY POPUP
+        =========================================== -->
+        <div class="card border bg-white rounded-3 shadow-xs overflow-hidden" id="secExitIntentCard">
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
+                 data-bs-toggle="collapse" 
+                 data-bs-target="#secExitIntent" 
+                 aria-expanded="false"
+                 role="button">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(245, 158, 11, 0.12); color: #d97706; font-size: 18px;">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">৮. কাস্টমার ড্রপ-অফ ও এক্সিট-ইনটেন্ট রিকভারি (Exit-Intent &amp; Bounce Recovery)</h6>
+                        <span class="text-muted small">মোবাইল ব্যাক বাটন, দ্রুত স্ক্রল ও বাউন্স রোধে ১-ক্লিক ডিসকাউন্ট কুপন পপআপ</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    @if(($settings['exit_intent_enabled'] ?? '0') == '1')
+                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1 small">সক্রিয় (Active)</span>
+                    @else
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fw-semibold px-2 py-1 small">নিষ্ক্রিয় (Disabled)</span>
+                    @endif
+                    <i class="fas fa-chevron-down text-muted accordion-arrow"></i>
+                </div>
+            </div>
+
+            <div id="secExitIntent" class="collapse">
+                <div class="card-body p-3 p-sm-4 border-top">
+                    <!-- Master Toggle switch -->
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mb-4 border">
+                        <div>
+                            <div class="fw-bold text-dark mb-1">
+                                <i class="fas fa-shield-alt text-warning me-1"></i> কাস্টমার ড্রপ-অফ / এক্সিট-ইনটেন্ট পপআপ চালু রাখুন (Master Enable)
+                            </div>
+                            <div class="text-muted small">চালু থাকলে কাস্টমার পেজ ছেড়ে চলে যাওয়ার চেষ্টা করলে স্বয়ংক্রিয়ভাবে একটি আকর্ষণীয় অফার পপআপ দেখানো হবে, যা ফেসবুক অ্যাডসের ড্রপ-অফ রোধ করে সেলস বাড়ায়।</div>
+                        </div>
+                        <div class="form-check form-switch fs-4 mb-0 ms-3">
+                            <input class="form-check-input" type="checkbox" role="switch" name="exit_intent_enabled" id="exit_intent_enabled" value="1" {{ ($settings['exit_intent_enabled'] ?? '0') == '1' ? 'checked' : '' }}>
+                        </div>
+                    </div>
+
+                    <!-- Target Scope & Coupon Selection -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label for="exit_intent_scope" class="form-label small fw-bold text-dark mb-1">প্রদর্শন এলাকা / টার্গেট পেজ (Target Pages)</label>
+                            <select name="exit_intent_scope" id="exit_intent_scope" class="form-select">
+                                <option value="pdp_only" {{ ($settings['exit_intent_scope'] ?? 'pdp_only') === 'pdp_only' ? 'selected' : '' }}>প্রোডাক্ট ডিটেইল পেজ শুধুমাত্র (রেকমেন্ডেড — অ্যাডস ট্রাফিকের জন্য)</option>
+                                <option value="all_pages" {{ ($settings['exit_intent_scope'] ?? 'pdp_only') === 'all_pages' ? 'selected' : '' }}>ওয়েবসাইটের সকল পেজ (হোম, শপ ও প্রোডাক্ট পেজ)</option>
+                            </select>
+                            <div class="form-text small">ফেসবুক বিজ্ঞাপন থেকে আসা কাস্টমারদের আটকে অর্ডার কনভার্ট করতে প্রোডাক্ট পেজ সিলেক্ট রাখাই সবচেয়ে কার্যকর।</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="exit_intent_coupon_code" class="form-label small fw-bold text-dark mb-1">অফার কুপন কোড (Discount Coupon Code)</label>
+                            <div class="input-group">
+                                <input type="text" name="exit_intent_coupon_code" id="exit_intent_coupon_code" class="form-control font-monospace text-uppercase" value="{{ old('exit_intent_coupon_code', $settings['exit_intent_coupon_code'] ?? '') }}" placeholder="যেমন: SPECIAL50 বা SAVE10">
+                                @if(isset($availableCoupons) && $availableCoupons->isNotEmpty())
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    বিদ্যমান কুপন
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    @foreach($availableCoupons as $c)
+                                    <li>
+                                        <button class="dropdown-item small d-flex align-items-center justify-content-between" type="button" onclick="document.getElementById('exit_intent_coupon_code').value='{{ $c->code }}'">
+                                            <span class="fw-bold font-monospace me-2">{{ $c->code }}</span>
+                                            <span class="badge bg-primary-subtle text-primary">{{ $c->type === 'percent' ? $c->value.'%' : '৳'.$c->value }}</span>
+                                        </button>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                                @endif
+                            </div>
+                            <div class="form-text small">
+                                কাস্টমার পপআপের বাটনে ক্লিক করা মাত্র এই কুপনটি স্বয়ংক্রিয়ভাবে চেকআউটে অ্যাপ্লাই হয়ে ডিসকাউন্ট বাদ যাবে। 
+                                <a href="{{ route('admin.coupons.index') }}" target="_blank" class="text-decoration-none fw-semibold">নতুন কুপন তৈরি করুন &rarr;</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customizable Texts -->
+                    <div class="border rounded-3 p-3 p-sm-4 mb-4 bg-white">
+                        <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                            <i class="fas fa-edit text-primary me-2"></i> পপআপ মেসেজ ও টেক্সট কাস্টমাইজেশন
+                        </h6>
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label for="exit_intent_heading" class="form-label small fw-bold text-dark mb-1">প্রধান শিরোনাম / হেডিং (Heading)</label>
+                                <input type="text" name="exit_intent_heading" id="exit_intent_heading" class="form-control" value="{{ old('exit_intent_heading', $settings['exit_intent_heading'] ?? 'এক মিনিট! আপনার জন্য একটি বিশেষ উপহার 🎁') }}">
+                                <div class="form-text small">পপআপের শীর্ষে বড় শিরোনাম। ইমোজি ব্যবহার করতে পারেন।</div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="exit_intent_subtitle" class="form-label small fw-bold text-dark mb-1">অফার বার্তা / সাব-টাইটেল (Subtitle / Offer Description)</label>
+                                <input type="text" name="exit_intent_subtitle" id="exit_intent_subtitle" class="form-control" value="{{ old('exit_intent_subtitle', $settings['exit_intent_subtitle'] ?? 'এখনই অর্ডার সম্পূর্ণ করলে পাচ্ছেন স্পেশাল ডিসকাউন্ট! সীমিত সময়ের এই সুযোগ হাতছাড়া করবেন না।') }}">
+                                <div class="form-text small">অফারের বিস্তারিত বা তাগিদ সৃষ্টিকারী সংক্ষিপ্ত বর্ণনা।</div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="exit_intent_btn_text" class="form-label small fw-bold text-dark mb-1">১-ক্লিক অর্ডার বাটন টেক্সট (Action Button Text)</label>
+                                <input type="text" name="exit_intent_btn_text" id="exit_intent_btn_text" class="form-control" value="{{ old('exit_intent_btn_text', $settings['exit_intent_btn_text'] ?? 'ডিসকাউন্ট নিয়ে অর্ডার করুন ⚡') }}">
+                                <div class="form-text small">এই বাটনে ক্লিক করলে পণ্য কার্টে যুক্ত হয়ে কুপন সহ সরাসরি চেকআউট পেজ ওপেন হবে।</div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="exit_intent_dismiss_text" class="form-label small fw-bold text-dark mb-1">বাতিল বা ডিসমিস লিংক টেক্সট (Dismiss Link Text)</label>
+                                <input type="text" name="exit_intent_dismiss_text" id="exit_intent_dismiss_text" class="form-control" value="{{ old('exit_intent_dismiss_text', $settings['exit_intent_dismiss_text'] ?? 'না, আমি ডিসকাউন্ট ছাড়াই কিনতে চাই') }}">
+                                <div class="form-text small">পপআপটি ক্লোজ করার ছোট নিচের লিংক।</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trigger Sensitivities & Detection Options -->
+                    <div class="border rounded-3 p-3 p-sm-4 mb-3 bg-white">
+                        <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                            <i class="fas fa-sliders-h text-primary me-2"></i> কোন কোন আচরণে পপআপ ট্রিগার হবে? (Smart Triggers)
+                        </h6>
+
+                        <div class="row g-3">
+                            <!-- Trigger 1: Mobile Back Button -->
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 bg-light rounded-3 border h-100 d-flex flex-column justify-content-between">
+                                    <div class="d-flex align-items-start justify-content-between gap-3 mb-2">
+                                        <div>
+                                            <label class="form-check-label fw-bold text-dark d-block mb-1" for="exit_intent_trigger_back_button" style="cursor: pointer;">
+                                                <i class="fas fa-arrow-left text-danger me-1"></i> মোবাইল ব্যাক-বাটন ইন্টারসেপ্ট
+                                            </label>
+                                            <p class="text-muted small mb-0" style="font-size: 12px;">
+                                                ফেসবুক ইন-অ্যাপ ব্রাউজার বা স্মার্টফোনে কাস্টমার ব্যাক বাটন চাপলে সাইট ছেড়ে যাওয়ার পূর্বে এই অফার পপআপ প্রদর্শন করবে।
+                                            </p>
+                                        </div>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" name="exit_intent_trigger_back_button" id="exit_intent_trigger_back_button" value="1" {{ ($settings['exit_intent_trigger_back_button'] ?? '1') == '1' ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Trigger 2: Rapid Scroll-Up -->
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 bg-light rounded-3 border h-100 d-flex flex-column justify-content-between">
+                                    <div class="d-flex align-items-start justify-content-between gap-3 mb-2">
+                                        <div>
+                                            <label class="form-check-label fw-bold text-dark d-block mb-1" for="exit_intent_trigger_scroll_up" style="cursor: pointer;">
+                                                <i class="fas fa-arrow-up text-primary me-1"></i> দ্রুত ওপরের দিকে স্ক্রল (Scroll-Up)
+                                            </label>
+                                            <p class="text-muted small mb-0" style="font-size: 12px;">
+                                                মোবাইলে পণ্য দেখার পর ভিজিটর হঠাৎ দ্রুত ওপরের দিকে স্ক্রল করে ব্রাউজার বার বা ব্যাক বাটনে যাওয়ার চেষ্টা করলে পপআপ দেখাবে।
+                                            </p>
+                                        </div>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" name="exit_intent_trigger_scroll_up" id="exit_intent_trigger_scroll_up" value="1" {{ ($settings['exit_intent_trigger_scroll_up'] ?? '1') == '1' ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Trigger 3: Idle / Dwell Time -->
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 bg-light rounded-3 border h-100 d-flex flex-column justify-content-between">
+                                    <div class="d-flex align-items-start justify-content-between gap-3 mb-2">
+                                        <div>
+                                            <label class="form-check-label fw-bold text-dark d-block mb-1" for="exit_intent_trigger_idle" style="cursor: pointer;">
+                                                <i class="fas fa-stopwatch text-warning me-1"></i> পেজে নিষ্ক্রিয়তা টাইমার (Idle Timer)
+                                            </label>
+                                            <p class="text-muted small mb-0" style="font-size: 12px;">
+                                                ভিজিটর পেজে এসে কোনো টাচ বা স্ক্রল না করে নির্দিষ্ট সময় থেমে থাকলে অফার শো করে দৃষ্টি আকর্ষণ করবে।
+                                            </p>
+                                        </div>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" name="exit_intent_trigger_idle" id="exit_intent_trigger_idle" value="1" {{ ($settings['exit_intent_trigger_idle'] ?? '1') == '1' ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 pt-2 border-top d-flex align-items-center gap-2">
+                                        <span class="small text-muted text-nowrap">নিষ্ক্রিয় সময়:</span>
+                                        <input type="number" min="5" max="180" step="1" name="exit_intent_idle_seconds" id="exit_intent_idle_seconds" class="form-control form-control-sm text-center" style="width: 80px;" value="{{ old('exit_intent_idle_seconds', $settings['exit_intent_idle_seconds'] ?? '25') }}">
+                                        <span class="small text-muted">সেকেন্ড</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Trigger 4: Desktop Mouse Leave -->
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 bg-light rounded-3 border h-100 d-flex flex-column justify-content-between">
+                                    <div class="d-flex align-items-start justify-content-between gap-3 mb-2">
+                                        <div>
+                                            <label class="form-check-label fw-bold text-dark d-block mb-1" for="exit_intent_trigger_desktop" style="cursor: pointer;">
+                                                <i class="fas fa-mouse-pointer text-success me-1"></i> ডেস্কটপ মাউস-আউট (Mouse Leave)
+                                            </label>
+                                            <p class="text-muted small mb-0" style="font-size: 12px;">
+                                                কম্পিউটার বা ল্যাপটপে মাউস পয়েন্টার স্ক্রিনের ওপরের ট্যাব বা ব্রাউজার ক্লোজ বাটনের দিকে নিলে সক্রিয় হবে।
+                                            </p>
+                                        </div>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" name="exit_intent_trigger_desktop" id="exit_intent_trigger_desktop" value="1" {{ ($settings['exit_intent_trigger_desktop'] ?? '1') == '1' ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safeguard Notice -->
+                    <div class="alert alert-info py-2 px-3 small border-0 rounded-3 mb-0 d-flex align-items-center gap-2">
+                        <i class="fas fa-shield-alt text-info fs-5"></i>
+                        <div>
+                            <strong>স্মার্ট সেশন ক্যাপ ও গার্ড:</strong> কাস্টমার অভিজ্ঞতা চমৎকার রাখতে প্রতি ব্রাউজার সেশনে এটি সর্বোচ্চ ১ বারই দেখাবে। এছাড়া চেকআউট ও অর্ডার কনফার্মেশন পেজে এটি স্বয়ংক্রিয়ভাবে বন্ধ থাকে।
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             ৯. SMS & NOTIFICATION GATEWAY (MRAM API)
         =========================================== -->
         <div class="card border bg-white rounded-3 shadow-xs overflow-hidden" id="secSmsCard">
             <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
@@ -882,7 +1159,7 @@
                         <i class="fas fa-sms"></i>
                     </div>
                     <div>
-                        <h6 class="fw-bold text-dark mb-0">৮. SMS নোটিফিকেশন ও গেটওয়ে (MRAM SMS Gateway &amp; Automation)</h6>
+                        <h6 class="fw-bold text-dark mb-0">৯. SMS নোটিফিকেশন ও গেটওয়ে (MRAM SMS Gateway &amp; Automation)</h6>
                         <span class="text-muted small">অর্ডার ট্রানজেকশনাল SMS, MRAM API কী, সেন্ডার আইডি ও মেসেজ টেমপ্লেট</span>
                     </div>
                 </div>
@@ -1061,13 +1338,13 @@
             </div>
         </div>
         <!-- ==========================================
-             9. SYSTEM & STORAGE MAINTENANCE
+             10. SYSTEM & STORAGE MAINTENANCE
         =========================================== -->
         <div class="card border bg-white rounded-3 shadow-xs p-3 p-sm-4 mb-3 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
             <div>
                 <h6 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
                     <i class="fas fa-images text-primary"></i>
-                    <span>পণ্য ও মিডিয়া ফাইল স্টোরেজ লিংক (Storage Symlink Fixer)</span>
+                    <span>১০. পণ্য ও মিডিয়া ফাইল স্টোরেজ লিংক (Storage Symlink Fixer)</span>
                 </h6>
                 <div class="text-muted small">
                     cPanel বা লাইভ সার্ভারে আপলোড করা পণ্যের ছবি শো না করলে এই বাটনে ক্লিক করে স্টোরেজ সিমলিংক স্বয়ংক্রিয়ভাবে তৈরি ও মেরামত করে নিন।
