@@ -37,8 +37,21 @@ class TrackingController extends Controller
         if (empty($userData['fbp']) && ($fbp = $request->cookie('_fbp'))) {
             $userData['fbp'] = $fbp;
         }
+        if (empty($userData['fbp']) && $request->hasSession() && $request->session()->has('meta_capi_fbp')) {
+            $userData['fbp'] = $request->session()->get('meta_capi_fbp');
+        }
+        if (empty($userData['fbp'])) {
+            $userData['fbp'] = 'fb.1.' . (time() * 1000) . '.' . mt_rand(1000000000, 9999999999);
+            if ($request->hasSession()) {
+                $request->session()->put('meta_capi_fbp', $userData['fbp']);
+            }
+        }
+
         if (empty($userData['fbc']) && ($fbc = $request->cookie('_fbc'))) {
             $userData['fbc'] = $fbc;
+        }
+        if (empty($userData['fbc']) && $request->hasSession() && $request->session()->has('meta_capi_fbc')) {
+            $userData['fbc'] = $request->session()->get('meta_capi_fbc');
         }
 
         // Fallback: Recover fbc if fbclid is in current query or referer
@@ -52,7 +65,10 @@ class TrackingController extends Controller
                 }
             }
             if (!empty($fbclid)) {
-                $userData['fbc'] = 'fb.1.' . time() . '.' . $fbclid;
+                $userData['fbc'] = 'fb.1.' . (time() * 1000) . '.' . $fbclid;
+                if ($request->hasSession()) {
+                    $request->session()->put('meta_capi_fbc', $userData['fbc']);
+                }
             }
         }
 

@@ -325,6 +325,15 @@
                 @endphp
 
                 // Browser Pixel Advanced Matching User Properties
+                try {
+                    @if(!empty($order->customer_phone))
+                    localStorage.setItem('sidq_user_phone', '{{ $order->customer_phone }}');
+                    @endif
+                    @if(!empty($order->customer_name))
+                    localStorage.setItem('sidq_user_name', '{{ addslashes($order->customer_name) }}');
+                    @endif
+                } catch(e) {}
+
                 @if(!empty($orderSuccessPixelId))
                 try {
                     fbq('setUserProperties', '{{ $orderSuccessPixelId }}', {

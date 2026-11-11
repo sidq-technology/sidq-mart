@@ -142,6 +142,15 @@
 
         // Advanced Matching initialization if customer identity is already known
         const initialUserData = @json($identifiedUserData);
+        try {
+            const storedPhone = localStorage.getItem('sidq_user_phone');
+            const storedName = localStorage.getItem('sidq_user_name');
+            const storedEmail = localStorage.getItem('sidq_user_email');
+            if (storedPhone && !initialUserData.phone) initialUserData.phone = storedPhone;
+            if (storedName && !initialUserData.name) initialUserData.name = storedName;
+            if (storedEmail && !initialUserData.email) initialUserData.email = storedEmail;
+        } catch(e) {}
+
         const fbInitOptions = {};
         if (initialUserData && initialUserData.phone) {
             let ph = String(initialUserData.phone).replace(/[^\d]/g, '');

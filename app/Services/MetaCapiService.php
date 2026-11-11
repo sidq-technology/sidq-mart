@@ -335,15 +335,31 @@ class MetaCapiService
             $userData['client_user_agent'] = $ua;
         }
 
-        // 3. Facebook Cookies (_fbp & _fbc from browser)
+        // 3. Facebook Cookies (_fbp & _fbc from browser or server-side fallback)
         $fbp = $raw['fbp'] ?? request()->cookie('_fbp');
+        if (empty($fbp) && session()->has('meta_capi_fbp')) {
+            $fbp = session()->get('meta_capi_fbp');
+        }
+        if (empty($fbp)) {
+            // Server-side fallback: Generate standard first-party _fbp (fb.1.<timestamp>.<random>)
+            $fbp = 'fb.1.' . (time() * 1000) . '.' . mt_rand(1000000000, 9999999999);
+            try {
+                session()->put('meta_capi_fbp', $fbp);
+            } catch (\Throwable $e) {}
+        }
         if (!empty($fbp)) {
             $userData['fbp'] = $fbp;
         }
 
         $fbc = $raw['fbc'] ?? request()->cookie('_fbc');
+        if (empty($fbc) && session()->has('meta_capi_fbc')) {
+            $fbc = session()->get('meta_capi_fbc');
+        }
         if (empty($fbc) && request()->filled('fbclid')) {
-            $fbc = 'fb.1.' . time() . '.' . request()->query('fbclid');
+            $fbc = 'fb.1.' . (time() * 1000) . '.' . request()->query('fbclid');
+            try {
+                session()->put('meta_capi_fbc', $fbc);
+            } catch (\Throwable $e) {}
         }
         if (!empty($fbc)) {
             $userData['fbc'] = $fbc;

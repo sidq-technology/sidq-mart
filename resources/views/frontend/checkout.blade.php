@@ -306,6 +306,10 @@
                     if (cleanPhone.length >= 10) {
                         hasTrackedLivePhone = true;
                         const custName = document.getElementById('customer_name')?.value?.trim() || '';
+                        try {
+                            localStorage.setItem('sidq_user_phone', cleanPhone);
+                            if (custName) localStorage.setItem('sidq_user_name', custName);
+                        } catch(e) {}
                         window.sidqTrackEvent('InitiateCheckout', {
                             num_items: cartItemCount,
                             content_ids: cartItemIds,
@@ -322,6 +326,15 @@
                 phoneField.addEventListener('input', function() {
                     if (this.value.replace(/[^\d]/g, '').length >= 11) {
                         handlePhoneIdentified();
+                    }
+                });
+            }
+
+            const nameField = document.getElementById('customer_name');
+            if (nameField) {
+                nameField.addEventListener('blur', function() {
+                    if (this.value) {
+                        try { localStorage.setItem('sidq_user_name', this.value.trim()); } catch(e) {}
                     }
                 });
             }
