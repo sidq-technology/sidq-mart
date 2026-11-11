@@ -366,6 +366,13 @@
             }
 
             // Google Tag Manager / GA4: purchase
+            const ga4PurchaseItems = {!! json_encode($order->items->map(fn($it) => [
+                'item_id' => (string)$it->product_id,
+                'item_name' => (string)$it->product_name,
+                'price' => (float)$it->unit_price,
+                'quantity' => (int)$it->quantity,
+            ])) !!};
+
             if (window.dataLayer) {
                 window.dataLayer.push({
                     event: 'purchase',
@@ -374,13 +381,18 @@
                         value: orderGrandTotal,
                         shipping: orderShipping,
                         currency: 'BDT',
-                        items: {!! json_encode($order->items->map(fn($it) => [
-                            'item_id' => (string)$it->product_id,
-                            'item_name' => (string)$it->product_name,
-                            'price' => (float)$it->unit_price,
-                            'quantity' => (int)$it->quantity,
-                        ])) !!}
+                        items: ga4PurchaseItems
                     }
+                });
+            }
+
+            if (typeof gtag === 'function') {
+                gtag('event', 'purchase', {
+                    transaction_id: orderNumber,
+                    value: orderGrandTotal,
+                    shipping: orderShipping,
+                    currency: 'BDT',
+                    items: ga4PurchaseItems
                 });
             }
         } catch (e) {

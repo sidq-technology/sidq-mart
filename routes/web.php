@@ -258,6 +258,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/settings', [SettingController::class, 'update'])
             ->middleware('permission:settings.manage')
             ->name('settings.update');
+        Route::post('/clear-cache', [SettingController::class, 'clearSystemCache'])
+            ->middleware('permission:settings.manage')
+            ->name('clear-cache');
 
         // Security & Order Fraud Protection
         Route::get('/security', [SecurityController::class, 'index'])

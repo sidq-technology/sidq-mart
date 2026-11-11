@@ -519,6 +519,85 @@
         </div>
 
         <!-- ==========================================
+             PRODUCT PAGE DISPLAY CUSTOMIZATIONS
+        =========================================== -->
+        <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">
+            <div class="card-header bg-white p-3 p-sm-4 settings-collapse-header collapsed d-flex align-items-center justify-content-between"
+                 data-bs-toggle="collapse" 
+                 data-bs-target="#secProductPage" 
+                 aria-expanded="false"
+                 role="button">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 18px;">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">প্রোডাক্ট পেজ ডিসপ্লে সেটিংস (Product Page Display Settings)</h6>
+                        <span class="text-muted small">প্রোডাক্ট বিস্তারিত পেজের ডিসকাউন্ট ব্যাজ, স্টক কাউন্ট ও আর্জেন্সি সেটিংস</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-dark border d-none d-md-inline-block small">Customization</span>
+                    <i class="fas fa-chevron-down text-muted accordion-arrow"></i>
+                </div>
+            </div>
+
+            <div class="collapse" id="secProductPage">
+                <div class="card-body p-3 p-sm-4 border-top bg-light">
+                    <div class="row g-3">
+                        <!-- Toggle 1: Savings Badge -->
+                        <div class="col-12 col-md-6">
+                            <div class="card border bg-white p-3 rounded-3 h-100 shadow-2xs">
+                                <div class="form-check form-switch d-flex align-items-start justify-content-between gap-3 p-0 m-0">
+                                    <div>
+                                        <label class="form-check-label fw-bold text-dark d-block mb-1" for="show_savings_badge" style="cursor: pointer;">
+                                            <i class="fas fa-tags text-success me-1"></i> সেভিংস / ডিসকাউন্ট ব্যাজ
+                                        </label>
+                                        <p class="text-muted small mb-0" style="font-size: 12px;">
+                                            প্রোডাক্ট মূল্যের পাশে সবুজ রঙের <strong>"৪৫০ টাকা সেইভ"</strong> ব্যাজ প্রদর্শন করতে এটি চালু রাখুন। বন্ধ করলে ব্যাজটি হাইড থাকবে।
+                                        </p>
+                                    </div>
+                                    <input class="form-check-input ms-0 flex-shrink-0" 
+                                           type="checkbox" 
+                                           role="switch" 
+                                           id="show_savings_badge" 
+                                           name="show_savings_badge" 
+                                           value="1" 
+                                           style="width: 2.8em; height: 1.5em; cursor: pointer;"
+                                           {{ ($settings['show_savings_badge'] ?? '0') === '1' ? 'checked' : '' }}>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Toggle 2: Stock Badge -->
+                        <div class="col-12 col-md-6">
+                            <div class="card border bg-white p-3 rounded-3 h-100 shadow-2xs">
+                                <div class="form-check form-switch d-flex align-items-start justify-content-between gap-3 p-0 m-0">
+                                    <div>
+                                        <label class="form-check-label fw-bold text-dark d-block mb-1" for="show_stock_badge" style="cursor: pointer;">
+                                            <i class="fas fa-fire text-danger me-1"></i> স্টক কাউন্ট ও আর্জেন্সি ব্যাজ
+                                        </label>
+                                        <p class="text-muted small mb-0" style="font-size: 12px;">
+                                            মূল্যের নিচে <strong>"🔥 ৫০ টি আইটেম আছে মাত্র"</strong> বক্সটি প্রদর্শন করতে এটি চালু রাখুন। বন্ধ করলে স্টক স্ট্যাটাস হাইড থাকবে।
+                                        </p>
+                                    </div>
+                                    <input class="form-check-input ms-0 flex-shrink-0" 
+                                           type="checkbox" 
+                                           role="switch" 
+                                           id="show_stock_badge" 
+                                           name="show_stock_badge" 
+                                           value="1" 
+                                           style="width: 2.8em; height: 1.5em; cursor: pointer;"
+                                           {{ ($settings['show_stock_badge'] ?? '0') === '1' ? 'checked' : '' }}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
              6. MARKETING & PIXELS
         =========================================== -->
         <div class="card border bg-white rounded-3 shadow-xs overflow-hidden">

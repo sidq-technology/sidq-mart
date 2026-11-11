@@ -23,8 +23,8 @@
                 </a>
             </div>
 
-            <!-- Search Bar -->
-            <div class="col-12 col-lg-5 col-xl-5 order-3 order-lg-2">
+            <!-- Search Bar (Desktop only) -->
+            <div class="col-12 col-lg-5 col-xl-5 order-3 order-lg-2 d-none d-lg-block">
                 <form action="{{ route('search') }}" method="GET" class="header-search-form" autocomplete="off">
                     <input type="text" name="q" id="mainSearchInput" class="form-control" placeholder="পণ্য খুঁজুন (Search anything...)" value="{{ request('q') }}" aria-label="Search">
                     <button type="submit" aria-label="Search Button">
@@ -155,6 +155,16 @@
                 <i class="fas fa-sign-in-alt"></i> লগইন / রেজিস্টার করুন
             </button>
             @endauth
+        </div>
+
+        <!-- Search bar inside mobile drawer -->
+        <div class="p-3 border-bottom bg-light">
+            <form action="{{ route('search') }}" method="GET" class="header-search-form" autocomplete="off">
+                <input type="text" name="q" class="form-control" placeholder="পণ্য খুঁজুন (Search anything...)" value="{{ request('q') }}" aria-label="Search">
+                <button type="submit" aria-label="Search Button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
         </div>
 
         <ul class="list-group list-group-flush">

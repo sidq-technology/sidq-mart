@@ -82,7 +82,11 @@
                                             <small class="text-muted">হোম ডেলিভারি (১-২ দিন)</small>
                                         </div>
                                     </div>
+                                    @if($insideDhakaFee <= 0)
+                                    <span class="badge bg-success text-white px-2.5 py-1.5 fw-bold shadow-xs"><i class="fas fa-gift me-1"></i>ফ্রি ডেলিভারি</span>
+                                    @else
                                     <span class="fw-bold text-danger tabular-nums">৳{{ $insideDhakaFee }}</span>
+                                    @endif
                                 </label>
                             </div>
 
@@ -96,7 +100,11 @@
                                             <small class="text-muted">হোম ডেলিভারি (২-৩ দিন)</small>
                                         </div>
                                     </div>
+                                    @if($outsideDhakaFee <= 0)
+                                    <span class="badge bg-success text-white px-2.5 py-1.5 fw-bold shadow-xs"><i class="fas fa-gift me-1"></i>ফ্রি ডেলিভারি</span>
+                                    @else
                                     <span class="fw-bold text-danger tabular-nums">৳{{ $outsideDhakaFee }}</span>
+                                    @endif
                                 </label>
                             </div>
                         </div>
@@ -238,7 +246,11 @@
 
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">ডেলিভারি চার্জ (Delivery):</span>
-                        <span class="fw-bold text-primary tabular-nums">৳<span id="summaryShipping">{{ number_format($insideDhakaFee, 0) }}</span></span>
+                        <span class="fw-bold tabular-nums" id="summaryShippingWrap">
+                            <span id="summaryShipping" class="{{ $insideDhakaFee <= 0 ? 'text-success fw-bold' : 'text-primary fw-bold' }}">
+                                {{ $insideDhakaFee <= 0 ? 'ফ্রি ডেলিভারি' : '৳' . number_format($insideDhakaFee, 0) }}
+                            </span>
+                        </span>
                     </div>
 
                     <div class="d-flex justify-content-between mb-2 text-success {{ $discountAmount > 0 ? '' : 'd-none' }}" id="discountRow">
@@ -255,7 +267,12 @@
                 </div>
 
                 <!-- Free delivery indicator -->
-                @if($freeThreshold > 0)
+                @if($insideDhakaFee <= 0 && $outsideDhakaFee <= 0)
+                <div class="alert alert-success py-2.5 mb-0 small fw-bold d-flex align-items-center gap-2 border-0 shadow-xs rounded-3" style="background: #ecfdf5; color: #047857;">
+                    <i class="fas fa-truck-fast fs-5 text-success"></i>
+                    <span>আজকের অর্ডারে সারা বাংলাদেশে সম্পূর্ণ ফ্রি হোম ডেলিভারি!</span>
+                </div>
+                @elseif($freeThreshold > 0)
                 <div class="alert alert-info py-2 mb-0 small">
                     <i class="fas fa-gift me-1"></i> <strong>৳{{ number_format($freeThreshold, 0) }}</strong> টাকার কেনাকাটায় সারা বাংলাদেশে ফ্রি ডেলিভারি!
                 </div>
@@ -364,6 +381,18 @@
                 }
             });
         }
+        if (typeof gtag === 'function') {
+            gtag('event', 'begin_checkout', {
+                currency: 'BDT',
+                value: cartSubtotal,
+                items: {!! json_encode(array_map(fn($item) => [
+                    'item_id' => (string)($item['product_id'] ?? ''),
+                    'item_name' => (string)($item['name'] ?? ''),
+                    'price' => (float)($item['unit_price'] ?? 0),
+                    'quantity' => (int)($item['quantity'] ?? 1),
+                ], $items)) !!}
+            });
+        }
     } catch (e) {
         console.error('Tracking Error (InitiateCheckout):', e);
     }
@@ -383,7 +412,16 @@
             currentShipping = 0;
         }
 
-        document.getElementById('summaryShipping').textContent = currentShipping;
+        const shippingEl = document.getElementById('summaryShipping');
+        if (shippingEl) {
+            if (currentShipping <= 0) {
+                shippingEl.textContent = 'ফ্রি ডেলিভারি';
+                shippingEl.className = 'text-success fw-bold';
+            } else {
+                shippingEl.textContent = '৳' + currentShipping;
+                shippingEl.className = 'text-primary fw-bold';
+            }
+        }
         recalculateGrandTotal();
     }
 

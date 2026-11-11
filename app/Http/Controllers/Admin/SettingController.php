@@ -94,6 +94,10 @@ class SettingController extends Controller
             'sms_template_order_shipped',
             'sms_template_order_delivered',
             'sms_template_order_cancelled',
+
+            // Product Detail Page Display Customizations
+            'show_savings_badge',
+            'show_stock_badge',
         ];
 
         foreach ($fields as $field) {
@@ -102,7 +106,8 @@ class SettingController extends Controller
             } elseif (in_array($field, [
                 'bkash_enabled', 'nagad_enabled', 'rocket_enabled', 'meta_pixel_enabled',
                 'sms_enabled', 'sms_event_order_placed', 'sms_event_order_processing',
-                'sms_event_order_shipped', 'sms_event_order_delivered', 'sms_event_order_cancelled'
+                'sms_event_order_shipped', 'sms_event_order_delivered', 'sms_event_order_cancelled',
+                'show_savings_badge', 'show_stock_badge'
             ])) {
                 // Checkbox unselected
                 Setting::set($field, '0');
@@ -143,5 +148,41 @@ class SettingController extends Controller
         Cache::forget('app_settings_all');
 
         return redirect()->back()->with('success', 'ওয়েবসাইটের সকল সেটিংস এবং পেমেন্ট তথ্য সফলভাবে আপডেট করা হয়েছে।');
+    }
+
+    /**
+     * Clear all application system cache, compiled views, and config
+     */
+    public function clearSystemCache(Request $request)
+    {
+        try {
+            Cache::flush();
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+            \Illuminate\Support\Facades\Artisan::call('route:clear');
+
+            $message = 'ওয়েবসাইটের সকল ক্যাশ (Settings, Blade Views, Config, Routes) সফলভাবে ক্লিয়ার করা হয়েছে!';
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                ]);
+            }
+
+            return redirect()->back()->with('success', $message);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('System Cache Clear Error: ' . $e->getMessage());
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ক্যাশ ক্লিয়ার করতে সমস্যা হয়েছে: ' . $e->getMessage(),
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'ক্যাশ ক্লিয়ার করতে সমস্যা হয়েছে: ' . $e->getMessage());
+        }
     }
 }

@@ -27,7 +27,7 @@ class CheckoutController extends Controller
     {
         // IP Blacklist Protection Check
         if (Setting::get('ip_blocking_enabled', '0') === '1') {
-            $clientIp = request()->ip();
+            $clientIp = app(\App\Services\MetaCapiService::class)->resolveClientIp() ?: request()->ip();
             if (!empty($clientIp)) {
                 $rawBlockedIps = Setting::get('blocked_ips', '');
                 $blockedIps = array_values(array_filter(array_map('trim', preg_split('/[\r\n,]+/', $rawBlockedIps))));
@@ -151,7 +151,7 @@ class CheckoutController extends Controller
 
         // 1. IP Blacklist Protection Check
         if (Setting::get('ip_blocking_enabled', '0') === '1') {
-            $clientIp = $request->ip();
+            $clientIp = app(\App\Services\MetaCapiService::class)->resolveClientIp() ?: $request->ip();
             if (!empty($clientIp)) {
                 $rawBlockedIps = Setting::get('blocked_ips', '');
                 $blockedIps = array_values(array_filter(array_map('trim', preg_split('/[\r\n,]+/', $rawBlockedIps))));
@@ -171,7 +171,7 @@ class CheckoutController extends Controller
             $blockMessage = Setting::get('order_protection_block_message', 'আপনি সম্প্রতি একটি অর্ডার প্লেস করেছেন। ফেক বা অতিরিক্ত অর্ডার রোধে সাময়িকভাবে পুনরায় অর্ডার গ্রহণ স্থগিত রয়েছে। জরুরি প্রয়োজনে আমাদের হটলাইনে যোগাযোগ করুন।');
 
             $since = now()->subMinutes($timeWindowMinutes);
-            $clientIp = $request->ip();
+            $clientIp = app(\App\Services\MetaCapiService::class)->resolveClientIp() ?: $request->ip();
             $customerPhone = $validated['customer_phone'];
 
             $orderQuery = Order::where('created_at', '>=', $since);
@@ -179,8 +179,13 @@ class CheckoutController extends Controller
             if ($trackBy === 'phone') {
                 $orderQuery->where('customer_phone', $customerPhone);
             } elseif ($trackBy === 'ip') {
-                $orderQuery->where('ip_address', $clientIp);
+                if (!empty($clientIp)) {
+                    $orderQuery->where('ip_address', $clientIp);
+                } else {
+                    $orderQuery->where('customer_phone', $customerPhone);
+                }
             } else {
+                // phone_and_ip: Tracks both phone and IP
                 $orderQuery->where(function ($q) use ($customerPhone, $clientIp) {
                     $q->where('customer_phone', $customerPhone);
                     if (!empty($clientIp)) {

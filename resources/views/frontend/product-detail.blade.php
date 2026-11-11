@@ -25,21 +25,21 @@
     $waUrl = "https://wa.me/{$waPhone}?text={$waDefaultMsg}";
 @endphp
 
-<div class="container my-4">
-    <div class="row g-4">
+<div class="container pdp-page-container mt-1 mt-md-4 mb-4 px-2 px-sm-3">
+    <div class="row g-2 g-md-4">
         <!-- 1. Product Images Gallery -->
         <div class="col-12 col-md-6">
-            <div class="card border-0 shadow-sm p-3 rounded-3 position-relative">
+            <div class="card border-0 shadow-sm p-1.5 p-sm-3 rounded-3 position-relative pdp-gallery-card">
                 
                 <!-- Main Image Container with Slide / Drag Support (No Zoom) -->
-                <div class="position-relative text-center mb-3 main-image-container rounded-3 overflow-hidden select-none" 
+                <div class="position-relative text-center mb-2 mb-md-3 main-image-container rounded-3 overflow-hidden select-none" 
                      id="pdpMainImageWrapper"
-                     style="background: #fafafa; border: 1px solid #f1f5f9; min-height: 320px; display: flex; align-items: center; justify-content: center; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y;">
+                     style="background: #fafafa; border: 1px solid #f1f5f9; aspect-ratio: 1 / 1; width: 100%; display: flex; align-items: center; justify-content: center; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y;">
                     
                     <img id="mainProductImg" src="{{ $product->primary_image_url }}" alt="{{ $product->name }}" 
                          class="img-fluid rounded-3" 
                          draggable="false"
-                         style="max-height: 440px; width: 100%; object-fit: contain; transition: opacity 0.2s ease; pointer-events: none; user-select: none;">
+                         style="max-height: 100%; max-width: 100%; width: 100%; height: 100%; object-fit: contain; transition: opacity 0.2s ease; pointer-events: none; user-select: none;">
 
                     @if($allGalleryImages->count() > 1)
                     <!-- Prev / Next Navigation Arrows -->
@@ -85,11 +85,14 @@
                         $savings = $product->regular_price - $product->current_price;
                     @endphp
                     <del class="text-muted fs-5 tabular-nums" id="pdpRegularPriceDisplay">Tk {{ number_format($product->regular_price, 0) }}</del>
+                    @if(\App\Models\Setting::get('show_savings_badge', '0') === '1')
                     <span class="badge fs-6 px-2 py-1 fw-bold text-white shadow-2xs" id="pdpSavingsBadge" style="background-color: #16a34a;">{{ number_format($savings, 0) }} টাকা সেইভ</span>
+                    @endif
                     @endif
                 </div>
 
                 <!-- Stock Status -->
+                @if(\App\Models\Setting::get('show_stock_badge', '0') === '1')
                 <div class="mb-3">
                     @if($product->stock_quantity > 0)
                     <span class="d-inline-flex align-items-center gap-1 px-3 py-1 rounded-2 bg-white border fw-semibold shadow-2xs" id="pdpStockBadge" style="color: #e05260; border-color: #fca5a5 !important; font-size: 13px;">
@@ -102,6 +105,7 @@
                     </span>
                     @endif
                 </div>
+                @endif
 
                 @if($product->short_description)
                 <div class="mb-4 pdp-short-description">
@@ -295,55 +299,109 @@
 </div>
 
 <!-- ===========================================
-     MOBILE STICKY BOTTOM ORDER BUTTON
+     MOBILE FLOATING BOTTOM ORDER DOCK (Continuous Shake & Glow)
 =========================================== -->
 <div class="pdp-mobile-sticky-bar d-block d-md-none" id="pdpMobileStickyBar">
     <div class="d-flex align-items-center justify-content-between gap-3">
-        <div class="pdp-sticky-price-box">
-            <span class="text-muted d-block" style="font-size: 11px; line-height: 1.1;">মূল্য:</span>
-            <span class="pdp-sticky-price fw-bold text-danger" id="pdpStickyPrice">Tk {{ number_format($product->final_price, 0) }}</span>
+        <div class="pdp-sticky-price-box ps-1">
+            <span class="text-muted d-block fw-medium" style="font-size: 10.5px; line-height: 1.1;">মূল্য:</span>
+            <span class="pdp-sticky-price fw-bold text-danger tabular-nums" id="pdpStickyPrice">৳{{ number_format($product->final_price, 0) }}</span>
         </div>
-        <button type="button" onclick="triggerPdpOrder()" class="btn btn-order-pdp flex-grow-1 py-2 px-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
-            <i class="fas fa-bolt text-warning"></i>
-            <span>অর্ডার করুন</span>
+        <button type="button" onclick="triggerPdpOrder()" class="btn btn-order-pdp flex-grow-1 py-2 px-2.5 fw-bold d-flex align-items-center justify-content-center gap-1.5 text-white shadow-sm">
+            <i class="fas fa-bolt text-warning fs-5"></i>
+            <span class="fs-6 fw-bold">অর্ডার করুন</span>
         </button>
     </div>
 </div>
 
 <style>
-/* Mobile Sticky Floating Bottom Order Bar */
+/* Mobile Floating Bottom Order Dock */
 @media (max-width: 767.98px) {
     body {
-        padding-bottom: 74px !important;
+        padding-bottom: 85px !important;
     }
-    .support-floating-wrapper {
-        bottom: 84px !important;
+    body .support-floating-wrapper {
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .pdp-page-container {
+        margin-top: 6px !important;
+        padding-left: 11px !important;
+        padding-right: 11px !important;
+    }
+    .pdp-gallery-card {
+        padding: 7px !important;
+        border-radius: 12px !important;
+    }
+    .main-image-container {
+        margin-bottom: 8px !important;
     }
 }
 .pdp-mobile-sticky-bar {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    right: 12px;
+    margin: 0 auto;
+    max-width: 520px;
     z-index: 1040;
-    background: #ffffff;
-    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
-    border-top: 1px solid #e2e8f0;
-    padding: 10px 16px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1.5px solid rgba(241, 49, 36, 0.25);
+    border-radius: 50px;
+    padding: 7px 10px 7px 14px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 .pdp-sticky-price-box {
     flex-shrink: 0;
+    min-width: 72px;
+    white-space: nowrap;
 }
 .pdp-sticky-price {
-    font-size: 18px;
+    font-size: 17.5px;
     letter-spacing: -0.3px;
+    line-height: 1.2;
+    display: block;
 }
 .pdp-mobile-sticky-bar .btn-order-pdp {
     min-height: 44px;
-    font-size: 16px;
-    border-radius: 8px;
+    font-size: 15.5px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #f13124 0%, #c9251a 100%);
+    border: none;
+    color: #ffffff;
+    padding: 8px 10px;
+    transform-origin: center center;
+    animation: orderBtnPulseShake 2.6s infinite ease-in-out;
+}
+.pdp-mobile-sticky-bar .btn-order-pdp:active {
+    transform: scale(0.96) !important;
+}
+
+/* Continuous Attention-Grabbing Shake & Pulse Animation */
+@keyframes orderBtnPulseShake {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+        box-shadow: 0 4px 12px rgba(241, 49, 36, 0.4);
+    }
+    10% {
+        transform: scale(1.04) rotate(-2deg);
+        box-shadow: 0 6px 18px rgba(241, 49, 36, 0.65), 0 0 0 4px rgba(241, 49, 36, 0.18);
+    }
+    18% {
+        transform: scale(1.04) rotate(2deg);
+        box-shadow: 0 6px 18px rgba(241, 49, 36, 0.65), 0 0 0 4px rgba(241, 49, 36, 0.18);
+    }
+    26% {
+        transform: scale(1.03) rotate(-1.5deg);
+    }
+    34% {
+        transform: scale(1.02) rotate(1.5deg);
+    }
+    42% {
+        transform: scale(1) rotate(0deg);
+        box-shadow: 0 4px 12px rgba(241, 49, 36, 0.4);
+    }
 }
 
 /* Product Image Slide Arrows (No Zoom) */
@@ -850,6 +908,19 @@
                             quantity: 1
                         }]
                     }
+                });
+            }
+            if (typeof gtag === 'function') {
+                gtag('event', 'view_item', {
+                    currency: 'BDT',
+                    value: productPrice,
+                    items: [{
+                        item_id: productId,
+                        item_name: productName,
+                        item_category: categoryName,
+                        price: productPrice,
+                        quantity: 1
+                    }]
                 });
             }
         } catch (e) {

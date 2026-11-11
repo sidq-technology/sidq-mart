@@ -288,7 +288,7 @@
         $topPhone = \App\Models\Setting::get('contact_phone');
     @endphp
     @if($topNotice || $topPhone)
-    <div class="top-bar-notice">
+    <div class="top-bar-notice d-none d-md-block">
         <div class="container d-flex justify-content-between align-items-center">
             <span class="text-truncate pe-2">
                 @if($topNotice)
@@ -315,7 +315,8 @@
     @include('frontend.partials.header')
 
     <!-- Flash Notifications -->
-    <div class="container mt-3">
+    @if(session('success') || session('error') || session('info'))
+    <div class="container mt-2 mt-md-3">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
@@ -335,6 +336,7 @@
             </div>
         @endif
     </div>
+    @endif
 
     <!-- Main Content Area -->
     <main id="main-content">
@@ -428,6 +430,18 @@
                                         quantity: quantity
                                     }]
                                 }
+                            });
+                        }
+                        if (typeof gtag === 'function') {
+                            gtag('event', 'add_to_cart', {
+                                currency: 'BDT',
+                                value: trackingData.value || undefined,
+                                items: [{
+                                    item_id: String(productId),
+                                    item_name: trackingData.name || undefined,
+                                    price: trackingData.price || undefined,
+                                    quantity: quantity
+                                }]
                             });
                         }
                     } catch (trackErr) {}

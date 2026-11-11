@@ -574,6 +574,12 @@
                     <span>Security</span>
                 </a>
             </li>
+            <li class="admin-nav-item">
+                <a href="javascript:void(0)" onclick="clearWebsiteCache(this)" class="text-danger" title="ওয়েবসাইটের সকল ক্যাশ ক্লিয়ার করুন">
+                    <i class="fas fa-broom text-danger"></i>
+                    <span>ক্যাশ ক্লিয়ার</span>
+                </a>
+            </li>
             @endif
 
             <li class="border-top my-3" style="border-color: #e2e8f0 !important;"></li>
@@ -627,6 +633,18 @@
                 <a href="{{ route('home') }}" target="_blank" class="btn btn-sm btn-outline-secondary d-none d-md-inline-flex align-items-center gap-1">
                     <i class="fas fa-store"></i> লাইভ স্টোর
                 </a>
+
+                @if(auth()->check() && auth()->user()->canDo('settings.manage'))
+                <!-- Clear Cache Button -->
+                <button type="button" 
+                        class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1.5 shadow-2xs rounded-pill px-2.5 py-1" 
+                        id="adminClearCacheBtn"
+                        onclick="clearWebsiteCache(this)" 
+                        title="ওয়েবসাইটের সব ক্যাশ ও মেমোরি ক্লিয়ার করুন">
+                    <i class="fas fa-broom"></i>
+                    <span class="small fw-semibold d-none d-sm-inline" style="font-size: 12px;">ক্যাশ ক্লিয়ার</span>
+                </button>
+                @endif
 
                 <div class="dropdown">
                     <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-2 border shadow-2xs" type="button" data-bs-toggle="dropdown">
@@ -1264,6 +1282,50 @@
 
         scheduleNextPoll();
     })();
+    </script>
+    @endif
+
+    @if(auth()->check() && auth()->user()->canDo('settings.manage'))
+    <script>
+    window.clearWebsiteCache = function(btn) {
+        if (!confirm('আপনি কি নিশ্চিত যে ওয়েবসাইটের সকল ক্যাশ (Settings, Blade Views, Config, Routes) ক্লিয়ার করতে চান?')) {
+            return;
+        }
+
+        const originalHtml = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> <span style="font-size: 12px;">ক্লিয়ার হচ্ছে...</span>';
+        }
+
+        fetch("{{ route('admin.clear-cache') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message || 'ওয়েবসাইটের সকল ক্যাশ সফলভাবে ক্লিয়ার করা হয়েছে!');
+                location.reload();
+            } else {
+                alert(data.message || 'ক্যাশ ক্লিয়ার করতে সমস্যা হয়েছে।');
+            }
+        })
+        .catch(err => {
+            console.error('Cache clear error:', err);
+            alert('ক্যাশ ক্লিয়ার করার সময় সার্ভার থেকে কোনো সাড়া পাওয়া যায়নি।');
+        })
+        .finally(() => {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        });
+    };
     </script>
     @endif
 

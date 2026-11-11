@@ -233,7 +233,7 @@ class OrderController extends Controller
                     'order_status' => $validated['order_status'],
                     'customer_note' => $validated['customer_note'] ?? null,
                     'admin_notes' => $adminNoteText,
-                    'ip_address' => request()->ip() ?: '127.0.0.1',
+                    'ip_address' => 'Admin Order',
                 ]);
 
                 foreach ($orderItemsData as $itemData) {
