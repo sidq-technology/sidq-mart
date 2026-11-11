@@ -60,10 +60,10 @@ Route::get('/order-tracking', [OrderTrackingController::class, 'index'])->name('
 Route::post('/tracking/meta-capi', [TrackingController::class, 'trackCapi'])->name('tracking.meta-capi');
 
 // Courier Real-time Status Webhook Endpoints (Steadfast, Pathao)
-Route::post('/api/courier/webhook/steadfast', [\App\Http\Controllers\CourierWebhookController::class, 'handleSteadfast'])->name('courier.webhook.steadfast');
-Route::post('/api/courier/webhook/pathao', [\App\Http\Controllers\CourierWebhookController::class, 'handlePathao'])->name('courier.webhook.pathao');
-Route::post('/webhook/courier/steadfast', [\App\Http\Controllers\CourierWebhookController::class, 'handleSteadfast']);
-Route::post('/webhook/courier/pathao', [\App\Http\Controllers\CourierWebhookController::class, 'handlePathao']);
+Route::match(['get', 'post'], '/api/courier/webhook/steadfast', [\App\Http\Controllers\CourierWebhookController::class, 'handleSteadfast'])->name('courier.webhook.steadfast');
+Route::match(['get', 'post'], '/api/courier/webhook/pathao', [\App\Http\Controllers\CourierWebhookController::class, 'handlePathao'])->name('courier.webhook.pathao');
+Route::match(['get', 'post'], '/webhook/courier/steadfast', [\App\Http\Controllers\CourierWebhookController::class, 'handleSteadfast']);
+Route::match(['get', 'post'], '/webhook/courier/pathao', [\App\Http\Controllers\CourierWebhookController::class, 'handlePathao']);
 
 // Legal & Policy Pages
 Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('pages.privacy');

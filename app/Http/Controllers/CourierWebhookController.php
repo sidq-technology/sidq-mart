@@ -19,6 +19,16 @@ class CourierWebhookController extends Controller
      */
     public function handleSteadfast(Request $request): JsonResponse
     {
+        // Friendly health-check response when visited directly in a web browser (GET)
+        if ($request->isMethod('get')) {
+            return response()->json([
+                'status' => 'active',
+                'service' => 'Steadfast Courier Real-Time Webhook',
+                'supported_method' => 'POST',
+                'message' => 'Steadfast Webhook এন্ডপয়েন্ট সক্রিয় রয়েছে। Steadfast মার্চেন্ট সার্ভার থেকে স্বয়ংক্রিয় POST রিকোয়েস্ট গ্রহণের জন্য প্রস্তুত।'
+            ]);
+        }
+
         Log::info('Steadfast Webhook Received: ', $request->all());
 
         $consignmentId = $request->input('consignment_id') ?? $request->input('consignmentId') ?? $request->input('cid');
@@ -54,6 +64,16 @@ class CourierWebhookController extends Controller
      */
     public function handlePathao(Request $request): JsonResponse
     {
+        // Friendly health-check response when visited directly in a web browser (GET)
+        if ($request->isMethod('get')) {
+            return response()->json([
+                'status' => 'active',
+                'service' => 'Pathao Courier Real-Time Webhook',
+                'supported_method' => 'POST',
+                'message' => 'Pathao Webhook এন্ডপয়েন্ট সক্রিয় রয়েছে। Pathao সার্ভার থেকে স্বয়ংক্রিয় POST রিকোয়েস্ট গ্রহণের জন্য প্রস্তুত।'
+            ]);
+        }
+
         Log::info('Pathao Webhook Received: ', $request->all());
 
         $event = strtolower(trim((string) $request->input('event', '')));
