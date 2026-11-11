@@ -20,6 +20,12 @@
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Clear Cache Button -->
+            <button type="button" class="btn btn-sm btn-white bg-white border border-danger-subtle text-danger fw-bold px-3 py-2 shadow-xs rounded-3 d-inline-flex align-items-center gap-1.5" onclick="clearWebsiteCache(this)" title="ওয়েবসাইটের ক্যাশ ক্লিয়ার করুন">
+                <i class="fas fa-broom text-danger"></i>
+                <span>ক্যাশ ক্লিয়ার</span>
+            </button>
+
             <!-- Expand / Collapse All Controls -->
             <button type="button" class="btn btn-sm btn-white bg-white border text-dark fw-semibold px-3 py-2 shadow-xs rounded-3 d-inline-flex align-items-center gap-1" id="btnToggleAll">
                 <i class="fas fa-expand-alt text-secondary" id="toggleAllIcon"></i>
@@ -188,6 +194,30 @@
                             <label for="delivery_time_outside" class="form-label small fw-bold text-dark mb-1">আনুমানিক ডেলিভারি সময় (ঢাকার বাহিরে)</label>
                             <input type="text" name="delivery_time_outside" id="delivery_time_outside" class="form-control" value="{{ old('delivery_time_outside', $settings['delivery_time_outside'] ?? '২ থেকে ৩ কার্যদিবস') }}" placeholder="যেমন: ২ থেকে ৩ কার্যদিবস">
                             <div class="form-text small">কুরিয়ারের মাধ্যমে ডেলিভারি সম্পন্ন হওয়ার সম্ভাব্য সময়।</div>
+                        </div>
+
+                        <!-- Toggle Delivery Duration Display on Checkout -->
+                        <div class="col-12">
+                            <div class="p-3 rounded-3 border bg-white d-flex align-items-center justify-content-between shadow-2xs">
+                                <div>
+                                    <label class="form-check-label fw-bold text-dark d-block mb-1" for="show_delivery_time" style="cursor: pointer;">
+                                        <i class="fas fa-clock text-danger me-1"></i> চেকআউটে ডেলিভারির সময়/দিন টেক্সট দেখান (Show Delivery Time on Checkout)
+                                    </label>
+                                    <div class="text-muted small">
+                                        অন থাকলে চেকআউটের ডেলিভারি অপশনে সাবটাইটেল হিসেবে ডেলিভারির আনুমানিক সময় (যেমন: <em>হোম ডেলিভারি ১-২ দিন</em>) প্রদর্শিত হবে। বন্ধ রাখলে চেকআউট কার্ড আরও ক্লিন ও সংক্ষিপ্ত থাকবে।
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch fs-4 mb-0 ms-3">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           role="switch" 
+                                           id="show_delivery_time" 
+                                           name="show_delivery_time" 
+                                           value="1" 
+                                           style="width: 2.6em; height: 1.4em; cursor: pointer;"
+                                           {{ ($settings['show_delivery_time'] ?? '0') === '1' ? 'checked' : '' }}>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-12">
@@ -589,6 +619,62 @@
                                            value="1" 
                                            style="width: 2.8em; height: 1.5em; cursor: pointer;"
                                            {{ ($settings['show_stock_badge'] ?? '0') === '1' ? 'checked' : '' }}>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Setting 3: Floating Order Button Color -->
+                        <div class="col-12">
+                            <div class="card border bg-white p-3 p-sm-4 rounded-3 shadow-2xs">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label fw-bold text-dark d-block mb-1">
+                                            <i class="fas fa-palette text-primary me-1"></i> মোবাইল বটম "অর্ডার করুন" বাটন কালার (Floating Order Button Color)
+                                        </label>
+                                        <p class="text-muted small mb-2" style="font-size: 12px;">
+                                            মোবাইলে নিচের ফ্লোটিং ডকে থাকা "অর্ডার করুন" বাটনের ব্যাকগ্রাউন্ড ও নিয়ন গ্লো কালার। সাধারণ লাল থিমে <strong>বেগুনী (#7c3aed)</strong> বা <strong>গাঢ় ভায়োলেট</strong> দিলে বাটনটি চোখের সামনে সবচেয়ে বেশি ভেসে ওঠে!
+                                        </p>
+                                        @php $floatingBtnColor = old('pdp_floating_btn_color', $settings['pdp_floating_btn_color'] ?? '#7c3aed'); @endphp
+                                        <div class="input-group" style="max-width: 320px;">
+                                            <input type="color" id="picker_pdp_btn" class="form-control form-control-color" value="{{ $floatingBtnColor }}" title="কালার নির্বাচন করুন" style="max-width: 54px; height: 42px;">
+                                            <input type="text" name="pdp_floating_btn_color" id="pdp_floating_btn_color" class="form-control fw-bold font-monospace" value="{{ $floatingBtnColor }}" placeholder="#7c3aed">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <div class="p-3 rounded-3 border bg-light">
+                                            <span class="small fw-bold text-dark d-block mb-2">কুইক প্রিসেট কালার (Click to Apply):</span>
+                                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                                <button type="button" class="btn btn-sm border rounded-pill px-2.5 py-1 bg-white shadow-2xs btn-pdp-color-preset" data-color="#7c3aed">
+                                                    <span class="rounded-circle d-inline-block me-1" style="width:12px;height:12px;background:#7c3aed;"></span> বেগুনী (Purple)
+                                                </button>
+                                                <button type="button" class="btn btn-sm border rounded-pill px-2.5 py-1 bg-white shadow-2xs btn-pdp-color-preset" data-color="#f13124">
+                                                    <span class="rounded-circle d-inline-block me-1" style="width:12px;height:12px;background:#f13124;"></span> হট রেড (Red)
+                                                </button>
+                                                <button type="button" class="btn btn-sm border rounded-pill px-2.5 py-1 bg-white shadow-2xs btn-pdp-color-preset" data-color="#059669">
+                                                    <span class="rounded-circle d-inline-block me-1" style="width:12px;height:12px;background:#059669;"></span> এমারেল্ড গ্রিন
+                                                </button>
+                                                <button type="button" class="btn btn-sm border rounded-pill px-2.5 py-1 bg-white shadow-2xs btn-pdp-color-preset" data-color="#ea580c">
+                                                    <span class="rounded-circle d-inline-block me-1" style="width:12px;height:12px;background:#ea580c;"></span> ফায়ার অরেঞ্জ
+                                                </button>
+                                                <button type="button" class="btn btn-sm border rounded-pill px-2.5 py-1 bg-white shadow-2xs btn-pdp-color-preset" data-color="#2563eb">
+                                                    <span class="rounded-circle d-inline-block me-1" style="width:12px;height:12px;background:#2563eb;"></span> রয়্যাল ব্লু
+                                                </button>
+                                                <button type="button" class="btn btn-sm border rounded-pill px-2.5 py-1 bg-white shadow-2xs btn-pdp-color-preset" data-color="#d97706">
+                                                    <span class="rounded-circle d-inline-block me-1" style="width:12px;height:12px;background:#d97706;"></span> গোল্ডেন অ্যাম্বার
+                                                </button>
+                                            </div>
+
+                                            <!-- Live Button Preview -->
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="small text-muted fw-bold">লাইভ প্রিভিউ:</span>
+                                                <div id="pdpBtnPreview" class="px-3 py-1.5 rounded-pill text-white fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" style="background: {{ $floatingBtnColor }}; font-size: 13px;">
+                                                    <i class="fas fa-bolt text-warning"></i>
+                                                    <span>অর্ডার করুন</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1158,6 +1244,40 @@
                     settingsLiveBalance.innerText = 'অসংযুক্ত';
                 });
         }
+        // 5. PDP Floating Order Button Color Live Picker & Presets
+        const pickerPdpBtn = document.getElementById('picker_pdp_btn');
+        const inputPdpBtn = document.getElementById('pdp_floating_btn_color');
+        const previewPdpBtn = document.getElementById('pdpBtnPreview');
+
+        function updatePdpBtnPreview(color) {
+            if (previewPdpBtn) {
+                previewPdpBtn.style.background = color;
+            }
+        }
+
+        if (pickerPdpBtn && inputPdpBtn) {
+            pickerPdpBtn.addEventListener('input', function() {
+                inputPdpBtn.value = this.value;
+                updatePdpBtnPreview(this.value);
+            });
+            inputPdpBtn.addEventListener('input', function() {
+                if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+                    pickerPdpBtn.value = this.value;
+                }
+                updatePdpBtnPreview(this.value);
+            });
+        }
+
+        document.querySelectorAll('.btn-pdp-color-preset').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const color = this.getAttribute('data-color');
+                if (color) {
+                    if (pickerPdpBtn) pickerPdpBtn.value = color;
+                    if (inputPdpBtn) inputPdpBtn.value = color;
+                    updatePdpBtnPreview(color);
+                }
+            });
+        });
     });
 </script>
 @endpush

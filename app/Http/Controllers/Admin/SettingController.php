@@ -98,6 +98,10 @@ class SettingController extends Controller
             // Product Detail Page Display Customizations
             'show_savings_badge',
             'show_stock_badge',
+            'pdp_floating_btn_color',
+
+            // Checkout Display Customizations
+            'show_delivery_time',
         ];
 
         foreach ($fields as $field) {
@@ -107,7 +111,7 @@ class SettingController extends Controller
                 'bkash_enabled', 'nagad_enabled', 'rocket_enabled', 'meta_pixel_enabled',
                 'sms_enabled', 'sms_event_order_placed', 'sms_event_order_processing',
                 'sms_event_order_shipped', 'sms_event_order_delivered', 'sms_event_order_cancelled',
-                'show_savings_badge', 'show_stock_badge'
+                'show_savings_badge', 'show_stock_badge', 'show_delivery_time'
             ])) {
                 // Checkbox unselected
                 Setting::set($field, '0');

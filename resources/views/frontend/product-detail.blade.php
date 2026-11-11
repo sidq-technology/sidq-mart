@@ -314,7 +314,25 @@
     </div>
 </div>
 
+@php
+    $pdpFloatingBtnColor = \App\Models\Setting::get('pdp_floating_btn_color', '#7c3aed');
+    $pdpCleanHex = ltrim($pdpFloatingBtnColor, '#');
+    if (strlen($pdpCleanHex) === 3) {
+        $pdpCleanHex = $pdpCleanHex[0].$pdpCleanHex[0].$pdpCleanHex[1].$pdpCleanHex[1].$pdpCleanHex[2].$pdpCleanHex[2];
+    }
+    $pdpR = hexdec(substr($pdpCleanHex, 0, 2)) ?: 124;
+    $pdpG = hexdec(substr($pdpCleanHex, 2, 2)) ?: 58;
+    $pdpB = hexdec(substr($pdpCleanHex, 4, 2)) ?: 237;
+    $pdpBtnRgb = "{$pdpR}, {$pdpG}, {$pdpB}";
+@endphp
+
 <style>
+.pdp-short-description {
+    font-size: 16px !important;
+    line-height: 1.65;
+    color: #1e293b;
+}
+
 /* Mobile Floating Bottom Order Dock */
 @media (max-width: 767.98px) {
     body {
@@ -346,11 +364,12 @@
     z-index: 1040;
     background: rgba(255, 255, 255, 0.98);
     box-shadow: 0 10px 28px rgba(15, 23, 42, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1.5px solid rgba(241, 49, 36, 0.25);
+    border: 1.5px solid rgba({{ $pdpBtnRgb }}, 0.25);
     border-radius: 50px;
     padding: 7px 10px 7px 14px;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    transform-origin: center bottom;
 }
 .pdp-sticky-price-box {
     flex-shrink: 0;
@@ -367,30 +386,84 @@
     min-height: 44px;
     font-size: 15.5px;
     border-radius: 50px;
-    background: linear-gradient(135deg, #f13124 0%, #c9251a 100%);
+    background: {{ $pdpFloatingBtnColor }} !important;
     border: none;
     color: #ffffff;
     padding: 8px 10px;
     transform-origin: center center;
+    position: relative;
+    overflow: hidden;
     animation: orderBtnPulseShake 2.6s infinite ease-in-out;
 }
 .pdp-mobile-sticky-bar .btn-order-pdp:active {
     transform: scale(0.96) !important;
 }
 
+/* First-Scroll Attention Grabber on the ENTIRE FLOATING DOCK (Fires Once) */
+@keyframes pdpFullDockScrollAttention {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    20% {
+        opacity: 0.12;
+        transform: translateY(24px) scale(0.92);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    }
+    48% {
+        opacity: 1;
+        transform: translateY(-8px) scale(1.04);
+        border-color: rgba({{ $pdpBtnRgb }}, 0.95);
+        box-shadow: 0 16px 38px rgba({{ $pdpBtnRgb }}, 0.45), 0 0 0 6px rgba({{ $pdpBtnRgb }}, 0.22);
+    }
+    72% {
+        transform: translateY(2px) scale(1.01);
+        border-color: rgba({{ $pdpBtnRgb }}, 0.6);
+        box-shadow: 0 12px 26px rgba({{ $pdpBtnRgb }}, 0.3);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        border-color: rgba({{ $pdpBtnRgb }}, 0.25);
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+}
+
+.pdp-mobile-sticky-bar.pdp-dock-attention {
+    animation: pdpFullDockScrollAttention 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+}
+
+.pdp-mobile-sticky-bar.pdp-dock-attention .btn-order-pdp::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+    transform: skewX(-20deg);
+    animation: pdpBtnShimmer 0.85s ease-in-out 0.15s;
+    pointer-events: none;
+}
+
+@keyframes pdpBtnShimmer {
+    0% { left: -120%; }
+    100% { left: 220%; }
+}
+
 /* Continuous Attention-Grabbing Shake & Pulse Animation */
 @keyframes orderBtnPulseShake {
     0%, 100% {
         transform: scale(1) rotate(0deg);
-        box-shadow: 0 4px 12px rgba(241, 49, 36, 0.4);
+        box-shadow: 0 4px 12px rgba({{ $pdpBtnRgb }}, 0.4);
     }
     10% {
         transform: scale(1.04) rotate(-2deg);
-        box-shadow: 0 6px 18px rgba(241, 49, 36, 0.65), 0 0 0 4px rgba(241, 49, 36, 0.18);
+        box-shadow: 0 6px 18px rgba({{ $pdpBtnRgb }}, 0.65), 0 0 0 4px rgba({{ $pdpBtnRgb }}, 0.2);
     }
     18% {
         transform: scale(1.04) rotate(2deg);
-        box-shadow: 0 6px 18px rgba(241, 49, 36, 0.65), 0 0 0 4px rgba(241, 49, 36, 0.18);
+        box-shadow: 0 6px 18px rgba({{ $pdpBtnRgb }}, 0.65), 0 0 0 4px rgba({{ $pdpBtnRgb }}, 0.2);
     }
     26% {
         transform: scale(1.03) rotate(-1.5deg);
@@ -400,7 +473,7 @@
     }
     42% {
         transform: scale(1) rotate(0deg);
-        box-shadow: 0 4px 12px rgba(241, 49, 36, 0.4);
+        box-shadow: 0 4px 12px rgba({{ $pdpBtnRgb }}, 0.4);
     }
 }
 
@@ -1054,6 +1127,28 @@
                 }
             });
         }
+
+        // First-Scroll Attention Grabber on Mobile Order Button (Fires Once)
+        let hasTriggeredScrollAttention = false;
+        function handleFirstScrollAttention() {
+            if (hasTriggeredScrollAttention) return;
+            if (window.scrollY > 15) {
+                hasTriggeredScrollAttention = true;
+                window.removeEventListener('scroll', handleFirstScrollAttention, { passive: true });
+                window.removeEventListener('touchmove', handleFirstScrollAttention, { passive: true });
+
+                const stickyBar = document.getElementById('pdpMobileStickyBar');
+                if (stickyBar) {
+                    stickyBar.classList.add('pdp-dock-attention');
+
+                    setTimeout(function() {
+                        stickyBar.classList.remove('pdp-dock-attention');
+                    }, 1150);
+                }
+            }
+        }
+        window.addEventListener('scroll', handleFirstScrollAttention, { passive: true });
+        window.addEventListener('touchmove', handleFirstScrollAttention, { passive: true });
     });
 
     function addPdpToCart() {

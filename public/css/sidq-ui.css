@@ -649,7 +649,14 @@ a:hover {
     font-weight: 600;
     color: var(--color-text-strong);
     margin-bottom: 6px;
-    font-size: 14px;
+    font-size: 15px;
+}
+
+.checkout-box .form-label {
+    font-size: 15.5px;
+    font-weight: 700;
+    margin-bottom: 7px;
+    color: var(--color-text-strong);
 }
 
 .form-control, .form-select {
@@ -968,7 +975,7 @@ a:hover {
 /* Product Detail Short Description */
 .pdp-short-description {
     color: #1e293b;
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.65;
     font-weight: 500;
 }

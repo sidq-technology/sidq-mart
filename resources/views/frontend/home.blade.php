@@ -110,7 +110,7 @@
             </h4>
         </div>
 
-        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-4 row-cols-xl-5 g-2 g-md-3">
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-4 row-cols-xl-5 g-2 g-md-3" id="homeAllProductsGrid">
             @foreach($allProducts as $product)
             <div class="col">
                 @include('frontend.partials.product-card', ['product' => $product])
@@ -118,9 +118,69 @@
             @endforeach
         </div>
 
-        <div class="d-flex justify-content-center mt-4">
-            {{ $allProducts->links('pagination::bootstrap-5') }}
+        @if($allProducts->hasMorePages())
+        <div class="d-flex flex-column align-items-center justify-content-center mt-4 pt-2" id="loadMoreSection">
+            <button type="button" 
+                    class="btn btn-outline-danger fw-bold px-4 py-2.5 rounded-pill shadow-xs d-inline-flex align-items-center gap-2" 
+                    id="btnLoadMoreProducts" 
+                    data-page="2" 
+                    onclick="loadMoreHomeProducts()">
+                <i class="fas fa-arrow-down-long" id="loadMoreIcon"></i>
+                <span id="loadMoreText">আরও প্রোডাক্ট দেখুন (Load More)</span>
+            </button>
+            <div id="loadMoreSpinner" class="d-none text-danger fw-bold my-2 small">
+                <i class="fas fa-spinner fa-spin me-1 fs-5"></i> প্রোডাক্ট লোড হচ্ছে...
+            </div>
         </div>
+        @endif
     </section>
 </div>
+
+@push('scripts')
+<script>
+function loadMoreHomeProducts() {
+    const btn = document.getElementById('btnLoadMoreProducts');
+    const spinner = document.getElementById('loadMoreSpinner');
+    if (!btn || btn.disabled) return;
+
+    const page = btn.getAttribute('data-page') || 2;
+    btn.disabled = true;
+    btn.classList.add('d-none');
+    if (spinner) spinner.classList.remove('d-none');
+
+    fetch("{{ route('home') }}?page=" + page, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const grid = document.getElementById('homeAllProductsGrid');
+        if (grid && data.html) {
+            grid.insertAdjacentHTML('beforeend', data.html);
+        }
+
+        if (data.hasMore) {
+            btn.setAttribute('data-page', data.nextPage);
+            btn.disabled = false;
+            btn.classList.remove('d-none');
+        } else {
+            const section = document.getElementById('loadMoreSection');
+            if (section) {
+                section.innerHTML = '<span class="text-muted small fw-semibold"><i class="fas fa-check-circle text-success me-1"></i>সবগুলো পণ্য লোড করা হয়েছে</span>';
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Error loading products:', err);
+        btn.disabled = false;
+        btn.classList.remove('d-none');
+    })
+    .finally(() => {
+        if (spinner) spinner.classList.add('d-none');
+    });
+}
+</script>
+@endpush
 @endsection

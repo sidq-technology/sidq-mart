@@ -12,6 +12,60 @@
                     <i class="fas fa-shipping-fast text-danger me-2"></i> বিলিং ও ডেলিভারি তথ্য
                 </h4>
 
+                <style>
+                    .checkout-box .form-label {
+                        font-size: 15.5px !important;
+                        font-weight: 700 !important;
+                        margin-bottom: 7px !important;
+                        color: #1e293b !important;
+                    }
+                    .checkout-box .form-control {
+                        font-size: 15px;
+                        border-radius: 8px;
+                    }
+                    .checkout-box .form-control::placeholder {
+                        font-size: 14px;
+                        color: #94a3b8;
+                    }
+
+                    /* Continuous Shake & Pulse on Order Confirm Button */
+                    @keyframes checkoutOrderBtnShake {
+                        0%, 100% {
+                            transform: scale(1) rotate(0deg);
+                            box-shadow: 0 4px 14px rgba(241, 49, 36, 0.35);
+                        }
+                        10% {
+                            transform: scale(1.02) rotate(-1.2deg);
+                            box-shadow: 0 6px 20px rgba(241, 49, 36, 0.6), 0 0 0 4px rgba(241, 49, 36, 0.18);
+                        }
+                        18% {
+                            transform: scale(1.02) rotate(1.2deg);
+                            box-shadow: 0 6px 20px rgba(241, 49, 36, 0.6), 0 0 0 4px rgba(241, 49, 36, 0.18);
+                        }
+                        26% {
+                            transform: scale(1.01) rotate(-0.8deg);
+                        }
+                        34% {
+                            transform: scale(1.01) rotate(0.8deg);
+                        }
+                        42% {
+                            transform: scale(1) rotate(0deg);
+                            box-shadow: 0 4px 14px rgba(241, 49, 36, 0.35);
+                        }
+                    }
+
+                    .checkout-btn-order {
+                        transform-origin: center center;
+                        animation: checkoutOrderBtnShake 2.6s infinite ease-in-out;
+                        border-radius: 8px;
+                        font-weight: 700;
+                        transition: transform 0.15s ease;
+                    }
+                    .checkout-btn-order:active {
+                        transform: scale(0.97) !important;
+                    }
+                </style>
+
 
 
                 @if(isset($errors) && $errors->any())
@@ -46,12 +100,9 @@
                     <!-- Customer Phone -->
                     <div class="mb-3">
                         <label for="customer_phone" class="form-label fw-bold text-dark">মোবাইল নাম্বার <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light text-muted fw-bold">+88</span>
-                            <input type="tel" name="customer_phone" id="customer_phone" class="form-control @error('customer_phone') is-invalid @enderror" value="{{ old('customer_phone', auth()->user()->phone ?? ($savedGuest['customer_phone'] ?? '')) }}" required>
-                        </div>
+                        <input type="tel" name="customer_phone" id="customer_phone" class="form-control @error('customer_phone') is-invalid @enderror" value="{{ old('customer_phone', auth()->user()->phone ?? ($savedGuest['customer_phone'] ?? '')) }}" placeholder="01XXXXXXXXX" required>
                         @error('customer_phone')
-                        <div class="text-danger small mt-1">{{ $message }}</div>
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -79,7 +130,9 @@
                                         <input type="radio" name="delivery_zone" id="zoneInsideDhaka" value="inside_dhaka" class="form-check-input me-2 mt-0" {{ $selectedZone === 'inside_dhaka' ? 'checked' : '' }} onchange="updateDeliveryCharge('inside_dhaka')">
                                         <div>
                                             <div class="fw-bold">ঢাকার ভিতরে</div>
-                                            <small class="text-muted">হোম ডেলিভারি (১-২ দিন)</small>
+                                            @if(\App\Models\Setting::get('show_delivery_time', '0') === '1')
+                                            <small class="text-muted">{{ \App\Models\Setting::get('delivery_time_inside', 'হোম ডেলিভারি (১-২ দিন)') }}</small>
+                                            @endif
                                         </div>
                                     </div>
                                     @if($insideDhakaFee <= 0)
@@ -97,7 +150,9 @@
                                         <input type="radio" name="delivery_zone" id="zoneOutsideDhaka" value="outside_dhaka" class="form-check-input me-2 mt-0" {{ $selectedZone === 'outside_dhaka' ? 'checked' : '' }} onchange="updateDeliveryCharge('outside_dhaka')">
                                         <div>
                                             <div class="fw-bold">ঢাকার বাহিরে</div>
-                                            <small class="text-muted">হোম ডেলিভারি (২-৩ দিন)</small>
+                                            @if(\App\Models\Setting::get('show_delivery_time', '0') === '1')
+                                            <small class="text-muted">{{ \App\Models\Setting::get('delivery_time_outside', 'হোম ডেলিভারি (২-৩ দিন)') }}</small>
+                                            @endif
                                         </div>
                                     </div>
                                     @if($outsideDhakaFee <= 0)
@@ -191,7 +246,7 @@
                     </div>
 
                     <!-- Submit Order Button -->
-                    <button type="submit" class="btn btn-primary-sidq w-100 py-3 fs-5 shadow-sm">
+                    <button type="submit" class="btn btn-primary-sidq w-100 py-3 fs-5 shadow-sm checkout-btn-order">
                         <i class="fas fa-lock me-2"></i> অর্ডার কনফার্ম করুন
                     </button>
                 </form>

@@ -34,6 +34,19 @@ class HomeController extends Controller
             return Product::where('is_active', true)->latest()->paginate(16);
         });
 
+        // AJAX response for "Load More Products" on Homepage
+        if ($request->ajax()) {
+            $html = '';
+            foreach ($allProducts as $product) {
+                $html .= '<div class="col">' . view('frontend.partials.product-card', compact('product'))->render() . '</div>';
+            }
+            return response()->json([
+                'html' => $html,
+                'hasMore' => $allProducts->hasMorePages(),
+                'nextPage' => $allProducts->currentPage() + 1,
+            ]);
+        }
+
         return view('frontend.home', compact('banners', 'topCategories', 'flashSales', 'featuredProducts', 'allProducts'));
     }
 
