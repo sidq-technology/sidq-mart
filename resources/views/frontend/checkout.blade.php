@@ -289,13 +289,49 @@
 
         // Meta Pixel & CAPI Hybrid Tracking: InitiateCheckout
         if (typeof window.sidqTrackEvent === 'function') {
+            const initialPhone = document.getElementById('customer_phone')?.value?.trim() || '';
+            const initialName = document.getElementById('customer_name')?.value?.trim() || '';
+            const initUserData = {};
+            if (initialPhone) initUserData.phone = initialPhone;
+            if (initialName) initUserData.name = initialName;
+
             window.sidqTrackEvent('InitiateCheckout', {
                 num_items: cartItemCount,
                 content_ids: cartItemIds,
                 content_type: 'product',
                 value: cartSubtotal,
                 currency: 'BDT'
-            });
+            }, initUserData);
+
+            // Dynamic Advanced Matching: Update InitiateCheckout when customer enters phone number
+            const phoneField = document.getElementById('customer_phone');
+            let hasTrackedLivePhone = Boolean(initialPhone && initialPhone.replace(/[^\d]/g, '').length >= 10);
+            if (phoneField && !hasTrackedLivePhone) {
+                const handlePhoneIdentified = function() {
+                    if (hasTrackedLivePhone) return;
+                    const cleanPhone = phoneField.value.replace(/[^\d]/g, '');
+                    if (cleanPhone.length >= 10) {
+                        hasTrackedLivePhone = true;
+                        const custName = document.getElementById('customer_name')?.value?.trim() || '';
+                        window.sidqTrackEvent('InitiateCheckout', {
+                            num_items: cartItemCount,
+                            content_ids: cartItemIds,
+                            content_type: 'product',
+                            value: cartSubtotal,
+                            currency: 'BDT'
+                        }, {
+                            phone: cleanPhone,
+                            name: custName
+                        });
+                    }
+                };
+                phoneField.addEventListener('blur', handlePhoneIdentified);
+                phoneField.addEventListener('input', function() {
+                    if (this.value.replace(/[^\d]/g, '').length >= 11) {
+                        handlePhoneIdentified();
+                    }
+                });
+            }
         }
 
         // TikTok Pixel: InitiateCheckout

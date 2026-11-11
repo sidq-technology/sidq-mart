@@ -82,10 +82,55 @@
         $pixelId = \App\Models\Setting::get('meta_pixel_id');
         $pixelEnabled = \App\Models\Setting::get('meta_pixel_enabled', '1') == '1';
         $metaTestCode = \App\Models\Setting::get('meta_test_event_code');
+
+        $identifiedUserData = [];
+        if (auth()->check()) {
+            $user = auth()->user();
+            if (!empty($user->phone)) $identifiedUserData['phone'] = $user->phone;
+            if (!empty($user->name)) $identifiedUserData['name'] = $user->name;
+            if (!empty($user->email)) $identifiedUserData['email'] = $user->email;
+            $identifiedUserData['external_id'] = (string) $user->id;
+        } else {
+            $guestProfile = request()->cookie('sidq_saved_guest_profile');
+            if ($guestProfile) {
+                $guestObj = json_decode($guestProfile, true) ?: [];
+                if (!empty($guestObj['customer_phone'])) $identifiedUserData['phone'] = $guestObj['customer_phone'];
+                if (!empty($guestObj['customer_name'])) $identifiedUserData['name'] = $guestObj['customer_name'];
+                $identifiedUserData['external_id'] = session()->getId();
+            }
+        }
     @endphp
     @if($pixelEnabled && !empty($pixelId))
     <!-- Meta Pixel & Native Conversions API (CAPI) Hybrid Tracking -->
     <script>
+        // 0. High-Coverage _fbp & _fbc Click ID Engine (Runs immediately before any events)
+        (function() {
+            try {
+                // A. Instant Ad Click ID (_fbc) Capture from URL with 90-day persistence
+                const urlParams = new URLSearchParams(window.location.search);
+                const fbclid = urlParams.get('fbclid');
+                if (fbclid) {
+                    const fbcVal = 'fb.1.' + Date.now() + '.' + fbclid;
+                    document.cookie = '_fbc=' + encodeURIComponent(fbcVal) + '; path=/; max-age=7776000; SameSite=Lax';
+                    try { sessionStorage.setItem('sidq_fbc', fbcVal); } catch(e) {}
+                } else if (!document.cookie.includes('_fbc=')) {
+                    // Restore from sessionStorage across internal navigation
+                    try {
+                        const savedFbc = sessionStorage.getItem('sidq_fbc');
+                        if (savedFbc) {
+                            document.cookie = '_fbc=' + encodeURIComponent(savedFbc) + '; path=/; max-age=7776000; SameSite=Lax';
+                        }
+                    } catch(e) {}
+                }
+
+                // B. Instant First-Party Browser ID (_fbp) Generation (Guarantees 100% coverage on first-page ViewContent)
+                if (!document.cookie.includes('_fbp=')) {
+                    const fbpVal = 'fb.1.' + Date.now() + '.' + Math.floor(Math.random() * 8999999999 + 1000000000);
+                    document.cookie = '_fbp=' + encodeURIComponent(fbpVal) + '; path=/; max-age=7776000; SameSite=Lax';
+                }
+            } catch(e) {}
+        })();
+
         !function(f,b,e,v,n,t,s)
         {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
         n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -94,12 +139,42 @@
         t.src=v;s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '{{ $pixelId }}');
+
+        // Advanced Matching initialization if customer identity is already known
+        const initialUserData = @json($identifiedUserData);
+        const fbInitOptions = {};
+        if (initialUserData && initialUserData.phone) {
+            let ph = String(initialUserData.phone).replace(/[^\d]/g, '');
+            if (ph.startsWith('01')) ph = '88' + ph;
+            else if (ph.startsWith('1') && ph.length === 10) ph = '880' + ph;
+            fbInitOptions.ph = ph;
+        }
+        if (initialUserData && initialUserData.email) {
+            fbInitOptions.em = initialUserData.email;
+        }
+        if (initialUserData && initialUserData.name) {
+            const parts = initialUserData.name.trim().split(' ');
+            fbInitOptions.fn = parts[0];
+            if (parts.length > 1) fbInitOptions.ln = parts.slice(1).join(' ');
+        }
+        if (initialUserData && initialUserData.external_id) {
+            fbInitOptions.external_id = initialUserData.external_id;
+        }
+
+        fbq('init', '{{ $pixelId }}', fbInitOptions);
 
         // Global SIDQ Hybrid Tracking Engine (Browser Pixel + Server CAPI Deduplication)
         window.sidqTrackEvent = function(eventName, customData = {}, userData = {}, eventId = null) {
             if (!eventId) {
                 eventId = 'evt_' + eventName.toLowerCase() + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+            }
+
+            // Auto-merge identified customer parameters for higher Event Match Quality
+            if (initialUserData) {
+                if (!userData.phone && initialUserData.phone) userData.phone = initialUserData.phone;
+                if (!userData.name && initialUserData.name) userData.name = initialUserData.name;
+                if (!userData.email && initialUserData.email) userData.email = initialUserData.email;
+                if (!userData.external_id && initialUserData.external_id) userData.external_id = initialUserData.external_id;
             }
 
             // 1. Browser Meta Pixel with Deduplication eventID & Test Event Code
@@ -113,13 +188,13 @@
 
             // 2. Server-Side Meta CAPI via Non-Blocking Beacon / Fetch
             try {
-                // Auto-capture cookies & session external_id
+                // Ensure cookies are extracted
                 try {
                     const cookieParts = document.cookie.split(';');
                     for (let c of cookieParts) {
                         const [k, v] = c.trim().split('=');
-                        if (k === '_fbp' && !userData.fbp) userData.fbp = v;
-                        if (k === '_fbc' && !userData.fbc) userData.fbc = v;
+                        if (k === '_fbp' && !userData.fbp) userData.fbp = decodeURIComponent(v);
+                        if (k === '_fbc' && !userData.fbc) userData.fbc = decodeURIComponent(v);
                     }
                 } catch (e) {}
 

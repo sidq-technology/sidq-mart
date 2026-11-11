@@ -34,11 +34,26 @@ class TrackingController extends Controller
             $userData['external_id'] = $request->session()->getId();
         }
 
-        if ($fbp = $request->cookie('_fbp')) {
+        if (empty($userData['fbp']) && ($fbp = $request->cookie('_fbp'))) {
             $userData['fbp'] = $fbp;
         }
-        if ($fbc = $request->cookie('_fbc')) {
+        if (empty($userData['fbc']) && ($fbc = $request->cookie('_fbc'))) {
             $userData['fbc'] = $fbc;
+        }
+
+        // Fallback: Recover fbc if fbclid is in current query or referer
+        if (empty($userData['fbc'])) {
+            $fbclid = $request->query('fbclid');
+            if (empty($fbclid) && $request->headers->has('referer')) {
+                $refQuery = parse_url($request->header('referer'), PHP_URL_QUERY);
+                if (!empty($refQuery)) {
+                    parse_str($refQuery, $refParams);
+                    $fbclid = $refParams['fbclid'] ?? null;
+                }
+            }
+            if (!empty($fbclid)) {
+                $userData['fbc'] = 'fb.1.' . time() . '.' . $fbclid;
+            }
         }
 
         $customData = $validated['custom_data'] ?? [];

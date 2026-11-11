@@ -145,16 +145,19 @@ class MetaCapiService
     /**
      * Send Purchase Event for an Order directly from Server
      */
-    public function sendPurchaseEvent(Order $order, string $eventId): array
+    public function sendPurchaseEvent(Order $order, string $eventId, array $extraUserData = []): array
     {
-        $userData = [
+        $userData = array_merge([
             'phone' => $order->customer_phone,
             'name' => $order->customer_name,
             'client_ip_address' => $order->ip_address ?: request()->ip(),
             'client_user_agent' => request()->userAgent(),
             'city' => $order->delivery_zone === 'inside_dhaka' ? 'Dhaka' : '',
             'country' => 'bd',
-        ];
+            'external_id' => $order->user_id ? (string) $order->user_id : $order->customer_phone,
+            'fbp' => request()->cookie('_fbp'),
+            'fbc' => request()->cookie('_fbc'),
+        ], array_filter($extraUserData, fn($v) => !is_null($v) && $v !== ''));
 
         if ($order->user && !empty($order->user->email)) {
             $userData['email'] = $order->user->email;
@@ -339,6 +342,9 @@ class MetaCapiService
         }
 
         $fbc = $raw['fbc'] ?? request()->cookie('_fbc');
+        if (empty($fbc) && request()->filled('fbclid')) {
+            $fbc = 'fb.1.' . time() . '.' . request()->query('fbclid');
+        }
         if (!empty($fbc)) {
             $userData['fbc'] = $fbc;
         }

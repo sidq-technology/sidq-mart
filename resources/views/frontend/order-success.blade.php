@@ -304,10 +304,40 @@
             const purchaseEventId = 'order_' + orderNumber;
             if (typeof fbq === 'function') {
                 const fbPurchaseOptions = { eventID: purchaseEventId };
-                @php $orderSuccessTestCode = \App\Models\Setting::get('meta_test_event_code'); @endphp
+                @php
+                    $orderSuccessPixelId = \App\Models\Setting::get('meta_pixel_id');
+                    $orderSuccessTestCode = \App\Models\Setting::get('meta_test_event_code');
+                @endphp
                 @if(!empty($orderSuccessTestCode))
                 fbPurchaseOptions.test_event_code = '{{ $orderSuccessTestCode }}';
                 @endif
+
+                @php
+                    $cleanCustPhone = preg_replace('/[^\d]/', '', $order->customer_phone ?? '');
+                    if (str_starts_with($cleanCustPhone, '01')) {
+                        $cleanCustPhone = '88' . $cleanCustPhone;
+                    } elseif (str_starts_with($cleanCustPhone, '1') && strlen($cleanCustPhone) === 10) {
+                        $cleanCustPhone = '880' . $cleanCustPhone;
+                    }
+                    $nameParts = explode(' ', trim($order->customer_name ?? ''), 2);
+                    $firstName = strtolower(trim($nameParts[0] ?? ''));
+                    $lastName = isset($nameParts[1]) ? strtolower(trim($nameParts[1])) : '';
+                @endphp
+
+                // Browser Pixel Advanced Matching User Properties
+                @if(!empty($orderSuccessPixelId))
+                try {
+                    fbq('setUserProperties', '{{ $orderSuccessPixelId }}', {
+                        @if(!empty($cleanCustPhone)) ph: '{{ hash('sha256', $cleanCustPhone) }}', @endif
+                        @if(!empty($firstName)) fn: '{{ hash('sha256', $firstName) }}', @endif
+                        @if(!empty($lastName)) ln: '{{ hash('sha256', $lastName) }}', @endif
+                        @if(!empty($order->user?->email)) em: '{{ hash('sha256', strtolower(trim($order->user->email))) }}', @endif
+                        country: '{{ hash('sha256', 'bd') }}',
+                        external_id: '{{ hash('sha256', (string) ($order->user_id ?? $order->customer_phone)) }}'
+                    });
+                } catch(e) {}
+                @endif
+
                 fbq('track', 'Purchase', {
                     content_type: 'product',
                     content_ids: orderItemIds,

@@ -235,8 +235,21 @@ class CheckoutController extends Controller
         // Dispatch Server-side CAPI Purchase Event asynchronously
         $capiService = app(\App\Services\MetaCapiService::class);
         if ($capiService->isEnabled()) {
-            dispatch(function () use ($capiService, $order, $purchaseEventId) {
-                $capiService->sendPurchaseEvent($order, $purchaseEventId);
+            $fbp = $request->cookie('_fbp');
+            $fbc = $request->cookie('_fbc');
+            if (empty($fbc) && $request->filled('fbclid')) {
+                $fbc = 'fb.1.' . time() . '.' . $request->input('fbclid');
+            }
+            $clientIp = $capiService->resolveClientIp($request->ip());
+            $userAgent = $request->userAgent();
+
+            dispatch(function () use ($capiService, $order, $purchaseEventId, $fbp, $fbc, $clientIp, $userAgent) {
+                $capiService->sendPurchaseEvent($order, $purchaseEventId, [
+                    'fbp' => $fbp,
+                    'fbc' => $fbc,
+                    'client_ip_address' => $clientIp,
+                    'client_user_agent' => $userAgent,
+                ]);
             })->afterResponse();
         }
 
