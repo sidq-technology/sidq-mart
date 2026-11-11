@@ -62,6 +62,7 @@ class Product extends Model
         static::saved(function () {
             Cache::forget('home_flash_sales');
             Cache::forget('home_featured_products');
+            Cache::forget('meta_product_catalog_xml');
             for ($i = 1; $i <= 10; $i++) {
                 Cache::forget("home_all_products_p_{$i}");
             }
@@ -70,6 +71,7 @@ class Product extends Model
         static::deleted(function () {
             Cache::forget('home_flash_sales');
             Cache::forget('home_featured_products');
+            Cache::forget('meta_product_catalog_xml');
             for ($i = 1; $i <= 10; $i++) {
                 Cache::forget("home_all_products_p_{$i}");
             }

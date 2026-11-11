@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class MetaCapiService
 {
-    protected string $graphApiVersion = 'v19.0';
+    protected string $graphApiVersion = 'v21.0';
     protected string $baseUrl = 'https://graph.facebook.com';
 
     /**
@@ -169,6 +169,8 @@ class MetaCapiService
                 'id' => (string) $item->product_id,
                 'quantity' => (int) $item->quantity,
                 'item_price' => (float) $item->unit_price,
+                'title' => (string) $item->product_name,
+                'category' => (string) ($item->product?->category?->name ?? 'General'),
             ];
         }
 

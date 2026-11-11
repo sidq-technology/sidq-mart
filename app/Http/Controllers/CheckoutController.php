@@ -243,7 +243,7 @@ class CheckoutController extends Controller
             $fbp = $request->cookie('_fbp');
             $fbc = $request->cookie('_fbc');
             if (empty($fbc) && $request->filled('fbclid')) {
-                $fbc = 'fb.1.' . time() . '.' . $request->input('fbclid');
+                $fbc = 'fb.1.' . (time() * 1000) . '.' . $request->input('fbclid');
             }
             $clientIp = $capiService->resolveClientIp($request->ip());
             $userAgent = $request->userAgent();

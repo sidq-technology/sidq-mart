@@ -59,6 +59,10 @@ Route::get('/order-tracking', [OrderTrackingController::class, 'index'])->name('
 // Async Analytics & Meta CAPI Beacon Endpoint
 Route::post('/tracking/meta-capi', [TrackingController::class, 'trackCapi'])->name('tracking.meta-capi');
 
+// Meta / Facebook Product Catalog XML Feed (Dynamic Product Ads & Advantage+ Catalog)
+Route::get('/feed/facebook-catalog.xml', [\App\Http\Controllers\MetaCatalogFeedController::class, 'index'])->name('feed.facebook.catalog');
+Route::get('/feed/meta-products.xml', [\App\Http\Controllers\MetaCatalogFeedController::class, 'index']);
+
 // Courier Real-time Status Webhook Endpoints (Steadfast, Pathao)
 Route::match(['get', 'post'], '/api/courier/webhook/steadfast', [\App\Http\Controllers\CourierWebhookController::class, 'handleSteadfast'])->name('courier.webhook.steadfast');
 Route::match(['get', 'post'], '/api/courier/webhook/pathao', [\App\Http\Controllers\CourierWebhookController::class, 'handlePathao'])->name('courier.webhook.pathao');

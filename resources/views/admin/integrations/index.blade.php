@@ -115,6 +115,18 @@
                                     </div>
                                     <div id="testMetaAlert" class="mt-2 d-none"></div>
                                 </div>
+
+                                <div class="mt-3 pt-3 border-top">
+                                    <label class="form-label small fw-bold text-dark mb-1">
+                                        <i class="fas fa-rss text-warning me-1"></i> Meta Dynamic Product Catalog Feed (XML)
+                                    </label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control bg-light font-monospace" value="{{ url('/feed/facebook-catalog.xml') }}" readonly id="metaCatalogFeedUrl">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('metaCatalogFeedUrl').value); this.innerText='কপি হয়েছে!'; setTimeout(()=>this.innerText='কপি করুন', 2000)">কপি করুন</button>
+                                        <a href="{{ url('/feed/facebook-catalog.xml') }}" target="_blank" class="btn btn-outline-primary" title="ফিড ভিউ করুন"><i class="fas fa-external-link-alt"></i></a>
+                                    </div>
+                                    <div class="form-text small">Meta Commerce Manager &gt; Catalogs &gt; Data Sources-এ এই লিঙ্কটি শিডিউল ফিড (Scheduled Feed) হিসেবে দিলে প্রতিদিন সব প্রোডাক্টের দাম, স্টক ও ছবি ফেসবুক বিজ্ঞাপনের জন্য স্বয়ংক্রিয়ভাবে সিঙ্ক হবে।</div>
+                                </div>
                             </div>
                         </div>
                     </div>
