@@ -240,6 +240,12 @@
 
 <script>
 (function() {
+    'use strict';
+
+    // Prevent double-initialization
+    if (window.__sidqFomoInitialized) return;
+    window.__sidqFomoInitialized = true;
+
     // If dismissed in this session, do not show again
     if (sessionStorage.getItem('sidq_fomo_dismissed') === '1') {
         return;
@@ -280,7 +286,10 @@
     const locationEl = document.getElementById('fomoLocation');
     const timeEl = document.getElementById('fomoTime');
 
+    if (!toastEl) return;
+
     let fomoTimeout = null;
+    let fomoNextTimer = null;
     let isFomoVisible = false;
 
     function getRandomItem(arr) {
@@ -291,25 +300,30 @@
         if (sessionStorage.getItem('sidq_fomo_dismissed') === '1') return;
         if (isFomoVisible) return;
 
+        if (fomoTimeout) clearTimeout(fomoTimeout);
+        if (fomoNextTimer) clearTimeout(fomoNextTimer);
+
         const prod = getRandomItem(fomoProducts);
         const buyer = getRandomItem(buyerNames);
         const loc = getRandomItem(locations);
         const tm = getRandomItem(times);
 
-        buyerNameEl.textContent = buyer;
-        productTitleEl.textContent = prod.name;
-        productImgEl.src = prod.image;
-        productImgEl.alt = prod.name;
-        productLinkEl.href = prod.url;
-        locationEl.textContent = loc;
-        timeEl.textContent = tm;
+        if (buyerNameEl) buyerNameEl.textContent = buyer;
+        if (productTitleEl) productTitleEl.textContent = prod.name;
+        if (productImgEl) {
+            productImgEl.src = prod.image;
+            productImgEl.alt = prod.name;
+        }
+        if (productLinkEl) productLinkEl.href = prod.url;
+        if (locationEl) locationEl.textContent = loc;
+        if (timeEl) timeEl.textContent = tm;
 
         toastEl.style.display = 'block';
         toastEl.classList.remove('fomo-leaving');
         toastEl.classList.add('fomo-entering');
         isFomoVisible = true;
 
-        // Auto hide after configured duration
+        // Auto hide strictly after configured duration
         fomoTimeout = setTimeout(function() {
             hideFomo();
         }, durationMs);
@@ -317,6 +331,10 @@
 
     function hideFomo() {
         if (!isFomoVisible) return;
+
+        if (fomoTimeout) clearTimeout(fomoTimeout);
+        if (fomoNextTimer) clearTimeout(fomoNextTimer);
+
         toastEl.classList.remove('fomo-entering');
         toastEl.classList.add('fomo-leaving');
 
@@ -325,9 +343,9 @@
             toastEl.classList.remove('fomo-leaving');
             isFomoVisible = false;
 
-            // Schedule next popup after configured interval
+            // Schedule next popup strictly after configured interval
             if (sessionStorage.getItem('sidq_fomo_dismissed') !== '1') {
-                setTimeout(showRandomFomo, intervalMs);
+                fomoNextTimer = setTimeout(showRandomFomo, intervalMs);
             }
         }, 420);
     }
@@ -338,12 +356,13 @@
             e.stopPropagation();
         }
         if (fomoTimeout) clearTimeout(fomoTimeout);
+        if (fomoNextTimer) clearTimeout(fomoNextTimer);
         sessionStorage.setItem('sidq_fomo_dismissed', '1');
         hideFomo();
     };
 
-    // First trigger after configured first delay (default 7s)
-    setTimeout(showRandomFomo, firstDelayMs);
+    // First trigger strictly after configured first delay
+    fomoNextTimer = setTimeout(showRandomFomo, firstDelayMs);
 })();
 </script>
 @endif

@@ -64,22 +64,6 @@
         <h3 class="sidq-exit-heading">{!! e($heading) !!}</h3>
         <p class="sidq-exit-subtitle">{!! e($subtitle) !!}</p>
 
-        @if(!empty($couponCode))
-        <!-- Coupon Ticket Visual Box -->
-        <div class="sidq-coupon-ticket">
-            <div class="sidq-coupon-left">
-                <span class="sidq-coupon-tag"><i class="fas fa-ticket-alt me-1"></i> স্পেশাল কুপন</span>
-                <span class="sidq-coupon-code">{{ $couponCode }}</span>
-            </div>
-            <div class="sidq-coupon-divider"></div>
-            <div class="sidq-coupon-right">
-                <span class="sidq-coupon-applied-note">
-                    <i class="fas fa-check-circle text-success me-1"></i> ১-ক্লিকে অটো অ্যাপ্লাই
-                </span>
-            </div>
-        </div>
-        @endif
-
         @if($currentProduct)
         <!-- Compact PDP Product Preview -->
         <div class="sidq-exit-product-strip">
@@ -240,7 +224,7 @@
     line-height: 1.35;
 }
 .sidq-exit-subtitle {
-    font-size: 13.5px;
+    font-size: 14.5px;
     color: #475569;
     line-height: 1.5;
     margin-bottom: 16px;
@@ -406,7 +390,7 @@
         font-size: 18px;
     }
     .sidq-exit-subtitle {
-        font-size: 13px;
+        font-size: 14px;
     }
     .sidq-exit-claim-btn {
         font-size: 15px;
