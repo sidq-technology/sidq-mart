@@ -12,14 +12,7 @@
                     <i class="fas fa-shipping-fast text-danger me-2"></i> বিলিং ও ডেলিভারি তথ্য
                 </h4>
 
-                @guest
-                <div class="alert border d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-3 small" style="background: #f8fffa; border-color: #e2f0e8 !important;">
-                    <span><i class="fas fa-user-circle me-1 text-danger"></i> পূর্বেই অ্যাকাউন্ট আছে? দ্রুত অর্ডারের জন্য লগইন করুন।</span>
-                    <button type="button" class="btn btn-sm btn-outline-danger fw-semibold px-3 py-1" data-bs-toggle="modal" data-bs-target="#customerAuthModal">
-                        লগইন
-                    </button>
-                </div>
-                @endguest
+
 
                 @if(isset($errors) && $errors->any())
                 <div class="alert alert-danger mb-4 shadow-xs border-0 rounded-3">
@@ -43,7 +36,7 @@
 
                     <!-- Customer Name -->
                     <div class="mb-3">
-                        <label for="customer_name" class="form-label">আপনার নাম <span class="text-danger">*</span></label>
+                        <label for="customer_name" class="form-label fw-bold text-dark">আপনার নাম <span class="text-danger">*</span></label>
                         <input type="text" name="customer_name" id="customer_name" class="form-control @error('customer_name') is-invalid @enderror" value="{{ old('customer_name', auth()->user()->name ?? ($savedGuest['customer_name'] ?? '')) }}" placeholder="সম্পূর্ণ নাম লিখুন" required>
                         @error('customer_name')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -52,7 +45,7 @@
 
                     <!-- Customer Phone -->
                     <div class="mb-3">
-                        <label for="customer_phone" class="form-label">মোবাইল নাম্বার <span class="text-danger">*</span></label>
+                        <label for="customer_phone" class="form-label fw-bold text-dark">মোবাইল নাম্বার <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted fw-bold">+88</span>
                             <input type="tel" name="customer_phone" id="customer_phone" class="form-control @error('customer_phone') is-invalid @enderror" value="{{ old('customer_phone', auth()->user()->phone ?? ($savedGuest['customer_phone'] ?? '')) }}" required>
@@ -64,7 +57,7 @@
 
                     <!-- Shipping Address -->
                     <div class="mb-3">
-                        <label for="shipping_address" class="form-label">সম্পূর্ণ ঠিকানা <span class="text-danger">*</span></label>
+                        <label for="shipping_address" class="form-label fw-bold text-dark">সম্পূর্ণ ঠিকানা <span class="text-danger">*</span></label>
                         <textarea name="shipping_address" id="shipping_address" rows="3" class="form-control @error('shipping_address') is-invalid @enderror" placeholder="বাড়ি নম্বর, রোড নম্বর, এলাকা, থানা, জেলা বিস্তারিত লিখুন..." required>{{ old('shipping_address', auth()->user()->address ?? ($savedGuest['shipping_address'] ?? '')) }}</textarea>
                         @error('shipping_address')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -76,7 +69,7 @@
                         $selectedZone = old('delivery_zone', $savedGuest['delivery_zone'] ?? 'inside_dhaka');
                     @endphp
                     <div class="mb-4">
-                        <label class="form-label d-block">ডেলিভারি এরিয়া নির্বাচন করুন <span class="text-danger">*</span></label>
+                        <label class="form-label d-block fw-bold text-dark">ডেলিভারি এরিয়া নির্বাচন করুন <span class="text-danger">*</span></label>
                         
                         <div class="row g-2">
                             <!-- Inside Dhaka -->
