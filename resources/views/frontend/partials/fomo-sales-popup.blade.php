@@ -1,0 +1,332 @@
+@if(\App\Models\Setting::get('fomo_popup_enabled', '1') === '1' && !request()->routeIs('checkout', 'order.success', 'admin.*'))
+@php
+    $fomoProducts = [];
+    if (isset($product) && $product instanceof \App\Models\Product) {
+        $fomoProducts = [
+            [
+                'id' => $product->id,
+                'name' => $product->name,
+                'image' => $product->primary_image_url,
+                'url' => route('product.detail', $product->slug)
+            ]
+        ];
+    } else {
+        $fomoProducts = \Illuminate\Support\Facades\Cache::remember('fomo_featured_products', 1800, function() {
+            $prods = \App\Models\Product::where('is_active', true)
+                ->where('is_featured', true)
+                ->latest('id')
+                ->take(8)
+                ->get();
+            if ($prods->isEmpty()) {
+                $prods = \App\Models\Product::where('is_active', true)->latest('id')->take(6)->get();
+            }
+            return $prods->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'image' => $p->primary_image_url,
+                'url' => route('product.detail', $p->slug)
+            ])->toArray();
+        });
+    }
+@endphp
+
+@if(!empty($fomoProducts))
+<!-- ==========================================
+     SIDQ Mart — Live Social Proof FOMO Popup
+=========================================== -->
+<div id="sidqFomoToast" class="sidq-fomo-toast" style="display:none;" aria-live="polite">
+    <button type="button" class="fomo-close-btn" onclick="dismissSidqFomo(event)" title="বন্ধ করুন" aria-label="Close">
+        &times;
+    </button>
+    <a id="fomoProductLink" href="#" class="fomo-inner-link">
+        <div class="fomo-img-wrap">
+            <img id="fomoProductImg" src="" alt="Product" loading="lazy">
+        </div>
+        <div class="fomo-text-wrap">
+            <div class="fomo-buyer-line">
+                <span class="fomo-buyer-name" id="fomoBuyerName"></span>
+                <span class="fomo-verified-badge" title="ভেরিফাইড ক্রেতা"><i class="fas fa-check-circle"></i></span>
+            </div>
+            <div class="fomo-action-text">এইমাত্র অর্ডার করেছেন</div>
+            <div class="fomo-product-title text-truncate" id="fomoProductTitle"></div>
+            <div class="fomo-meta-line">
+                <span class="fomo-pulse-dot"></span>
+                <span id="fomoLocation"></span> &bull; <span id="fomoTime"></span>
+            </div>
+        </div>
+    </a>
+</div>
+
+<style>
+/* SIDQ FOMO Recent Sales Notification Styles */
+.sidq-fomo-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1045;
+    width: 320px;
+    max-width: calc(100vw - 24px);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.15), 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+    padding: 10px 12px;
+    font-family: inherit;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+    user-select: none;
+}
+
+.sidq-fomo-toast.fomo-entering {
+    animation: fomoSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.sidq-fomo-toast.fomo-leaving {
+    animation: fomoSlideOut 0.35s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+@keyframes fomoSlideIn {
+    0% { transform: translateY(35px) scale(0.96); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes fomoSlideOut {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(35px) scale(0.96); opacity: 0; }
+}
+
+.sidq-fomo-toast .fomo-close-btn {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    line-height: 1;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 2px 4px;
+    z-index: 2;
+    transition: color 0.15s ease;
+}
+
+.sidq-fomo-toast .fomo-close-btn:hover {
+    color: #dc2626;
+}
+
+.sidq-fomo-toast .fomo-inner-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.sidq-fomo-toast .fomo-img-wrap {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    overflow: hidden;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+}
+
+.sidq-fomo-toast .fomo-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.sidq-fomo-toast .fomo-text-wrap {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.sidq-fomo-toast .fomo-buyer-line {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sidq-fomo-toast .fomo-buyer-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.sidq-fomo-toast .fomo-verified-badge {
+    color: #10b981;
+    font-size: 11px;
+}
+
+.sidq-fomo-toast .fomo-action-text {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.sidq-fomo-toast .fomo-product-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e293b;
+    max-width: 220px;
+    margin-top: 2px;
+}
+
+.sidq-fomo-toast .fomo-meta-line {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    color: #94a3b8;
+    margin-top: 3px;
+}
+
+.sidq-fomo-toast .fomo-pulse-dot {
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0.6);
+    animation: fomoPulseDot 2s infinite;
+}
+
+@keyframes fomoPulseDot {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Mobile Responsive Optimization - Clearance above Sticky Order Bar */
+@media (max-width: 768px) {
+    .sidq-fomo-toast {
+        left: 12px;
+        right: 12px;
+        width: auto;
+        bottom: 20px;
+    }
+
+    /* When bottom sticky bar is present on PDP */
+    body.has-pdp-sticky-bar .sidq-fomo-toast {
+        bottom: 84px !important;
+    }
+}
+</style>
+
+<script>
+(function() {
+    // If dismissed in this session, do not show again
+    if (sessionStorage.getItem('sidq_fomo_dismissed') === '1') {
+        return;
+    }
+
+    const fomoProducts = @json($fomoProducts);
+    if (!fomoProducts || !fomoProducts.length) return;
+
+    const buyerNames = [
+        'তানিয়া আক্তার', 'সাদিয়া সুলতানা', 'ফারহানা ইসলাম', 'নুসরাত জাহান', 
+        'মোঃ রফিকুল ইসলাম', 'সাবরিনা আক্তার', 'আশরাফুল আলম', 'নাজমুল হাসান', 
+        'জান্নাতুল ফেরদৌস', 'মোঃ শাহাদাত হোসেন', 'ইমরান খান', 'সুমাইয়া আক্তার', 
+        'মেহজাবিন চৌধুরী', 'তানভীর আহমেদ', 'আরিফুল হক', 'তাসলিমা বেগম', 
+        'মোঃ জাহিদুল ইসলাম', 'মাকসুদা আক্তার', 'রাশেদুল ইসলাম', 'রুবাইয়া ইয়াসমিন'
+    ];
+
+    const locations = [
+        'উত্তরা, ঢাকা', 'মিরপুর, ঢাকা', 'ধানমন্ডি, ঢাকা', 'বনশ্রী, ঢাকা', 
+        'মোহাম্মদপুর, ঢাকা', 'চট্টগ্রাম সদর', 'সিলেট সদর', 'রাজশাহী সদর', 
+        'খুলনা', 'কুমিল্লা', 'বগুড়া', 'গাজীপুর সদর', 'নারায়ণগঞ্জ', 
+        'রংপুর', 'ময়মনসিংহ', 'বরিশাল', 'কক্সবাজার', 'ফেনী'
+    ];
+
+    const times = [
+        'এইমাত্র', '১ মিনিট আগে', '২ মিনিট আগে', '৩ মিনিট আগে', 
+        '৪ মিনিট আগে', '৫ মিনিট আগে', '৬ মিনিট আগে', '৭ মিনিট আগে'
+    ];
+
+    const toastEl = document.getElementById('sidqFomoToast');
+    const buyerNameEl = document.getElementById('fomoBuyerName');
+    const productTitleEl = document.getElementById('fomoProductTitle');
+    const productImgEl = document.getElementById('fomoProductImg');
+    const productLinkEl = document.getElementById('fomoProductLink');
+    const locationEl = document.getElementById('fomoLocation');
+    const timeEl = document.getElementById('fomoTime');
+
+    // Add marker class to body if PDP mobile sticky bar exists
+    if (document.getElementById('pdpMobileStickyBar')) {
+        document.body.classList.add('has-pdp-sticky-bar');
+    }
+
+    let fomoTimeout = null;
+    let isFomoVisible = false;
+
+    function getRandomItem(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function showRandomFomo() {
+        if (sessionStorage.getItem('sidq_fomo_dismissed') === '1') return;
+        if (isFomoVisible) return;
+
+        const prod = getRandomItem(fomoProducts);
+        const buyer = getRandomItem(buyerNames);
+        const loc = getRandomItem(locations);
+        const tm = getRandomItem(times);
+
+        buyerNameEl.textContent = buyer;
+        productTitleEl.textContent = prod.name;
+        productImgEl.src = prod.image;
+        productImgEl.alt = prod.name;
+        productLinkEl.href = prod.url;
+        locationEl.textContent = loc;
+        timeEl.textContent = tm;
+
+        toastEl.style.display = 'block';
+        toastEl.classList.remove('fomo-leaving');
+        toastEl.classList.add('fomo-entering');
+        isFomoVisible = true;
+
+        // Auto hide after 4.5 seconds
+        fomoTimeout = setTimeout(function() {
+            hideFomo();
+        }, 4500);
+    }
+
+    function hideFomo() {
+        if (!isFomoVisible) return;
+        toastEl.classList.remove('fomo-entering');
+        toastEl.classList.add('fomo-leaving');
+
+        setTimeout(function() {
+            toastEl.style.display = 'none';
+            toastEl.classList.remove('fomo-leaving');
+            isFomoVisible = false;
+
+            // Schedule next popup after 16 - 24 seconds random jitter
+            if (sessionStorage.getItem('sidq_fomo_dismissed') !== '1') {
+                const nextInterval = Math.floor(Math.random() * 8000) + 16000;
+                setTimeout(showRandomFomo, nextInterval);
+            }
+        }, 350);
+    }
+
+    window.dismissSidqFomo = function(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (fomoTimeout) clearTimeout(fomoTimeout);
+        sessionStorage.setItem('sidq_fomo_dismissed', '1');
+        hideFomo();
+    };
+
+    // First trigger after 5.5 seconds of page interaction
+    setTimeout(showRandomFomo, 5500);
+})();
+</script>
+@endif
+@endif

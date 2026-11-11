@@ -792,6 +792,9 @@
     {!! $customFooter !!}
     @endif
 
+    {{-- Live Social Proof Recent Sales Popup --}}
+    @include('frontend.partials.fomo-sales-popup')
+
     @stack('scripts')
 </body>
 </html>

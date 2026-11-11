@@ -678,6 +678,30 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Setting 4: Live Social Proof FOMO Sales Popup -->
+                        <div class="col-12">
+                            <div class="card border bg-white p-3 p-sm-4 rounded-3 shadow-2xs">
+                                <div class="form-check form-switch d-flex align-items-start justify-content-between gap-3 p-0 m-0">
+                                    <div>
+                                        <label class="form-check-label fw-bold text-dark d-block mb-1" for="fomo_popup_enabled" style="cursor: pointer;">
+                                            <i class="fas fa-bell text-warning me-1"></i> লাইভ সোশ্যাল প্রুফ সেলস পপআপ (Recent Sales FOMO Popup)
+                                        </label>
+                                        <p class="text-muted small mb-0" style="font-size: 12px;">
+                                            মোবাইল ও ডেস্কটপ স্ক্রিনে কিছু সময় পর পর স্বয়ংক্রিয় অর্ডার নোটিফিকেশন (যেমন: <em>"তানিয়া আক্তার (উত্তরা, ঢাকা) এইমাত্র অর্ডার করেছেন..."</em>) প্রদর্শন করুন। এটি কাস্টমারের মনে আস্থা ও ক্রয়ের তাগিদ তৈরি করে সেলস বাড়াতে সাহায্য করে।
+                                        </p>
+                                    </div>
+                                    <input class="form-check-input ms-0 flex-shrink-0" 
+                                           type="checkbox" 
+                                           role="switch" 
+                                           id="fomo_popup_enabled" 
+                                           name="fomo_popup_enabled" 
+                                           value="1" 
+                                           style="width: 2.8em; height: 1.5em; cursor: pointer;"
+                                           {{ ($settings['fomo_popup_enabled'] ?? '1') === '1' ? 'checked' : '' }}>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
