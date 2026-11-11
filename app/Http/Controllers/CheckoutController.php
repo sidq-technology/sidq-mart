@@ -71,12 +71,12 @@ class CheckoutController extends Controller
             'bkash_enabled' => Setting::get('bkash_enabled', '1') === '1',
             'bkash_number' => Setting::get('bkash_number', '01711223344'),
             'bkash_type' => Setting::get('bkash_type', 'Personal (Send Money)'),
-            'bkash_instructions' => Setting::get('bkash_instructions', 'দয়া করে указанный বিকাশ নম্বরে Send Money করুন এবং TrxID নিচে লিখুন।'),
+            'bkash_instructions' => Setting::get('bkash_instructions', 'দয়া করে প্রদত্ত বিকাশ নম্বরে Send Money করুন এবং TrxID নিচে লিখুন।'),
             
             'nagad_enabled' => Setting::get('nagad_enabled', '1') === '1',
             'nagad_number' => Setting::get('nagad_number', '01711223344'),
             'nagad_type' => Setting::get('nagad_type', 'Personal (Send Money)'),
-            'nagad_instructions' => Setting::get('nagad_instructions', 'দয়া করে указанный নগদ নম্বরে Send Money করুন এবং TrxID নিচে লিখুন।'),
+            'nagad_instructions' => Setting::get('nagad_instructions', 'দয়া করে প্রদত্ত নগদ নম্বরে Send Money করুন এবং TrxID নিচে লিখুন।'),
         ];
 
         // Safety fallback: Always ensure at least Cash On Delivery is available

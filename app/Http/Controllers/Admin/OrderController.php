@@ -33,13 +33,17 @@ class OrderController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        $rawCounts = Order::select('order_status', DB::raw('count(*) as aggregate'))
+            ->groupBy('order_status')
+            ->pluck('aggregate', 'order_status');
+
         $counts = [
-            'all' => Order::count(),
-            'pending' => Order::where('order_status', 'pending')->count(),
-            'processing' => Order::where('order_status', 'processing')->count(),
-            'shipped' => Order::where('order_status', 'shipped')->count(),
-            'delivered' => Order::where('order_status', 'delivered')->count(),
-            'cancelled' => Order::where('order_status', 'cancelled')->count(),
+            'all' => (int) $rawCounts->sum(),
+            'pending' => (int) ($rawCounts['pending'] ?? 0),
+            'processing' => (int) ($rawCounts['processing'] ?? 0),
+            'shipped' => (int) ($rawCounts['shipped'] ?? 0),
+            'delivered' => (int) ($rawCounts['delivered'] ?? 0),
+            'cancelled' => (int) ($rawCounts['cancelled'] ?? 0),
         ];
 
         $enabledCouriers = app(\App\Services\Courier\CourierManager::class)->getEnabledCouriers();

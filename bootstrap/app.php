@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             'tracking/*',
+            'api/courier/webhook/*',
+            'webhook/courier/*',
         ]);
 
         $middleware->redirectGuestsTo(fn (\Illuminate\Http\Request $request) => $request->is('admin*') ? route('admin.login') : route('login'));

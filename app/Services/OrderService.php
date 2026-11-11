@@ -13,7 +13,7 @@ class OrderService
     public function generateOrderNumber(): string
     {
         do {
-            $orderNumber = 'SIDQ-' . date('Ymd') . '-' . rand(1000, 9999);
+            $orderNumber = 'SIDQ-' . date('Ymd') . '-' . rand(10000, 99999);
         } while (Order::where('order_number', $orderNumber)->exists());
 
         return $orderNumber;
@@ -72,16 +72,16 @@ class OrderService
                     'total_price' => $item['total_price'],
                 ]);
 
-                // Stock decrement
+                // Stock decrement with non-negative guard
                 if (!empty($item['variant_id'])) {
                     $variant = \App\Models\ProductVariant::find($item['variant_id']);
                     if ($variant) {
-                        $variant->decrement('stock_quantity', $item['quantity']);
+                        $variant->update(['stock_quantity' => max(0, (int) $variant->stock_quantity - (int) $item['quantity'])]);
                     }
                 }
                 $prod = \App\Models\Product::find($item['product_id']);
                 if ($prod) {
-                    $prod->decrement('stock_quantity', $item['quantity']);
+                    $prod->update(['stock_quantity' => max(0, (int) $prod->stock_quantity - (int) $item['quantity'])]);
                 }
             }
 

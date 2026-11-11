@@ -12,11 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('courier_name')->nullable()->after('admin_notes');
-            $table->string('courier_tracking_code')->nullable()->after('courier_name');
-            $table->string('courier_consignment_id')->nullable()->after('courier_tracking_code');
-            $table->string('courier_status')->nullable()->after('courier_consignment_id');
-            $table->timestamp('courier_submitted_at')->nullable()->after('courier_status');
+            if (!Schema::hasColumn('orders', 'courier_name')) {
+                $table->string('courier_name')->nullable()->after('admin_notes');
+            }
+            if (!Schema::hasColumn('orders', 'courier_tracking_code')) {
+                $table->string('courier_tracking_code')->nullable()->after('courier_name');
+            }
+            if (!Schema::hasColumn('orders', 'courier_consignment_id')) {
+                $table->string('courier_consignment_id')->nullable()->after('courier_tracking_code');
+            }
+            if (!Schema::hasColumn('orders', 'courier_status')) {
+                $table->string('courier_status')->nullable()->after('courier_consignment_id');
+            }
+            if (!Schema::hasColumn('orders', 'courier_submitted_at')) {
+                $table->timestamp('courier_submitted_at')->nullable()->after('courier_status');
+            }
         });
     }
 

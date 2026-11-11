@@ -101,7 +101,7 @@ class PaperflyDriver implements CourierInterface
             'custName' => $order->customer_name,
             'custPhone' => $cleanPhone,
             'custAddress' => $order->shipping_address,
-            'remarks' => $order->admin_notes ?: ($order->customer_note ?: ''),
+            'remarks' => $order->customer_note ?: '',
         ];
 
         try {

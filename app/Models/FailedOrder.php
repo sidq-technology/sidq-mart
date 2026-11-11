@@ -3,11 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 
 class FailedOrder extends Model
 {
-    use HasFactory;
+    use HasFactory, MassPrunable;
+
+    /**
+     * Get the prunable model query (Purge unrecovered drafts older than 60 days).
+     */
+    public function prunable()
+    {
+        return static::where('is_recovered', false)
+            ->where('created_at', '<=', now()->subDays(60));
+    }
 
     protected $fillable = [
         'session_id',

@@ -59,6 +59,12 @@ Route::get('/order-tracking', [OrderTrackingController::class, 'index'])->name('
 // Async Analytics & Meta CAPI Beacon Endpoint
 Route::post('/tracking/meta-capi', [TrackingController::class, 'trackCapi'])->name('tracking.meta-capi');
 
+// Courier Real-time Status Webhook Endpoints (Steadfast, Pathao)
+Route::post('/api/courier/webhook/steadfast', [\App\Http\Controllers\CourierWebhookController::class, 'handleSteadfast'])->name('courier.webhook.steadfast');
+Route::post('/api/courier/webhook/pathao', [\App\Http\Controllers\CourierWebhookController::class, 'handlePathao'])->name('courier.webhook.pathao');
+Route::post('/webhook/courier/steadfast', [\App\Http\Controllers\CourierWebhookController::class, 'handleSteadfast']);
+Route::post('/webhook/courier/pathao', [\App\Http\Controllers\CourierWebhookController::class, 'handlePathao']);
+
 // Legal & Policy Pages
 Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('pages.privacy');
 Route::get('/terms-and-conditions', [HomeController::class, 'termsConditions'])->name('pages.terms');
@@ -284,31 +290,37 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // Fallback direct storage file server (Guarantees image delivery on cPanel / shared hosting without symlink support)
 Route::get('/storage/{path}', function ($path) {
-    // 1. Check storage/app/public
-    $filePath = storage_path('app/public/' . $path);
-    if (file_exists($filePath) && is_file($filePath)) {
-        return response()->file($filePath, [
-            'Cache-Control' => 'public, max-age=2592000',
-        ]);
+    // 1. Strict Directory Traversal & Null-Byte Guard
+    if (str_contains($path, '..') || str_contains($path, "\0") || str_contains($path, '\\')) {
+        abort(404);
     }
 
-    // 2. Check public/storage (if public directory exists directly)
-    $pubStoragePath = public_path('storage/' . $path);
-    if (file_exists($pubStoragePath) && is_file($pubStoragePath)) {
-        return response()->file($pubStoragePath, [
-            'Cache-Control' => 'public, max-age=2592000',
-        ]);
+    $allowedBases = array_filter([
+        realpath(storage_path('app/public')),
+        realpath(public_path('storage')),
+    ]);
+
+    $candidates = [
+        storage_path('app/public/' . $path),
+        public_path('storage/' . $path),
+    ];
+
+    foreach ($candidates as $candidate) {
+        $realCandidate = realpath($candidate);
+        if ($realCandidate && is_file($realCandidate)) {
+            // Strictly enforce candidate must be within an allowed public storage root
+            foreach ($allowedBases as $base) {
+                if ($realCandidate === $base || str_starts_with($realCandidate, $base . DIRECTORY_SEPARATOR)) {
+                    return response()->file($realCandidate, [
+                        'Cache-Control' => 'public, max-age=2592000',
+                        'X-Content-Type-Options' => 'nosniff',
+                    ]);
+                }
+            }
+        }
     }
 
-    // 3. Check public_path directly
-    $rootPub = public_path($path);
-    if (file_exists($rootPub) && is_file($rootPub)) {
-        return response()->file($rootPub, [
-            'Cache-Control' => 'public, max-age=2592000',
-        ]);
-    }
-
-    // 4. Return clean placeholder PNG instead of raw HTML 404 to prevent broken img icons
+    // Return clean placeholder PNG instead of raw HTML 404 to prevent broken img icons
     $placeholder = public_path('images/placeholder-product.png');
     if (file_exists($placeholder)) {
         return response()->file($placeholder, [
@@ -320,7 +332,7 @@ Route::get('/storage/{path}', function ($path) {
     abort(404);
 })->where('path', '.*')->name('storage.fallback');
 
-// Quick storage symlink helper for cPanel / live hosting without SSH terminal access
+// Quick storage symlink helper for cPanel / live hosting without SSH terminal access (Admin Only)
 Route::get('/fix-storage-link', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('storage:link');
@@ -329,4 +341,4 @@ Route::get('/fix-storage-link', function () {
     } catch (\Throwable $e) {
         return response('<div style="font-family:sans-serif;padding:40px;text-align:center;"><h2 style="color:#dc2626;">Notice on Storage Link</h2><p style="color:#64748b;">' . htmlspecialchars($e->getMessage()) . '</p><p style="color:#16a34a;margin-top:10px;">However, SIDQ Mart\'s Direct Storage Fallback is active, so images will still serve automatically!</p><a href="/" style="display:inline-block;padding:10px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;margin-top:15px;">Go to Storefront</a></div>');
     }
-});
+})->middleware(['auth', 'admin'])->name('admin.fix-storage-link');

@@ -495,6 +495,14 @@
                                                 </button>
                                                 <div class="courier-test-alert mt-2 d-none"></div>
                                             </div>
+                                            <div class="col-12 mt-1 pt-2 border-top">
+                                                <label class="form-label small fw-bold text-muted mb-1"><i class="fas fa-satellite-dish text-success me-1"></i>Steadfast Webhook URL (অটোমেটিক ডেলিভারি স্ট্যাটাস আপডেট)</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control bg-light font-monospace" value="{{ url('/api/courier/webhook/steadfast') }}" readonly id="sfWebhookUrl">
+                                                    <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('sfWebhookUrl').value); this.innerText='কপি হয়েছে!'; setTimeout(()=>this.innerText='কপি করুন', 2000)">কপি করুন</button>
+                                                </div>
+                                                <div class="form-text" style="font-size:11.5px;">Steadfast মার্চেন্ট পোর্টালে এই Webhook URL দিয়ে দিলে পার্সেল ডেলিভারি হওয়ার সাথে সাথে অর্ডার স্ট্যাটাস স্বয়ংক্রিয়ভাবে <strong>Delivered</strong> ও পেমেন্ট <strong>Paid</strong> হয়ে যাবে।</div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -535,6 +543,14 @@
                                                     <i class="fas fa-vial me-1"></i> Pathao কানেকশন টেস্ট করুন
                                                 </button>
                                                 <div class="courier-test-alert mt-2 d-none"></div>
+                                            </div>
+                                            <div class="col-12 mt-1 pt-2 border-top">
+                                                <label class="form-label small fw-bold text-muted mb-1"><i class="fas fa-satellite-dish text-success me-1"></i>Pathao Webhook URL (অটোমেটিক ডেলিভারি স্ট্যাটাস আপডেট)</label>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control bg-light font-monospace" value="{{ url('/api/courier/webhook/pathao') }}" readonly id="ptWebhookUrl">
+                                                    <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('ptWebhookUrl').value); this.innerText='কপি হয়েছে!'; setTimeout(()=>this.innerText='কপি করুন', 2000)">কপি করুন</button>
+                                                </div>
+                                                <div class="form-text" style="font-size:11.5px;">Pathao মার্চেন্ট বা ডেভেলপার পোর্টালে এই Webhook সেট করলে ডেলিভারি বা রিটার্নের লাইভ আপডেট ওয়েবসাইটে স্বয়ংক্রিয়ভাবে সিঙ্ক হবে।</div>
                                             </div>
                                         </div>
                                     </div>

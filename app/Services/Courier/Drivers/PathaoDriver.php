@@ -127,7 +127,7 @@ class PathaoDriver implements CourierInterface
                 'item_quantity' => $order->items()->sum('quantity') ?: 1,
                 'item_weight' => 0.5,
                 'item_description' => 'E-Commerce Package',
-                'special_instruction' => $order->admin_notes ?: ($order->customer_note ?: ''),
+                'special_instruction' => $order->customer_note ?: '',
             ];
 
             $response = Http::timeout(20)

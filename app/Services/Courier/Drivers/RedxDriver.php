@@ -95,7 +95,7 @@ class RedxDriver implements CourierInterface
             'merchant_invoice_id' => $order->order_number,
             'cash_collection_amount' => $codAmount,
             'parcel_weight' => 500,
-            'instruction' => $order->admin_notes ?: ($order->customer_note ?: ''),
+            'instruction' => $order->customer_note ?: '',
         ];
 
         try {

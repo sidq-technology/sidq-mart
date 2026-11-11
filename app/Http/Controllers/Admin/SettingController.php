@@ -165,8 +165,9 @@ class SettingController extends Controller
             \Illuminate\Support\Facades\Artisan::call('view:clear');
             \Illuminate\Support\Facades\Artisan::call('config:clear');
             \Illuminate\Support\Facades\Artisan::call('route:clear');
+            \Illuminate\Support\Facades\Artisan::call('model:prune');
 
-            $message = 'ওয়েবসাইটের সকল ক্যাশ (Settings, Blade Views, Config, Routes) সফলভাবে ক্লিয়ার করা হয়েছে!';
+            $message = 'ওয়েবসাইটের সকল ক্যাশ (Settings, Views, Config, Routes) ও পুরনো লগ সফলভাবে ক্লিয়ার করা হয়েছে!';
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([

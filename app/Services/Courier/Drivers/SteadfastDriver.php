@@ -101,7 +101,7 @@ class SteadfastDriver implements CourierInterface
             'recipient_phone' => $cleanPhone,
             'recipient_address' => $order->shipping_address,
             'cod_amount' => $codAmount,
-            'note' => $order->admin_notes ?: ($order->customer_note ?: 'Handle with care'),
+            'note' => $order->customer_note ?: 'Handle with care',
         ];
 
         try {
